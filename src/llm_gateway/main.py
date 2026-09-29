@@ -18,8 +18,10 @@ def health() -> dict[str, str]:
 
 
 @app.post("/v1/chat/completions", response_model=ChatCompletionResponse)
-def chat_completion(
-    request: ChatCompletionRequest,
-    provider: Annotated[Provider, Depends(get_provider)],
+async def chat_completion(
+    request: ChatCompletionRequest,  # Validated chat input.
+    provider: Annotated[
+        Provider, Depends(get_provider)
+    ],  # Injected completion provider.
 ) -> ChatCompletionResponse:
-    return provider.complete(request)
+    return await provider.complete(request)

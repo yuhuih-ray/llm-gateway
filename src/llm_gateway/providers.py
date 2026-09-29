@@ -9,11 +9,17 @@ from llm_gateway.schemas import (
 
 
 class Provider(Protocol):
-    def complete(self, request: ChatCompletionRequest) -> ChatCompletionResponse: ...
+    async def complete(
+        self,
+        request: ChatCompletionRequest,  # Validated chat input.
+    ) -> ChatCompletionResponse: ...
 
 
 class FakeProvider:
-    def complete(self, request: ChatCompletionRequest) -> ChatCompletionResponse:
+    async def complete(
+        self,
+        request: ChatCompletionRequest,  # Validated chat input.
+    ) -> ChatCompletionResponse:
         return ChatCompletionResponse(
             id="chatcmpl-fake",
             model=request.model,
