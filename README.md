@@ -52,3 +52,24 @@ The local FakeProvider echoes the model and always returns:
 ```
 
 The fake ID is fixed, not unique. No external services are called.
+
+## Local infrastructure
+
+Requires Docker with Docker Compose. This starts only PostgreSQL and Redis;
+the gateway continues to run locally with uv and does not connect to them yet.
+The example credentials are placeholders for local development only.
+
+```sh
+cp .env.example .env
+docker compose up -d
+docker compose ps
+```
+
+Both services bind to localhost. PostgreSQL and Redis store data in named volumes.
+Stop the services while preserving data:
+
+```sh
+docker compose down
+```
+
+`docker compose down -v` deletes all data in these volumes.
