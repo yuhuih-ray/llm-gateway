@@ -7,3 +7,5 @@ build/
 dist/
 .DS_Store
 .vscode/
+.ruff_cache/
+.mypy_cache/
