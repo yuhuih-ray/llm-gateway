@@ -4,37 +4,35 @@ A learning-oriented FastAPI project. Provides a health endpoint and a minimal no
 
 ## Run locally
 
-Requires Python 3.12. From the project directory:
+Install [uv](https://docs.astral.sh/uv/getting-started/installation/). Python 3.12 is pinned in `.python-version`. From the project directory:
 
 ```sh
-python3.12 -m venv .venv
-source .venv/bin/activate
-python -m pip install -e '.[dev]'
-python -m uvicorn llm_gateway.main:app --reload
+uv sync
+uv run uvicorn llm_gateway.main:app --reload
 ```
 
 Visit `http://127.0.0.1:8000/health` to get `{"status":"ok"}`.
 
 ## Run tests
 
-With the virtual environment activated:
+From the project directory:
 
 ```sh
-python -m pytest
+uv run pytest
 ```
 
 ## Development checks
 
-With the development dependencies installed and the environment activated:
+After `uv sync` (which includes development dependencies):
 
 ```sh
-ruff check .
-ruff format --check .
-mypy src
-python -m pytest
+uv run ruff check .
+uv run ruff format --check .
+uv run mypy src
+uv run pytest
 ```
 
-To apply formatting, run `ruff format .`.
+To apply formatting, run `uv run ruff format .`.
 
 ## Chat completions
 

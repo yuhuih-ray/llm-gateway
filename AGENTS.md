@@ -13,10 +13,15 @@
 - Before considering work complete, run lint, format check, type check, and tests:
 
   ```sh
-  ruff check .
-  ruff format --check .
-  mypy src
-  python -m pytest
+  uv run ruff check .
+  uv run ruff format --check .
+  uv run mypy src
+  uv run pytest
   ```
 
 - Report any failures honestly.
+
+- Code comments must be in English.
+- Annotate key function parameters with inline comments.
+- Do not use emoji anywhere in code, comments, commit messages, or docs.
+- Use `uv add` / `uv remove` to change dependencies; never edit uv.lock by hand.

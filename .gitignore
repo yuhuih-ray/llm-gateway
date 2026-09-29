@@ -9,3 +9,6 @@ dist/
 .vscode/
 .ruff_cache/
 .mypy_cache/
+.env
+.env.*
+!.env.example
