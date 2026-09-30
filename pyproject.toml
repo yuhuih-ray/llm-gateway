@@ -10,6 +10,10 @@ dependencies = [
     "fastapi>=0.141.1",
     "uvicorn>=0.54.0",
     "pydantic>=2.13.5,<3",
+    "sqlalchemy[asyncio]>=2,<3",
+    "asyncpg>=0.31.0",
+    "alembic>=1.20.0",
+    "pydantic-settings>=2.15.0",
 ]
 
 [tool.setuptools.packages.find]
@@ -25,6 +29,7 @@ target-version = "py312"
 select = ["E4", "E7", "E9", "F", "I"]
 
 [tool.mypy]
+plugins = ["pydantic.mypy"]
 python_version = "3.12"
 check_untyped_defs = true
 warn_unused_ignores = true

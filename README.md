@@ -73,3 +73,21 @@ docker compose down
 ```
 
 `docker compose down -v` deletes all data in these volumes.
+
+## Database migrations
+
+With `.env` configured as above, start PostgreSQL and apply the schema:
+
+```sh
+docker compose up -d --wait
+uv run alembic upgrade head
+```
+
+To remove all application tables and their data:
+
+```sh
+uv run alembic downgrade base
+```
+
+Migrations read `DATABASE_URL` from the environment or `.env`. The database is
+not connected to endpoints yet; importing the app does not require configuration.
