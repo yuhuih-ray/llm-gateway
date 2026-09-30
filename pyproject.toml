@@ -21,6 +21,7 @@ where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+markers = ["integration: requires Docker and a throwaway PostgreSQL container"]
 
 [tool.ruff]
 target-version = "py312"
@@ -40,4 +41,5 @@ dev = [
     "mypy>=2.3.1",
     "pytest>=9.1.1",
     "ruff>=0.16.9",
+    "testcontainers[postgres]>=4.15.0",
 ]

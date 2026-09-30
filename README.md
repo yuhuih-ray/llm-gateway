@@ -15,10 +15,18 @@ Visit `http://127.0.0.1:8000/health` to get `{"status":"ok"}`.
 
 ## Run tests
 
+Docker must be running. Integration tests create a throwaway PostgreSQL 18
+container and apply Alembic migrations; they never use the Compose database.
 From the project directory:
 
 ```sh
 uv run pytest
+```
+
+To skip Docker-dependent integration tests:
+
+```sh
+uv run pytest -m "not integration"
 ```
 
 ## Development checks
