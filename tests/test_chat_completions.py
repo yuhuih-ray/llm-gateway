@@ -1,10 +1,12 @@
 import asyncio
 from time import perf_counter
+from uuid import uuid4
 
 import httpx2
 import pytest
 from fastapi.testclient import TestClient
 
+from llm_gateway.auth import AuthContext, authenticate
 from llm_gateway.main import app, get_provider
 from llm_gateway.providers import FakeProvider
 from llm_gateway.schemas import (
@@ -13,6 +15,13 @@ from llm_gateway.schemas import (
     ChatCompletionResponse,
     Choice,
 )
+
+
+@pytest.fixture(autouse=True)
+def authenticated():
+    app.dependency_overrides[authenticate] = lambda: AuthContext(uuid4(), uuid4())
+    yield
+    del app.dependency_overrides[authenticate]
 
 
 @pytest.fixture

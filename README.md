@@ -48,6 +48,7 @@ With the server running:
 
 ```sh
 curl http://127.0.0.1:8000/v1/chat/completions \
+  -H "Authorization: Bearer $GATEWAY_API_KEY" \
   -H 'Content-Type: application/json' \
   -d '{"model":"fake-model","messages":[{"role":"user","content":"Hello"}]}'
 ```
@@ -99,3 +100,22 @@ uv run alembic downgrade base
 
 Migrations read `DATABASE_URL` from the environment or `.env`. The database is
 not connected to endpoints yet; importing the app does not require configuration.
+
+## API keys
+
+Start local infrastructure and apply migrations before creating a tenant and key:
+
+```sh
+uv run python -m llm_gateway.cli create-tenant local
+uv run python -m llm_gateway.cli create-key --tenant local --name development
+```
+
+The CLI prints the full key once. Store it securely and set `GATEWAY_API_KEY`
+in your shell to use the authenticated curl example above. Only the key prefix
+and SHA-256 hash are stored. `/health` remains public.
+
+Revoke a key using its `gw_<id>` prefix:
+
+```sh
+uv run python -m llm_gateway.cli revoke-key 'gw_<id>'
+```
