@@ -124,13 +124,15 @@ uv run python -m llm_gateway.cli revoke-key 'gw_<id>'
 
 Set `GEMINI_API_KEY` in your ignored `.env` file. The gateway creates the SDK
 client only when a Gemini request is made. Timeouts are fixed per model in the registry:
-Flash allows 12 seconds to first streaming text (or the whole non-streaming call);
-Pro allows 28 seconds. Both allow at most 1 second between streaming events.
-These values are three times measured maxima, rounded up, from a small sample
-on 2026-09-30 using the default output budget.
+Flash and Flash-Lite allow 60 seconds to first streaming text (or the whole non-streaming call);
+Pro allows 120 seconds. All allow at most 30 seconds between streaming events.
+These deadlines budget for the configured cap (roughly 1.5 times cap divided by
+measured throughput), not short sample maxima. An idle timeout after the commit
+point cannot be retried.
 
 | Gateway model | Upstream model |
 | --- | --- |
+| `gemini-flash-lite` | `gemini-3.1-flash-lite` |
 | `gemini-flash` | `gemini-3.8-flash` |
 | `gemini-pro` | `gemini-3.1-pro-preview` |
 | `fake` | Deterministic local provider |
@@ -158,7 +160,11 @@ uv run pytest -m live
 Without that environment variable, the live test skips. The live test sends a
 short prompt to Gemini and may incur API charges.
 
-Thinking is fixed in the registry: Flash uses `LOW`; Pro uses its model default.
+Thinking is fixed in the registry: Flash-Lite requests disabled thinking with
+`thinking_budget=0`; Flash and Pro use `LOW`. Flash accepted budget zero but still
+reported reasoning on a math probe, so it uses its lowest accepted explicit level.
+Each model/thinking pair is a distinct configuration shared by training and serving;
+a thinking variant can later have its own gateway model name.
 Changing this policy changes quality, latency, and cost. `max_tokens` is used
 as the output token limit after applying the registry default and cap and includes internal thinking tokens,
 matching OpenAI reasoning-model semantics. A small limit can be exhausted before
@@ -166,7 +172,7 @@ visible text is generated. `usage.completion_tokens` includes visible and thinki
 tokens, with thinking reported in `completion_tokens_details.reasoning_tokens`.
 Terminal reasons are `stop`, `length` (token limit), or `content_filter` (safety).
 
-Gemini requests default to 1024 output tokens when `max_tokens` is omitted;
+Gemini requests default to 2048 output tokens when `max_tokens` is omitted;
 values above 8192 are clamped to 8192. These limits include billed thinking
 tokens. The `fake` model has no token limit. Settings are cached until process
 restart, and a lazily created Gemini async client is reused until app shutdown.

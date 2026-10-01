@@ -17,12 +17,14 @@ def anyio_backend():
 @pytest.mark.skipif(
     not os.environ.get("GEMINI_API_KEY"), reason="GEMINI_API_KEY is not set"
 )
-@pytest.mark.parametrize("model", ["gemini-flash", "gemini-pro"])
+@pytest.mark.parametrize("model", ["gemini-flash-lite", "gemini-flash", "gemini-pro"])
 async def test_live_gemini(model):  # Test both pinned registry configurations.
     entry = MODELS[model]
     assert entry.upstream_model is not None
     response = await GeminiProvider(
-        entry.upstream_model, thinking_level=entry.thinking_level
+        entry.upstream_model,
+        thinking_level=entry.thinking_level,
+        thinking_budget=entry.thinking_budget,
     ).complete(
         ChatCompletionRequest(
             model=model,

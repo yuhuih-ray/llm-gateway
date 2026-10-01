@@ -173,7 +173,7 @@ async def test_cancel_closes_upstream(caplog):
 
 
 @pytest.mark.parametrize("stream", [False, True])
-@pytest.mark.parametrize("supplied,expected", [(None, 1024), (9000, 8192), (64, 64)])
+@pytest.mark.parametrize("supplied,expected", [(None, 2048), (9000, 8192), (64, 64)])
 def test_gateway_limits_both_paths(
     authenticated, stream, supplied, expected
 ):  # Providers see only the final budget.

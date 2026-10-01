@@ -20,26 +20,31 @@ class ModelEntry:
     max_tokens_cap: int | None
     first_event_timeout: float
     idle_timeout: float
+    thinking_budget: int | None = None
 
 
 # Thinking tokens count toward this limit and are billed as output tokens,
 # so these limits are the main guard against runaway cost.
 # Changing thinking settings changes quality, latency, and cost.
 # These IDs accepted real generateContent requests, not just model-list queries.
-# Measured 2026-09-30: 3 prompts per model, both modes, default 1024 tokens.
-# First timeout = ceil(3 * max(non-stream total, stream first text)):
-# Flash 3.986s -> 12s; Pro 9.303s -> 28s.
-# Idle = ceil(3 * worst stream event gap): Flash .162s / Pro .180s -> 1s.
-# Small sample at default limits, not a latency guarantee for larger budgets.
-# Fake has no upstream measurements; retain generous local-test deadlines.
+# Every (upstream model, thinking level/budget) pair is a distinct configuration;
+# training data and serving must use the same pair. A thinking variant can later
+# be added as a separate gateway model name.
+# Size deadlines for the 8192-token cap, approximately 1.5 * cap / measured
+# throughput, rather than short sample maxima: 60s Flash tiers, 120s Pro.
+# A too-short idle timeout breaks responses that cannot be retried after commit.
 MODELS = {
     "fake": ModelEntry("fake", None, None, None, None, 30, 30),
+    "gemini-flash-lite": ModelEntry(
+        "gemini", "gemini-3.1-flash-lite", None, 2048, 8192, 60, 30, thinking_budget=0
+    ),
+    # Budget 0 was accepted but still produced reasoning; LOW is the lowest level.
     "gemini-flash": ModelEntry(
-        "gemini", "gemini-3.8-flash", types.ThinkingLevel.LOW, 1024, 8192, 12, 1
+        "gemini", "gemini-3.8-flash", types.ThinkingLevel.LOW, 2048, 8192, 60, 30
     ),
     # Preview may retire on short notice; the live test detects availability changes.
     "gemini-pro": ModelEntry(
-        "gemini", "gemini-3.1-pro-preview", None, 1024, 8192, 28, 1
+        "gemini", "gemini-3.1-pro-preview", types.ThinkingLevel.LOW, 2048, 8192, 120, 30
     ),
 }
 
@@ -60,6 +65,7 @@ def get_provider(
         entry.upstream_model,
         thinking_level=entry.thinking_level,
         timeout=entry.first_event_timeout,
+        thinking_budget=entry.thinking_budget,
     )
 
 

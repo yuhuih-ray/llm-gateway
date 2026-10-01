@@ -302,3 +302,19 @@ async def test_read_timeout_never_retries(failure):  # Deadline or SDK read time
     assert error.value.status == 504
     operation.assert_awaited_once()
     sleep.assert_not_awaited()
+
+
+def test_measured_stream_reasoning_usage():
+    from llm_gateway.gemini import map_usage
+
+    usage = map_usage(
+        types.GenerateContentResponseUsageMetadata(
+            prompt_token_count=69,
+            candidates_token_count=1318,
+            thoughts_token_count=726,
+            total_token_count=2113,
+        )
+    )
+    assert usage.completion_tokens_details.reasoning_tokens == 726
+    assert usage.completion_tokens == 2044
+    assert usage.total_tokens == 2113

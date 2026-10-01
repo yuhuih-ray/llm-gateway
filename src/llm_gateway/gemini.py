@@ -79,11 +79,14 @@ class GeminiProvider:
         | None = None,  # Fixed registry policy; None uses model default.
         client: genai.client.AsyncClient | None = None,  # Injectable async SDK client.
         timeout: float | None = None,  # Optional per-attempt deadline override.
+        thinking_budget: int
+        | None = None,  # Fixed registry budget; zero disables thinking.
     ) -> None:
         self.model_id = model_id
         self.thinking_level = thinking_level
         self.client = client
         self.timeout = timeout
+        self.thinking_budget = thinking_budget
 
     async def complete(
         self,
@@ -149,8 +152,10 @@ class GeminiProvider:
             system_instruction="\n".join(systems) if systems else None,
             max_output_tokens=request.max_tokens,
             temperature=request.temperature,
-            thinking_config=types.ThinkingConfig(thinking_level=self.thinking_level)
-            if self.thinking_level is not None
+            thinking_config=types.ThinkingConfig(
+                thinking_level=self.thinking_level, thinking_budget=self.thinking_budget
+            )
+            if self.thinking_level is not None or self.thinking_budget is not None
             else None,
             automatic_function_calling=types.AutomaticFunctionCallingConfig(
                 disable=True

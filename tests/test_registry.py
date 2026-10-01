@@ -72,8 +72,8 @@ def test_request_validation(extra):  # Invalid request field overrides.
         del app.dependency_overrides[authenticate]
 
 
-@pytest.mark.parametrize("model", ["gemini-flash", "gemini-pro"])
-@pytest.mark.parametrize("supplied,expected", [(None, 1024), (10000, 8192), (512, 512)])
+@pytest.mark.parametrize("model", ["gemini-flash-lite", "gemini-flash", "gemini-pro"])
+@pytest.mark.parametrize("supplied,expected", [(None, 2048), (10000, 8192), (512, 512)])
 @pytest.mark.anyio
 async def test_token_limits(
     model, supplied, expected
@@ -103,3 +103,34 @@ def test_fake_has_no_token_limit():
 @pytest.fixture
 def anyio_backend():
     return "asyncio"
+
+
+def test_lowest_thinking_registry():
+    from google.genai import types
+
+    from llm_gateway.registry import MODELS, get_provider
+    from llm_gateway.schemas import ChatCompletionRequest
+
+    for model in ("gemini-flash-lite", "gemini-flash", "gemini-pro"):
+        entry = MODELS[model]
+        provider = get_provider(
+            ChatCompletionRequest(
+                model=model, messages=[{"role": "user", "content": "Hi"}]
+            ),
+            AuthContext(uuid4(), uuid4()),
+        )
+        _, config = provider._translate(
+            ChatCompletionRequest(
+                model=model, messages=[{"role": "user", "content": "Hi"}]
+            )
+        )
+        assert entry.default_max_tokens == 2048
+        assert entry.max_tokens_cap == 8192
+        assert entry.first_event_timeout == (120 if model == "gemini-pro" else 60)
+        assert entry.idle_timeout == 30
+        if model == "gemini-flash-lite":
+            assert config.thinking_config.thinking_budget == 0
+            assert config.thinking_config.thinking_level is None
+        else:
+            assert config.thinking_config.thinking_level == types.ThinkingLevel.LOW
+            assert config.thinking_config.thinking_budget is None
