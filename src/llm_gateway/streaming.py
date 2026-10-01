@@ -9,9 +9,9 @@ import anyio
 from starlette.responses import StreamingResponse
 from starlette.types import Receive, Scope, Send
 
-from llm_gateway.config import get_settings
 from llm_gateway.errors import GatewayError
 from llm_gateway.providers import FinalEvent, Provider, StreamEvent, TextEvent
+from llm_gateway.registry import MODELS
 from llm_gateway.retries import with_retries
 from llm_gateway.schemas import (
     ChatCompletionChunk,
@@ -137,7 +137,7 @@ async def stream_response(
     provider: Provider,  # No SSE knowledge is required of the provider.
     request: ChatCompletionRequest,  # Already authenticated and token-limited.
 ) -> StreamingResponse:
-    timeout = get_settings().gemini_timeout_seconds
+    entry = MODELS[request.model]
 
     async def open_stream() -> tuple[AsyncGenerator[StreamEvent, None], StreamEvent]:
         upstream = provider.stream(request)
@@ -150,9 +150,11 @@ async def stream_response(
             raise
 
     try:
-        upstream, first = await with_retries(open_stream, timeout)
+        upstream, first = await with_retries(open_stream, entry.first_event_timeout)
     except GatewayError:
         raise
     except Exception:
         raise GatewayError(502, "Upstream stream failed", "upstream_error") from None
-    return GatewayStreamingResponse(SSEStream(upstream, first, request, timeout))
+    return GatewayStreamingResponse(
+        SSEStream(upstream, first, request, entry.idle_timeout)
+    )

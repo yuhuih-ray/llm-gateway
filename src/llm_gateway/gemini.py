@@ -89,11 +89,12 @@ class GeminiProvider:
         self,
         request: ChatCompletionRequest,  # Validated gateway request.
     ) -> ChatCompletionResponse:
-        settings = get_settings()
+        from llm_gateway.registry import MODELS
+
         timeout = (
             self.timeout
             if self.timeout is not None
-            else settings.gemini_timeout_seconds
+            else MODELS[request.model].first_event_timeout
         )
         client = self.client if self.client is not None else get_gemini_client()
         return await self._complete(request, client, timeout)

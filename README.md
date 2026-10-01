@@ -123,8 +123,11 @@ uv run python -m llm_gateway.cli revoke-key 'gw_<id>'
 ## Gemini models
 
 Set `GEMINI_API_KEY` in your ignored `.env` file. The gateway creates the SDK
-client only when a Gemini request is made. `GEMINI_TIMEOUT_SECONDS` sets the
-per-attempt timeout (default: 30 seconds).
+client only when a Gemini request is made. Timeouts are fixed per model in the registry:
+Flash allows 12 seconds to first streaming text (or the whole non-streaming call);
+Pro allows 28 seconds. Both allow at most 1 second between streaming events.
+These values are three times measured maxima, rounded up, from a small sample
+on 2026-09-30 using the default output budget.
 
 | Gateway model | Upstream model |
 | --- | --- |
@@ -139,7 +142,10 @@ require at least one message and optionally accept positive `max_tokens` and
 `temperature` from 0 to 2. Responses include token `usage` and keep the requested
 gateway model name. Responses are non-streaming by default; no usage records are written.
 
-Transient failures get at most two retries with jittered exponential backoff.
+Connection errors, connect timeouts, and HTTP 429/500/502/503/504 get at most
+two retries with jittered exponential backoff. Read timeouts and gateway deadlines
+return 504 without retrying potentially billed generation. After SSE headers are
+sent, timeouts instead terminate the stream with an error event; no retry occurs.
 There is no fallback to another model or provider.
 
 Default tests and CI exclude live API calls. To run the live test, export

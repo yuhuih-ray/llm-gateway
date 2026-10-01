@@ -108,9 +108,14 @@ def test_commit_point(
 def test_stream_timeout(
     authenticated, monkeypatch, first
 ):  # Before commitment or while idle.
-    monkeypatch.setattr(
-        "llm_gateway.streaming.get_settings",
-        lambda: SimpleNamespace(gemini_timeout_seconds=0.01),
+    from dataclasses import replace
+
+    from llm_gateway.registry import MODELS
+
+    monkeypatch.setitem(
+        MODELS,
+        "fake",
+        replace(MODELS["fake"], first_event_timeout=0.01, idle_timeout=0.01),
     )
     monkeypatch.setattr("llm_gateway.retries.random.uniform", lambda *_: 0)
     closed = []
@@ -129,7 +134,8 @@ def test_stream_timeout(
     with TestClient(app) as client:
         response = client.post("/v1/chat/completions", json=payload())
     assert response.status_code == (504 if first else 200)
-    assert len(closed) == (3 if first else 1)
+    assert len(closed) == 1
+    assert provider.stream.call_count == 1
     if not first:
         assert events(response)[-1]["error"]["type"] == "upstream_error"
         assert "[DONE]" not in response.text

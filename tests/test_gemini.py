@@ -110,7 +110,7 @@ async def test_no_retry_on_client_error(
     "failure,expected",
     [
         (errors.ServerError(503, {}), 502),
-        (TimeoutError(), 504),
+        (httpx.ConnectTimeout("private"), 504),
         (httpx.ConnectError("private"), 502),
         (errors.ClientError(429, {}), 502),
     ],
@@ -290,3 +290,15 @@ async def test_gemini_stream_thoughts_and_latest_usage():
     ]
     assert generate.call_args.kwargs["config"].max_output_tokens == 99
     closed.assert_awaited_once()
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize("failure", [TimeoutError(), httpx.ReadTimeout("private")])
+async def test_read_timeout_never_retries(failure):  # Deadline or SDK read timeout.
+    operation = AsyncMock(side_effect=failure)
+    with patch("llm_gateway.retries.asyncio.sleep", new_callable=AsyncMock) as sleep:
+        with pytest.raises(GatewayError) as error:
+            await with_retries(operation, 30)
+    assert error.value.status == 504
+    operation.assert_awaited_once()
+    sleep.assert_not_awaited()
