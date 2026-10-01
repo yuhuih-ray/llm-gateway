@@ -79,7 +79,9 @@ async def test_authentication(
             "Authorization": f"Bearer {parse_key(key)}_{generate_key().split('_', 2)[2]}"
         }
     response = await client.post(
-        "/v1/chat/completions", headers=headers, json={"model": "fake", "messages": []}
+        "/v1/chat/completions",
+        headers=headers,
+        json={"model": "fake", "messages": [{"role": "user", "content": "Hello"}]},
     )
     if case == "valid":
         assert response.status_code == 200
@@ -179,7 +181,10 @@ async def test_auth_releases_connection_before_provider(
                     client.post(
                         "/v1/chat/completions",
                         headers={"Authorization": f"Bearer {key}"},
-                        json={"model": "fake", "messages": []},
+                        json={
+                            "model": "fake",
+                            "messages": [{"role": "user", "content": "Hello"}],
+                        },
                     )
                     for _ in range(3)
                 ),

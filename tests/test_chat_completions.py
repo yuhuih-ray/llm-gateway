@@ -34,7 +34,7 @@ def test_chat_completion():
         response = client.post(
             "/v1/chat/completions",
             json={
-                "model": "fake-model",
+                "model": "fake",
                 "messages": [
                     {"role": "system", "content": "Be helpful."},
                     {"role": "assistant", "content": "How can I help?"},
@@ -45,8 +45,14 @@ def test_chat_completion():
 
     assert response.status_code == 200
     assert response.json() == {
+        "usage": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "total_tokens": 0,
+            "completion_tokens_details": {"reasoning_tokens": 0},
+        },
         "id": "chatcmpl-fake",
-        "model": "fake-model",
+        "model": "fake",
         "choices": [
             {
                 "message": {
@@ -65,7 +71,7 @@ def test_invalid_message_role():
         response = client.post(
             "/v1/chat/completions",
             json={
-                "model": "fake-model",
+                "model": "fake",
                 "messages": [{"role": "tool", "content": "Hello"}],
             },
         )
@@ -88,11 +94,13 @@ def test_missing_model():
 @pytest.mark.anyio
 async def test_fake_provider_is_deterministic():
     provider = FakeProvider()
-    request = ChatCompletionRequest(model="another-model", messages=[])
+    request = ChatCompletionRequest(
+        model="fake", messages=[{"role": "user", "content": "Hello"}]
+    )
 
     first = await provider.complete(request)
     assert first == await provider.complete(request)
-    assert first.model == "another-model"
+    assert first.model == "fake"
 
 
 def test_endpoint_delegates_to_provider():

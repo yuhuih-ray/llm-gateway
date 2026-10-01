@@ -8,15 +8,14 @@ from llm_gateway.auth import (
     authenticate,
     authentication_error_handler,
 )
-from llm_gateway.providers import FakeProvider, Provider
+from llm_gateway.errors import GatewayError, gateway_error_handler
+from llm_gateway.providers import Provider
+from llm_gateway.registry import get_provider
 from llm_gateway.schemas import ChatCompletionRequest, ChatCompletionResponse
 
 app = FastAPI()
 app.add_exception_handler(AuthenticationError, authentication_error_handler)
-
-
-def get_provider() -> Provider:
-    return FakeProvider()
+app.add_exception_handler(GatewayError, gateway_error_handler)
 
 
 @app.get("/health")

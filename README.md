@@ -50,17 +50,17 @@ With the server running:
 curl http://127.0.0.1:8000/v1/chat/completions \
   -H "Authorization: Bearer $GATEWAY_API_KEY" \
   -H 'Content-Type: application/json' \
-  -d '{"model":"fake-model","messages":[{"role":"user","content":"Hello"}]}'
+  -d '{"model":"fake","messages":[{"role":"user","content":"Hello"}]}'
 ```
 
 Messages support `system`, `user`, and `assistant` roles with string content.
 The local FakeProvider echoes the model and always returns:
 
 ```json
-{"id":"chatcmpl-fake","model":"fake-model","choices":[{"message":{"role":"assistant","content":"Hello from FakeProvider."},"finish_reason":"stop"}]}
+{"id":"chatcmpl-fake","model":"fake","choices":[{"message":{"role":"assistant","content":"Hello from FakeProvider."},"finish_reason":"stop"}],"usage":{"prompt_tokens":0,"completion_tokens":0,"total_tokens":0,"completion_tokens_details":{"reasoning_tokens":0}}}
 ```
 
-The fake ID is fixed, not unique. No external services are called.
+The fake ID is fixed, not unique. The `fake` model makes no external calls and reports zero usage.
 
 ## Local infrastructure
 
@@ -119,3 +119,43 @@ Revoke a key using its `gw_<id>` prefix:
 ```sh
 uv run python -m llm_gateway.cli revoke-key 'gw_<id>'
 ```
+
+## Gemini models
+
+Set `GEMINI_API_KEY` in your ignored `.env` file. The gateway creates the SDK
+client only when a Gemini request is made. `GEMINI_TIMEOUT_SECONDS` sets the
+per-attempt timeout (default: 30 seconds).
+
+| Gateway model | Upstream model |
+| --- | --- |
+| `gemini-flash` | `gemini-3.8-flash` |
+| `gemini-pro` | `gemini-3.1-pro-preview` |
+| `fake` | Deterministic local provider |
+
+Both Gemini IDs were verified with real generation requests. Pro is a preview
+model that may retire on short notice; run the live tests to detect availability changes.
+Use one of these gateway names in the authenticated curl example. Requests
+require at least one message and optionally accept positive `max_tokens` and
+`temperature` from 0 to 2. Responses include token `usage` and keep the requested
+gateway model name. Responses are non-streaming; no usage records are written.
+
+Transient failures get at most two retries with jittered exponential backoff.
+There is no fallback to another model or provider.
+
+Default tests and CI exclude live API calls. To run the live test, export
+`GEMINI_API_KEY` in your shell and run:
+
+```sh
+uv run pytest -m live
+```
+
+Without that environment variable, the live test skips. The live test sends a
+short prompt to Gemini and may incur API charges.
+
+Thinking is fixed in the registry: Flash uses `LOW`; Pro uses its model default.
+Changing this policy changes quality, latency, and cost. `max_tokens` is passed
+unchanged as the output token limit and includes internal thinking tokens,
+matching OpenAI reasoning-model semantics. A small limit can be exhausted before
+visible text is generated. `usage.completion_tokens` includes visible and thinking
+tokens, with thinking reported in `completion_tokens_details.reasoning_tokens`.
+Terminal reasons are `stop`, `length` (token limit), or `content_filter` (safety).
