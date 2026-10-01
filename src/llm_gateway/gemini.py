@@ -1,11 +1,14 @@
-from typing import Literal
+from collections.abc import AsyncGenerator
+from typing import Literal, cast
 from uuid import uuid4
 
+import anyio
 from google import genai
 from google.genai import types
 
 from llm_gateway.config import get_settings
 from llm_gateway.errors import GatewayError
+from llm_gateway.providers import FinalEvent, StreamEvent, TextEvent
 from llm_gateway.retries import with_retries
 from llm_gateway.schemas import (
     AssistantMessage,
@@ -76,28 +79,16 @@ class GeminiProvider:
         | None = None,  # Fixed registry policy; None uses model default.
         client: genai.client.AsyncClient | None = None,  # Injectable async SDK client.
         timeout: float | None = None,  # Optional per-attempt deadline override.
-        default_max_tokens: int | None = None,  # Registry default output budget.
-        max_tokens_cap: int | None = None,  # Registry maximum output budget.
     ) -> None:
         self.model_id = model_id
         self.thinking_level = thinking_level
         self.client = client
         self.timeout = timeout
-        self.default_max_tokens = default_max_tokens
-        self.max_tokens_cap = max_tokens_cap
 
     async def complete(
         self,
         request: ChatCompletionRequest,  # Validated gateway request.
     ) -> ChatCompletionResponse:
-        limit = (
-            request.max_tokens
-            if request.max_tokens is not None
-            else self.default_max_tokens
-        )
-        if limit is not None and self.max_tokens_cap is not None:
-            limit = min(limit, self.max_tokens_cap)
-        request = request.model_copy(update={"max_tokens": limit})
         settings = get_settings()
         timeout = (
             self.timeout
@@ -113,6 +104,35 @@ class GeminiProvider:
         client: genai.client.AsyncClient,  # Async-only SDK interface.
         timeout: float,  # Deadline for each individual attempt.
     ) -> ChatCompletionResponse:
+        contents, config = self._translate(request)
+        response = await with_retries(
+            lambda: client.models.generate_content(
+                model=self.model_id, contents=contents, config=config
+            ),
+            timeout,
+        )
+        if not response.candidates:
+            raise GatewayError(502, "Upstream returned no completion", "upstream_error")
+        candidate = response.candidates[0]
+        finish_reason = map_finish_reason(candidate.finish_reason)
+        parts = candidate.content.parts or [] if candidate.content else []
+        content = "".join(part.text for part in parts if part.text and not part.thought)
+        return ChatCompletionResponse(
+            id=response.response_id or f"chatcmpl-{uuid4()}",
+            model=request.model,
+            choices=[
+                Choice(
+                    message=AssistantMessage(content=content),
+                    finish_reason=finish_reason,
+                )
+            ],
+            usage=map_usage(response.usage_metadata),
+        )
+
+    def _translate(
+        self,
+        request: ChatCompletionRequest,  # Shared translation for both response modes.
+    ) -> tuple[list[types.Content], types.GenerateContentConfig]:
         systems = [
             message.content for message in request.messages if message.role == "system"
         ]
@@ -135,36 +155,51 @@ class GeminiProvider:
                 disable=True
             ),
         )
-        response = await with_retries(
-            lambda: client.models.generate_content(
-                model=self.model_id, contents=contents, config=config
-            ),
-            timeout,
+        return contents, config
+
+    async def stream(
+        self,
+        request: ChatCompletionRequest,  # Gateway owns retries before the first event.
+    ) -> AsyncGenerator[StreamEvent, None]:
+        client = self.client if self.client is not None else get_gemini_client()
+        contents, config = self._translate(request)
+        upstream = await client.models.generate_content_stream(
+            model=self.model_id, contents=contents, config=config
         )
-        if not response.candidates:
-            raise GatewayError(502, "Upstream returned no completion", "upstream_error")
-        candidate = response.candidates[0]
-        finish_reason = map_finish_reason(candidate.finish_reason)
-        parts = candidate.content.parts or [] if candidate.content else []
-        content = "".join(part.text for part in parts if part.text and not part.thought)
-        usage = response.usage_metadata
-        reasoning_tokens = usage.thoughts_token_count or 0 if usage else 0
-        visible_tokens = usage.candidates_token_count or 0 if usage else 0
-        return ChatCompletionResponse(
-            id=response.response_id or f"chatcmpl-{uuid4()}",
-            model=request.model,
-            choices=[
-                Choice(
-                    message=AssistantMessage(content=content),
-                    finish_reason=finish_reason,
+        usage = None
+        finish_reason = None
+        try:
+            async for response in upstream:
+                if response.usage_metadata is not None:
+                    usage = map_usage(response.usage_metadata)
+                if not response.candidates:
+                    continue
+                candidate = response.candidates[0]
+                if candidate.finish_reason is not None:
+                    finish_reason = map_finish_reason(candidate.finish_reason)
+                for part in candidate.content.parts or [] if candidate.content else []:
+                    if part.text and not part.thought:
+                        yield TextEvent(part.text)
+            if finish_reason is None:
+                raise GatewayError(
+                    502, "Upstream stream ended unexpectedly", "upstream_error"
                 )
-            ],
-            usage=Usage(
-                prompt_tokens=usage.prompt_token_count or 0 if usage else 0,
-                completion_tokens=visible_tokens + reasoning_tokens,
-                completion_tokens_details=CompletionTokensDetails(
-                    reasoning_tokens=reasoning_tokens
-                ),
-                total_tokens=usage.total_token_count or 0 if usage else 0,
-            ),
-        )
+            yield FinalEvent(finish_reason, usage)
+        finally:
+            with anyio.CancelScope(shield=True):
+                await cast(
+                    AsyncGenerator[types.GenerateContentResponse, None], upstream
+                ).aclose()
+
+
+def map_usage(
+    usage: types.GenerateContentResponseUsageMetadata | None,  # Latest SDK totals.
+) -> Usage:
+    reasoning = usage.thoughts_token_count or 0 if usage else 0
+    visible = usage.candidates_token_count or 0 if usage else 0
+    return Usage(
+        prompt_tokens=usage.prompt_token_count or 0 if usage else 0,
+        completion_tokens=visible + reasoning,
+        completion_tokens_details=CompletionTokensDetails(reasoning_tokens=reasoning),
+        total_tokens=usage.total_token_count or 0 if usage else 0,
+    )

@@ -213,3 +213,80 @@ async def test_shared_client_and_lifespan_shutdown():
             client.aclose.assert_not_awaited()
         client.aclose.assert_awaited_once()
         assert gemini._shared_client is None
+
+
+@pytest.mark.anyio
+async def test_gemini_stream_thoughts_and_latest_usage():
+    from llm_gateway.providers import FinalEvent, TextEvent
+    from llm_gateway.schemas import CompletionTokensDetails, Usage
+
+    closed = AsyncMock()
+
+    async def upstream():
+        try:
+            yield types.GenerateContentResponse(
+                candidates=[
+                    types.Candidate(
+                        content=types.Content(
+                            parts=[
+                                types.Part(text="hidden", thought=True),
+                                types.Part(text="Hello"),
+                            ]
+                        )
+                    )
+                ],
+                usage_metadata=types.GenerateContentResponseUsageMetadata(
+                    prompt_token_count=3, candidates_token_count=1, total_token_count=4
+                ),
+            )
+            yield types.GenerateContentResponse(
+                candidates=[
+                    types.Candidate(
+                        content=types.Content(parts=[types.Part(text=" world")]),
+                        finish_reason=types.FinishReason.STOP,
+                    )
+                ]
+            )
+            yield types.GenerateContentResponse(
+                usage_metadata=types.GenerateContentResponseUsageMetadata(
+                    prompt_token_count=3,
+                    candidates_token_count=2,
+                    thoughts_token_count=4,
+                    total_token_count=9,
+                )
+            )
+        finally:
+            await closed()
+
+    generate = AsyncMock(return_value=upstream())
+    provider = GeminiProvider(
+        "test-model",
+        client=SimpleNamespace(
+            models=SimpleNamespace(generate_content_stream=generate)
+        ),
+    )
+    result = [
+        event
+        async for event in provider.stream(
+            ChatCompletionRequest(
+                model="gemini-flash",
+                messages=[{"role": "user", "content": "Hi"}],
+                max_tokens=99,
+            )
+        )
+    ]
+    assert result == [
+        TextEvent("Hello"),
+        TextEvent(" world"),
+        FinalEvent(
+            "stop",
+            Usage(
+                prompt_tokens=3,
+                completion_tokens=6,
+                total_tokens=9,
+                completion_tokens_details=CompletionTokensDetails(reasoning_tokens=4),
+            ),
+        ),
+    ]
+    assert generate.call_args.kwargs["config"].max_output_tokens == 99
+    closed.assert_awaited_once()

@@ -8,7 +8,8 @@ from llm_gateway.db import get_sessionmaker
 from llm_gateway.main import app
 
 
-def test_unknown_model_after_auth():
+@pytest.mark.parametrize("stream", [False, True])
+def test_unknown_model_after_auth(stream):  # Both endpoint modes authenticate first.
     app.dependency_overrides[authenticate] = lambda: AuthContext(uuid4(), uuid4())
     try:
         with TestClient(app) as client:
@@ -16,6 +17,7 @@ def test_unknown_model_after_auth():
                 "/v1/chat/completions",
                 json={
                     "model": "unknown",
+                    "stream": stream,
                     "messages": [{"role": "user", "content": "Hi"}],
                 },
             )
@@ -31,7 +33,8 @@ def test_unknown_model_after_auth():
         del app.dependency_overrides[authenticate]
 
 
-def test_unauthenticated_unknown_model():
+@pytest.mark.parametrize("stream", [False, True])
+def test_unauthenticated_unknown_model(stream):  # Unknown models must not bypass auth.
     app.dependency_overrides[get_sessionmaker] = lambda: None
     try:
         with TestClient(app) as client:
@@ -39,6 +42,7 @@ def test_unauthenticated_unknown_model():
                 "/v1/chat/completions",
                 json={
                     "model": "unknown",
+                    "stream": stream,
                     "messages": [{"role": "user", "content": "Hi"}],
                 },
             )
@@ -74,22 +78,14 @@ def test_request_validation(extra):  # Invalid request field overrides.
 async def test_token_limits(
     model, supplied, expected
 ):  # Gateway model and requested budget.
-    from llm_gateway.registry import get_provider
     from llm_gateway.schemas import ChatCompletionRequest
 
     request = ChatCompletionRequest(
         model=model, messages=[{"role": "user", "content": "Hi"}], max_tokens=supplied
     )
-    from unittest.mock import AsyncMock, patch
+    from llm_gateway.registry import apply_token_limits
 
-    from llm_gateway.gemini import GeminiProvider
-
-    provider = get_provider(request, AuthContext(uuid4(), uuid4()))
-    assert isinstance(provider, GeminiProvider)
-    provider.client = object()
-    with patch.object(provider, "_complete", new_callable=AsyncMock) as complete:
-        await provider.complete(request)
-    assert complete.call_args.args[0].max_tokens == expected
+    assert apply_token_limits(request).max_tokens == expected
 
 
 def test_fake_has_no_token_limit():

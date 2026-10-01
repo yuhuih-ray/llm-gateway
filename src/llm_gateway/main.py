@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 from typing import Annotated
 
 from fastapi import Depends, FastAPI
+from fastapi.responses import StreamingResponse
 
 from llm_gateway.auth import (
     AuthContext,
@@ -13,8 +14,9 @@ from llm_gateway.auth import (
 from llm_gateway.errors import GatewayError, gateway_error_handler
 from llm_gateway.gemini import close_gemini_client
 from llm_gateway.providers import Provider
-from llm_gateway.registry import get_provider
+from llm_gateway.registry import apply_token_limits, get_provider
 from llm_gateway.schemas import ChatCompletionRequest, ChatCompletionResponse
+from llm_gateway.streaming import stream_response
 
 
 @asynccontextmanager
@@ -44,5 +46,8 @@ async def chat_completion(
     provider: Annotated[
         Provider, Depends(get_provider)
     ],  # Injected completion provider.
-) -> ChatCompletionResponse:
+) -> ChatCompletionResponse | StreamingResponse:
+    request = apply_token_limits(request)
+    if request.stream:
+        return await stream_response(provider, request)
     return await provider.complete(request)

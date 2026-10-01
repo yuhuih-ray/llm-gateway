@@ -49,6 +49,22 @@ def get_provider(
     return GeminiProvider(
         entry.upstream_model,
         thinking_level=entry.thinking_level,
-        default_max_tokens=entry.default_max_tokens,
-        max_tokens_cap=entry.max_tokens_cap,
     )
+
+
+def apply_token_limits(
+    request: ChatCompletionRequest,  # Return a copy with the gateway's final budget.
+) -> ChatCompletionRequest:
+    entry = MODELS.get(request.model)
+    if entry is None:
+        raise GatewayError(
+            404, "Model not found", "invalid_request_error", "model_not_found"
+        )
+    limit = (
+        request.max_tokens
+        if request.max_tokens is not None
+        else entry.default_max_tokens
+    )
+    if limit is not None and entry.max_tokens_cap is not None:
+        limit = min(limit, entry.max_tokens_cap)
+    return request.model_copy(update={"max_tokens": limit})

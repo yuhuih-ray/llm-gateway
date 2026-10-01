@@ -137,7 +137,7 @@ model that may retire on short notice; run the live tests to detect availability
 Use one of these gateway names in the authenticated curl example. Requests
 require at least one message and optionally accept positive `max_tokens` and
 `temperature` from 0 to 2. Responses include token `usage` and keep the requested
-gateway model name. Responses are non-streaming; no usage records are written.
+gateway model name. Responses are non-streaming by default; no usage records are written.
 
 Transient failures get at most two retries with jittered exponential backoff.
 There is no fallback to another model or provider.
@@ -164,3 +164,24 @@ Gemini requests default to 1024 output tokens when `max_tokens` is omitted;
 values above 8192 are clamped to 8192. These limits include billed thinking
 tokens. The `fake` model has no token limit. Settings are cached until process
 restart, and a lazily created Gemini async client is reused until app shutdown.
+
+## Streaming chat completions
+
+Use `stream: true` and `curl -N` to receive Server-Sent Events as text arrives:
+
+```sh
+curl -N http://127.0.0.1:8000/v1/chat/completions \
+  -H "Authorization: Bearer $GATEWAY_API_KEY" \
+  -H 'Content-Type: application/json' \
+  -d '{"model":"gemini-flash","messages":[{"role":"user","content":"Explain HTTP streaming in a paragraph."}],"stream":true,"stream_options":{"include_usage":true}}'
+```
+
+The stream sends an assistant role chunk, content deltas, a finish chunk, and
+`data: [DONE]`. With `include_usage`, a chunk with empty `choices` and final usage
+precedes `[DONE]`; usage can be null if the provider does not report it.
+Gateway token defaults and caps apply identically to both response modes.
+
+Retries occur only before the first provider event and before HTTP headers are
+sent. After streaming starts, failures or idle timeouts produce one sanitized
+error event and close the stream without `[DONE]`. Disconnecting closes the
+upstream iterator. No usage records are written.

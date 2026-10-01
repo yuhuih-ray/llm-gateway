@@ -8,7 +8,13 @@ class Message(BaseModel):
     content: str
 
 
+class StreamOptions(BaseModel):
+    include_usage: bool = False
+
+
 class ChatCompletionRequest(BaseModel):
+    stream: bool = False
+    stream_options: StreamOptions | None = None
     model: str
     messages: list[Message] = Field(min_length=1)
     max_tokens: int | None = Field(default=None, gt=0)
@@ -43,3 +49,23 @@ class ChatCompletionResponse(BaseModel):
     model: str
     choices: list[Choice]
     usage: Usage = Field(default_factory=Usage)
+
+
+class Delta(BaseModel):
+    role: Literal["assistant"] | None = None
+    content: str | None = None
+
+
+class ChunkChoice(BaseModel):
+    index: int = 0
+    delta: Delta = Field(default_factory=Delta)
+    finish_reason: Literal["stop", "length", "content_filter"] | None = None
+
+
+class ChatCompletionChunk(BaseModel):
+    object: Literal["chat.completion.chunk"] = "chat.completion.chunk"
+    id: str
+    created: int
+    model: str
+    choices: list[ChunkChoice]
+    usage: Usage | None = None

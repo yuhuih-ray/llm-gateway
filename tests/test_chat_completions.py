@@ -107,7 +107,7 @@ def test_endpoint_delegates_to_provider():
     received = []
     expected = ChatCompletionResponse(
         id="test-completion",
-        model="test-model",
+        model="fake",
         choices=[Choice(message=AssistantMessage(content="Provider result"))],
     )
 
@@ -125,7 +125,7 @@ def test_endpoint_delegates_to_provider():
             response = client.post(
                 "/v1/chat/completions",
                 json={
-                    "model": "test-model",
+                    "model": "fake",
                     "messages": [{"role": "user", "content": "Hello"}],
                 },
             )
@@ -135,7 +135,7 @@ def test_endpoint_delegates_to_provider():
     assert response.status_code == 200
     assert response.json() == expected.model_dump()
     assert len(received) == 1
-    assert received[0].model == "test-model"
+    assert received[0].model == "fake"
     assert received[0].messages[0].content == "Hello"
 
 
@@ -165,7 +165,7 @@ async def test_endpoint_does_not_block_event_loop():
                     client.post(
                         "/v1/chat/completions",
                         json={
-                            "model": "test-model",
+                            "model": "fake",
                             "messages": [{"role": "user", "content": "Hello"}],
                         },
                     )
