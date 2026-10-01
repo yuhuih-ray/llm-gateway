@@ -10,9 +10,9 @@ from uuid import UUID
 from fastapi import Depends, Header, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from llm_gateway.db import get_session
+from llm_gateway.db import get_sessionmaker
 from llm_gateway.models import ApiKey, Tenant
 
 logger = logging.getLogger(__name__)
@@ -74,7 +74,9 @@ async def authentication_error_handler(
 
 
 async def authenticate(
-    session: Annotated[AsyncSession, Depends(get_session)],  # Request-scoped session.
+    session_factory: Annotated[
+        async_sessionmaker[AsyncSession], Depends(get_sessionmaker)
+    ],  # Factory keeps the lookup session independent of the request lifetime.
     authorization: Annotated[str | None, Header()] = None,  # Raw header; never logged.
 ) -> AuthContext:
     if authorization is None:
@@ -89,13 +91,14 @@ async def authenticate(
     except ValueError:
         logger.warning("API key rejected: malformed key; prefix=none")
         raise AuthenticationError("Invalid API key") from None
-    row = (
-        await session.execute(
-            select(ApiKey, Tenant)
-            .join(Tenant, ApiKey.tenant_id == Tenant.id)
-            .where(ApiKey.key_prefix == prefix)
-        )
-    ).one_or_none()
+    async with session_factory() as session:
+        row = (
+            await session.execute(
+                select(ApiKey, Tenant)
+                .join(Tenant, ApiKey.tenant_id == Tenant.id)
+                .where(ApiKey.key_prefix == prefix)
+            )
+        ).one_or_none()
     if row is None:
         logger.warning("API key rejected: unknown prefix; prefix=%s", prefix)
         raise AuthenticationError("Invalid API key")

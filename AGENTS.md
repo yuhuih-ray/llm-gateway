@@ -26,3 +26,4 @@
 - Do not use emoji anywhere in code, comments, commit messages, or docs.
 - Use `uv add` / `uv remove` to change dependencies; never edit uv.lock by hand.
 - Pin third-party GitHub Actions to a full commit SHA with the version in a trailing comment. Never guess action versions; verify the tag exists.
+- Never hold a database session or connection across an external call (LLM provider, HTTP). Scope sessions to the database work only.

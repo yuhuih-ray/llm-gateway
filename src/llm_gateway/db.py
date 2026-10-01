@@ -1,4 +1,3 @@
-from collections.abc import AsyncIterator
 from functools import lru_cache
 
 from sqlalchemy import MetaData
@@ -33,8 +32,3 @@ def get_engine() -> AsyncEngine:
 @lru_cache
 def get_sessionmaker() -> async_sessionmaker[AsyncSession]:
     return async_sessionmaker(get_engine(), expire_on_commit=False)
-
-
-async def get_session() -> AsyncIterator[AsyncSession]:
-    async with get_sessionmaker()() as session:
-        yield session

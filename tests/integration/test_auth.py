@@ -1,3 +1,4 @@
+import asyncio
 import os
 import subprocess
 import sys
@@ -7,30 +8,28 @@ from pathlib import Path
 import httpx2
 import pytest
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import async_sessionmaker
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 from llm_gateway.auth import generate_key, hash_key, parse_key
-from llm_gateway.db import get_session
-from llm_gateway.main import app
+from llm_gateway.db import get_sessionmaker
+from llm_gateway.main import app, get_provider
 from llm_gateway.models import ApiKey, Tenant
+from llm_gateway.providers import FakeProvider
+from llm_gateway.schemas import ChatCompletionRequest, ChatCompletionResponse
 
 pytestmark = pytest.mark.anyio
 
 
 @pytest.fixture
 async def client(engine):  # Dedicated testcontainer engine.
-    async def session_override():
-        async with async_sessionmaker(engine)() as session:
-            yield session
-
-    app.dependency_overrides[get_session] = session_override
+    app.dependency_overrides[get_sessionmaker] = lambda: async_sessionmaker(engine)
     try:
         async with httpx2.AsyncClient(
             transport=httpx2.ASGITransport(app=app), base_url="http://test"
         ) as client:
             yield client
     finally:
-        del app.dependency_overrides[get_session]
+        del app.dependency_overrides[get_sessionmaker]
 
 
 @pytest.mark.parametrize(
@@ -134,3 +133,63 @@ async def test_cli_key_storage(
         assert (
             await connection.execute(select(ApiKey.revoked_at))
         ).scalar_one() is not None
+
+
+async def test_auth_releases_connection_before_provider(
+    engine, database_url
+):  # Existing fixture migrates and cleans the isolated database.
+    key = generate_key()
+    async with async_sessionmaker(engine)() as session:
+        tenant = Tenant(name="pool-regression")
+        session.add(tenant)
+        await session.flush()
+        session.add(
+            ApiKey(
+                tenant_id=tenant.id,
+                name="pool-key",
+                key_prefix=parse_key(key),
+                key_hash=hash_key(key),
+            )
+        )
+        await session.commit()
+
+    class SlowProvider:
+        async def complete(
+            self,
+            request: ChatCompletionRequest,  # Preserve the normal fake response.
+        ) -> ChatCompletionResponse:
+            await asyncio.sleep(2)
+            return await FakeProvider().complete(request)
+
+    limited_engine = create_async_engine(
+        database_url, pool_size=1, max_overflow=0, pool_timeout=1
+    )
+    app.dependency_overrides[get_sessionmaker] = lambda: async_sessionmaker(
+        limited_engine
+    )
+    app.dependency_overrides[get_provider] = lambda: SlowProvider()
+    try:
+        async with httpx2.AsyncClient(
+            transport=httpx2.ASGITransport(app=app), base_url="http://test"
+        ) as client:
+            # Holding the auth connection during the 2-second provider call makes
+            # the other requests exceed the 1-second timeout of this one-slot pool.
+            responses = await asyncio.gather(
+                *(
+                    client.post(
+                        "/v1/chat/completions",
+                        headers={"Authorization": f"Bearer {key}"},
+                        json={"model": "fake", "messages": []},
+                    )
+                    for _ in range(3)
+                ),
+                return_exceptions=True,
+            )
+        assert all(
+            isinstance(response, httpx2.Response) and response.status_code == 200
+            for response in responses
+        ), responses
+    finally:
+        del app.dependency_overrides[get_sessionmaker]
+        del app.dependency_overrides[get_provider]
+        await limited_engine.dispose()
