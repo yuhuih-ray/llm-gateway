@@ -66,3 +66,44 @@ def test_request_validation(extra):  # Invalid request field overrides.
         assert response.status_code == 422
     finally:
         del app.dependency_overrides[authenticate]
+
+
+@pytest.mark.parametrize("model", ["gemini-flash", "gemini-pro"])
+@pytest.mark.parametrize("supplied,expected", [(None, 1024), (10000, 8192), (512, 512)])
+@pytest.mark.anyio
+async def test_token_limits(
+    model, supplied, expected
+):  # Gateway model and requested budget.
+    from llm_gateway.registry import get_provider
+    from llm_gateway.schemas import ChatCompletionRequest
+
+    request = ChatCompletionRequest(
+        model=model, messages=[{"role": "user", "content": "Hi"}], max_tokens=supplied
+    )
+    from unittest.mock import AsyncMock, patch
+
+    from llm_gateway.gemini import GeminiProvider
+
+    provider = get_provider(request, AuthContext(uuid4(), uuid4()))
+    assert isinstance(provider, GeminiProvider)
+    provider.client = object()
+    with patch.object(provider, "_complete", new_callable=AsyncMock) as complete:
+        await provider.complete(request)
+    assert complete.call_args.args[0].max_tokens == expected
+
+
+def test_fake_has_no_token_limit():
+    from llm_gateway.registry import get_provider
+    from llm_gateway.schemas import ChatCompletionRequest
+
+    for limit in (None, 100000):
+        request = ChatCompletionRequest(
+            model="fake", messages=[{"role": "user", "content": "Hi"}], max_tokens=limit
+        )
+        get_provider(request, AuthContext(uuid4(), uuid4()))
+        assert request.max_tokens == limit
+
+
+@pytest.fixture
+def anyio_backend():
+    return "asyncio"

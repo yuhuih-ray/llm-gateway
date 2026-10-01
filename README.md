@@ -153,9 +153,14 @@ Without that environment variable, the live test skips. The live test sends a
 short prompt to Gemini and may incur API charges.
 
 Thinking is fixed in the registry: Flash uses `LOW`; Pro uses its model default.
-Changing this policy changes quality, latency, and cost. `max_tokens` is passed
-unchanged as the output token limit and includes internal thinking tokens,
+Changing this policy changes quality, latency, and cost. `max_tokens` is used
+as the output token limit after applying the registry default and cap and includes internal thinking tokens,
 matching OpenAI reasoning-model semantics. A small limit can be exhausted before
 visible text is generated. `usage.completion_tokens` includes visible and thinking
 tokens, with thinking reported in `completion_tokens_details.reasoning_tokens`.
 Terminal reasons are `stop`, `length` (token limit), or `content_filter` (safety).
+
+Gemini requests default to 1024 output tokens when `max_tokens` is omitted;
+values above 8192 are clamped to 8192. These limits include billed thinking
+tokens. The `fake` model has no token limit. Settings are cached until process
+restart, and a lazily created Gemini async client is reused until app shutdown.

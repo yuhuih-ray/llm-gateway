@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import (
 )
 from sqlalchemy.orm import DeclarativeBase
 
-from llm_gateway.config import Settings
+from llm_gateway.config import get_settings
 
 
 class Base(DeclarativeBase):
@@ -26,7 +26,7 @@ class Base(DeclarativeBase):
 
 @lru_cache
 def get_engine() -> AsyncEngine:
-    return create_async_engine(Settings().database_url)
+    return create_async_engine(get_settings().database_url)
 
 
 @lru_cache

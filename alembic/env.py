@@ -6,7 +6,7 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import create_async_engine
 
 from alembic import context
-from llm_gateway.config import Settings
+from llm_gateway.config import get_settings
 from llm_gateway.models import Base
 
 # this is the Alembic Config object, which provides
@@ -42,7 +42,7 @@ def run_migrations_offline() -> None:
     script output.
 
     """
-    url = Settings().database_url
+    url = get_settings().database_url
     context.configure(
         url=url,
         target_metadata=target_metadata,
@@ -74,7 +74,7 @@ async def run_async_migrations() -> None:
     """
 
     connectable = create_async_engine(
-        Settings().database_url,
+        get_settings().database_url,
         poolclass=pool.NullPool,
     )
 

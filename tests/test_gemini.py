@@ -163,3 +163,53 @@ def test_finish_reason(reason, expected):  # SDK reason and gateway mapping.
 def test_unknown_finish_reason():
     with pytest.raises(GatewayError):
         map_finish_reason(types.FinishReason.OTHER)
+
+
+@pytest.mark.anyio
+async def test_shared_client_and_lifespan_shutdown():
+    from unittest.mock import Mock
+
+    from pydantic import SecretStr
+
+    from llm_gateway import gemini
+    from llm_gateway.config import Settings
+    from llm_gateway.main import app
+
+    generate = AsyncMock(
+        return_value=types.GenerateContentResponse(
+            candidates=[
+                types.Candidate(
+                    content=types.Content(parts=[types.Part(text="Hello")]),
+                    finish_reason=types.FinishReason.STOP,
+                )
+            ]
+        )
+    )
+    client = SimpleNamespace(
+        models=SimpleNamespace(generate_content=generate), aclose=AsyncMock()
+    )
+    factory = Mock(return_value=SimpleNamespace(aio=client))
+    request = ChatCompletionRequest(
+        model="gemini-flash", messages=[{"role": "user", "content": "Hi"}]
+    )
+    with (
+        patch.object(gemini, "_shared_client", None),
+        patch.object(gemini.genai, "Client", factory),
+        patch.object(
+            gemini,
+            "get_settings",
+            return_value=Settings(gemini_api_key=SecretStr("test")),
+        ),
+    ):
+        async with app.router.lifespan_context(app):
+            factory.assert_not_called()
+            await GeminiProvider("model-a").complete(request)
+            first = gemini.get_gemini_client()
+            await GeminiProvider("model-b").complete(request)
+            assert first is gemini.get_gemini_client() is client
+            assert generate.await_count == 2
+            factory.assert_called_once()
+            assert factory.call_args.kwargs["http_options"].retry_options.attempts == 1
+            client.aclose.assert_not_awaited()
+        client.aclose.assert_awaited_once()
+        assert gemini._shared_client is None

@@ -4,7 +4,7 @@ from uuid import uuid4
 from google import genai
 from google.genai import types
 
-from llm_gateway.config import Settings
+from llm_gateway.config import get_settings
 from llm_gateway.errors import GatewayError
 from llm_gateway.retries import with_retries
 from llm_gateway.schemas import (
@@ -15,6 +15,34 @@ from llm_gateway.schemas import (
     CompletionTokensDetails,
     Usage,
 )
+
+_shared_client: genai.client.AsyncClient | None = None
+
+
+def get_gemini_client() -> genai.client.AsyncClient:
+    global _shared_client
+    if _shared_client is None:
+        settings = get_settings()
+        if settings.gemini_api_key is None:
+            raise GatewayError(
+                502, "Gemini provider is not configured", "upstream_error"
+            )
+        # No await during initialization: concurrent requests on the app loop share it.
+        # Disable SDK retries: the gateway owns all retry attempts and backoff.
+        _shared_client = genai.Client(
+            api_key=settings.gemini_api_key.get_secret_value(),
+            http_options=types.HttpOptions(
+                retry_options=types.HttpRetryOptions(attempts=1)
+            ),
+        ).aio
+    return _shared_client
+
+
+async def close_gemini_client() -> None:
+    global _shared_client
+    client, _shared_client = _shared_client, None
+    if client is not None:
+        await client.aclose()
 
 
 def map_finish_reason(
@@ -48,36 +76,36 @@ class GeminiProvider:
         | None = None,  # Fixed registry policy; None uses model default.
         client: genai.client.AsyncClient | None = None,  # Injectable async SDK client.
         timeout: float | None = None,  # Optional per-attempt deadline override.
+        default_max_tokens: int | None = None,  # Registry default output budget.
+        max_tokens_cap: int | None = None,  # Registry maximum output budget.
     ) -> None:
         self.model_id = model_id
         self.thinking_level = thinking_level
         self.client = client
         self.timeout = timeout
+        self.default_max_tokens = default_max_tokens
+        self.max_tokens_cap = max_tokens_cap
 
     async def complete(
         self,
         request: ChatCompletionRequest,  # Validated gateway request.
     ) -> ChatCompletionResponse:
-        settings = Settings()
+        limit = (
+            request.max_tokens
+            if request.max_tokens is not None
+            else self.default_max_tokens
+        )
+        if limit is not None and self.max_tokens_cap is not None:
+            limit = min(limit, self.max_tokens_cap)
+        request = request.model_copy(update={"max_tokens": limit})
+        settings = get_settings()
         timeout = (
             self.timeout
             if self.timeout is not None
             else settings.gemini_timeout_seconds
         )
-        if self.client is not None:
-            return await self._complete(request, self.client, timeout)
-        if settings.gemini_api_key is None:
-            raise GatewayError(
-                502, "Gemini provider is not configured", "upstream_error"
-            )
-        # Disable SDK retries: the gateway owns all retry attempts and backoff.
-        async with genai.Client(
-            api_key=settings.gemini_api_key.get_secret_value(),
-            http_options=types.HttpOptions(
-                retry_options=types.HttpRetryOptions(attempts=1)
-            ),
-        ).aio as client:
-            return await self._complete(request, client, timeout)
+        client = self.client if self.client is not None else get_gemini_client()
+        return await self._complete(request, client, timeout)
 
     async def _complete(
         self,

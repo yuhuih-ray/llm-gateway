@@ -16,15 +16,21 @@ class ModelEntry:
     provider: str
     upstream_model: str | None
     thinking_level: types.ThinkingLevel | None
+    default_max_tokens: int | None
+    max_tokens_cap: int | None
 
 
+# Thinking tokens count toward this limit and are billed as output tokens,
+# so these limits are the main guard against runaway cost.
 # Changing thinking settings changes quality, latency, and cost.
 # These IDs accepted real generateContent requests, not just model-list queries.
 MODELS = {
-    "fake": ModelEntry("fake", None, None),
-    "gemini-flash": ModelEntry("gemini", "gemini-3.8-flash", types.ThinkingLevel.LOW),
+    "fake": ModelEntry("fake", None, None, None, None),
+    "gemini-flash": ModelEntry(
+        "gemini", "gemini-3.8-flash", types.ThinkingLevel.LOW, 1024, 8192
+    ),
     # Preview may retire on short notice; the live test detects availability changes.
-    "gemini-pro": ModelEntry("gemini", "gemini-3.1-pro-preview", None),
+    "gemini-pro": ModelEntry("gemini", "gemini-3.1-pro-preview", None, 1024, 8192),
 }
 
 
@@ -40,4 +46,9 @@ def get_provider(
     if entry.provider == "fake":
         return FakeProvider()
     assert entry.upstream_model is not None
-    return GeminiProvider(entry.upstream_model, thinking_level=entry.thinking_level)
+    return GeminiProvider(
+        entry.upstream_model,
+        thinking_level=entry.thinking_level,
+        default_max_tokens=entry.default_max_tokens,
+        max_tokens_cap=entry.max_tokens_cap,
+    )

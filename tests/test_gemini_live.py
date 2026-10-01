@@ -2,7 +2,7 @@ import os
 
 import pytest
 
-from llm_gateway.gemini import GeminiProvider
+from llm_gateway.gemini import GeminiProvider, close_gemini_client
 from llm_gateway.registry import MODELS
 from llm_gateway.schemas import ChatCompletionRequest
 
@@ -40,3 +40,9 @@ async def test_live_gemini(model):  # Test both pinned registry configurations.
     assert response.usage.total_tokens > 0
     assert response.choices[0].finish_reason == "stop"
     assert response.usage.completion_tokens_details.reasoning_tokens >= 0
+
+
+@pytest.fixture(autouse=True)
+async def close_live_client(anyio_backend):  # Close before the test event loop ends.
+    yield
+    await close_gemini_client()
