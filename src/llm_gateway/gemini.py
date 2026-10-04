@@ -201,11 +201,19 @@ class GeminiProvider:
 def map_usage(
     usage: types.GenerateContentResponseUsageMetadata | None,  # Latest SDK totals.
 ) -> Usage:
-    reasoning = usage.thoughts_token_count or 0 if usage else 0
+    if usage is None:
+        return Usage(
+            prompt_tokens=None,
+            completion_tokens=None,
+            completion_tokens_details=CompletionTokensDetails(reasoning_tokens=None),
+        )
+    reasoning = usage.thoughts_token_count or 0
     visible = usage.candidates_token_count or 0 if usage else 0
     return Usage(
-        prompt_tokens=usage.prompt_token_count or 0 if usage else 0,
-        completion_tokens=visible + reasoning,
+        prompt_tokens=usage.prompt_token_count,
+        completion_tokens=visible + reasoning
+        if usage.candidates_token_count is not None
+        else None,
         completion_tokens_details=CompletionTokensDetails(reasoning_tokens=reasoning),
         total_tokens=usage.total_token_count or 0 if usage else 0,
     )

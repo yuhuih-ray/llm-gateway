@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from decimal import Decimal
 from typing import Annotated
 
 from fastapi import Depends
@@ -21,6 +22,10 @@ class ModelEntry:
     first_event_timeout: float
     idle_timeout: float
     thinking_budget: int | None = None
+    input_price: Decimal = Decimal("0")
+    output_price: Decimal = Decimal("0")
+    long_input_price: Decimal | None = None
+    long_output_price: Decimal | None = None
 
 
 # Thinking tokens count toward this limit and are billed as output tokens,
@@ -33,18 +38,48 @@ class ModelEntry:
 # Size deadlines for the 8192-token cap, approximately 1.5 * cap / measured
 # throughput, rather than short sample maxima: 60s Flash tiers, 120s Pro.
 # A too-short idle timeout breaks responses that cannot be retried after commit.
+# Standard USD per 1M text tokens, verified 2026-10-04:
+# https://ai.google.dev/gemini-api/docs/pricing
+# Flash promotional .75/3.75 expires 2026-12-31; reverify before 2027.
 MODELS = {
     "fake": ModelEntry("fake", None, None, None, None, 30, 30),
     "gemini-flash-lite": ModelEntry(
-        "gemini", "gemini-3.1-flash-lite", None, 2048, 8192, 60, 30, thinking_budget=0
+        "gemini",
+        "gemini-3.1-flash-lite",
+        None,
+        2048,
+        8192,
+        60,
+        30,
+        thinking_budget=0,
+        input_price=Decimal("0.25"),
+        output_price=Decimal("1.50"),
     ),
     # Budget 0 was accepted but still produced reasoning; LOW is the lowest level.
     "gemini-flash": ModelEntry(
-        "gemini", "gemini-3.8-flash", types.ThinkingLevel.LOW, 2048, 8192, 60, 30
+        "gemini",
+        "gemini-3.8-flash",
+        types.ThinkingLevel.LOW,
+        2048,
+        8192,
+        60,
+        30,
+        input_price=Decimal("0.75"),
+        output_price=Decimal("3.75"),
     ),
     # Preview may retire on short notice; the live test detects availability changes.
     "gemini-pro": ModelEntry(
-        "gemini", "gemini-3.1-pro-preview", types.ThinkingLevel.LOW, 2048, 8192, 120, 30
+        "gemini",
+        "gemini-3.1-pro-preview",
+        types.ThinkingLevel.LOW,
+        2048,
+        8192,
+        120,
+        30,
+        input_price=Decimal("2.00"),
+        output_price=Decimal("12.00"),
+        long_input_price=Decimal("4.00"),
+        long_output_price=Decimal("18.00"),
     ),
 }
 

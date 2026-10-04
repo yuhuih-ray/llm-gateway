@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import create_async_engine
-from testcontainers.community.postgres import PostgresContainer
+from testcontainers.postgres import PostgresContainer
 
 ROOT = Path(__file__).resolve().parents[2]
 

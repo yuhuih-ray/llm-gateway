@@ -32,12 +32,12 @@ class Choice(BaseModel):
 
 
 class CompletionTokensDetails(BaseModel):
-    reasoning_tokens: int = 0
+    reasoning_tokens: int | None = 0
 
 
 class Usage(BaseModel):
-    prompt_tokens: int = 0
-    completion_tokens: int = 0
+    prompt_tokens: int | None = 0
+    completion_tokens: int | None = 0
     total_tokens: int = 0
     completion_tokens_details: CompletionTokensDetails = Field(
         default_factory=CompletionTokensDetails

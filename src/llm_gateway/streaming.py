@@ -19,6 +19,7 @@ from llm_gateway.schemas import (
     ChunkChoice,
     Delta,
 )
+from llm_gateway.usage import UsageTracker
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +31,9 @@ class SSEStream:
         first: StreamEvent,  # Already fetched before HTTP status is committed.
         request: ChatCompletionRequest,  # Gateway model and usage preference.
         timeout: float,  # Maximum idle wait for the next provider event.
+        tracker: UsageTracker | None = None,  # Request accounting without DB access.
     ) -> None:
+        self.tracker = tracker
         self.upstream = upstream
         self.first = first
         self.request = request
@@ -45,7 +48,11 @@ class SSEStream:
         if not self.closed:
             self.closed = True
             with anyio.CancelScope(shield=True):
-                await self.upstream.aclose()
+                try:
+                    await self.upstream.aclose()
+                finally:
+                    if self.tracker is not None:
+                        await self.tracker.emit()
 
     def encode(
         self,
@@ -77,6 +84,8 @@ class SSEStream:
                 if isinstance(event, TextEvent):
                     yield self.encode(ChunkChoice(delta=Delta(content=event.text)))
                 else:
+                    if self.tracker is not None:
+                        self.tracker.success(event.usage)
                     yield self.encode(ChunkChoice(finish_reason=event.finish_reason))
                     if (
                         self.request.stream_options
@@ -88,9 +97,17 @@ class SSEStream:
                     return
                 async with asyncio.timeout(self.timeout):
                     event = await anext(self.upstream)
+                    if (
+                        self.tracker is not None
+                        and isinstance(event, TextEvent)
+                        and event.text
+                    ):
+                        self.tracker.first_text()
         except (asyncio.CancelledError, GeneratorExit):
             raise
         except Exception as exc:
+            if self.tracker is not None:
+                self.tracker.failure(exc)
             logger.warning(
                 "Upstream stream failed chunks_sent=%s reason=%s",
                 self.sent,
@@ -136,6 +153,7 @@ class GatewayStreamingResponse(StreamingResponse):
 async def stream_response(
     provider: Provider,  # No SSE knowledge is required of the provider.
     request: ChatCompletionRequest,  # Already authenticated and token-limited.
+    tracker: UsageTracker | None = None,  # Optional for standalone adapter tests.
 ) -> StreamingResponse:
     entry = MODELS[request.model]
 
@@ -155,6 +173,11 @@ async def stream_response(
         raise
     except Exception:
         raise GatewayError(502, "Upstream stream failed", "upstream_error") from None
+    if tracker is not None:
+        if isinstance(first, TextEvent) and first.text:
+            tracker.first_text()
+        elif isinstance(first, FinalEvent):
+            tracker.success(first.usage)
     return GatewayStreamingResponse(
-        SSEStream(upstream, first, request, entry.idle_timeout)
+        SSEStream(upstream, first, request, entry.idle_timeout, tracker)
     )

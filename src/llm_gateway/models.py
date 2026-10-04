@@ -56,7 +56,9 @@ class ApiKey(Base):
 
 class UsageLog(Base):
     __tablename__ = "usage_logs"
-    __table_args__ = (CheckConstraint("status IN ('success', 'error')", name="status"),)
+    __table_args__ = (
+        CheckConstraint("status IN ('success', 'error', 'cancelled')", name="status"),
+    )
 
     # No extra indexes, including FK indexes: index design is a later EXPLAIN ANALYZE exercise.
     id: Mapped[int] = mapped_column(BigInteger, Identity(always=True), primary_key=True)
@@ -69,6 +71,9 @@ class UsageLog(Base):
     )
     model_requested: Mapped[str] = mapped_column(Text)
     model_selected: Mapped[str | None] = mapped_column(Text)
+    upstream_model: Mapped[str | None] = mapped_column(Text)
+    reasoning_tokens: Mapped[int | None] = mapped_column(Integer)
+    ttft_ms: Mapped[int | None] = mapped_column(Integer)
     prompt_tokens: Mapped[int | None] = mapped_column(Integer)
     completion_tokens: Mapped[int | None] = mapped_column(Integer)
     cost: Mapped[Decimal | None] = mapped_column(Numeric(14, 8))

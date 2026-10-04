@@ -19,6 +19,9 @@ services:
 
   redis:
     image: redis:8
+    # Without AOF, jobs since the last RDB snapshot are lost on crash/power loss.
+    # With everysec, the worst case is about one second of usage records.
+    command: ["redis-server", "--appendonly", "yes", "--appendfsync", "everysec"]
     volumes:
       - redis_data:/data
     ports:

@@ -142,7 +142,7 @@ model that may retire on short notice; run the live tests to detect availability
 Use one of these gateway names in the authenticated curl example. Requests
 require at least one message and optionally accept positive `max_tokens` and
 `temperature` from 0 to 2. Responses include token `usage` and keep the requested
-gateway model name. Responses are non-streaming by default; no usage records are written.
+gateway model name. Responses are non-streaming by default; usage records are queued for the ARQ worker.
 
 Connection errors, connect timeouts, and HTTP 429/500/502/503/504 get at most
 two retries with jittered exponential backoff. Read timeouts and gateway deadlines
@@ -196,4 +196,38 @@ Gateway token defaults and caps apply identically to both response modes.
 Retries occur only before the first provider event and before HTTP headers are
 sent. After streaming starts, failures or idle timeouts produce one sanitized
 error event and close the stream without `[DONE]`. Disconnecting closes the
-upstream iterator. No usage records are written.
+upstream iterator. Usage records are queued for the ARQ worker.
+
+## Usage recording worker
+
+Start the infrastructure and apply migrations, then run the gateway and worker
+in separate terminals using the same `.env` (`DATABASE_URL` and `REDIS_URL`):
+
+```sh
+docker compose up -d --wait
+uv run alembic upgrade head
+uv run uvicorn llm_gateway.main:app --reload
+```
+
+```sh
+uv run arq llm_gateway.worker.WorkerSettings
+```
+
+Each chat request returns `X-Request-ID`. Requests reaching a provider enqueue a
+record with status `success`, `error`, or `cancelled`. Authentication, validation,
+and model-lookup rejections do not enqueue records. Unknown token counts and cost
+remain null. The gateway calculates Decimal USD cost including reasoning tokens;
+the worker only inserts, deduplicating by request ID and preserving request time.
+
+Enqueue attempts have a 0.5-second limit. Failures log `usage_record_dropped` with
+the full record for recovery; they do not change the client's response. The worker
+retries database failures up to five tries. Redis uses AOF with `everysec`, so a
+crash can still lose roughly one second of queued records. This is best-effort
+accounting, not a guarantee of lossless billing across gateway process crashes.
+
+Prices use the official standard paid text rates verified on 2026-10-04, even if
+an upstream account has a free allowance. Flash's $0.75/$3.75 per-million rates
+expire December 31, 2026 and must be reverified before 2027. Pro uses $4/$18 when
+prompt tokens exceed 200,000. Registry comments cite the official pricing page.
+Downgrading the usage migration retains cancelled rows as errors because the
+previous schema has no cancelled state.
