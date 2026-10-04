@@ -3,6 +3,7 @@ import logging
 import time
 from datetime import datetime, timezone
 from decimal import Decimal
+from time import monotonic
 from typing import Any, Literal
 from uuid import UUID, uuid4
 
@@ -11,6 +12,7 @@ import httpx
 from arq import create_pool
 from arq.connections import ArqRedis, RedisSettings
 from pydantic import BaseModel
+from starlette.datastructures import State
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 from llm_gateway.auth import AuthContext
@@ -68,16 +70,27 @@ async def create_usage_pool() -> ArqRedis | None:
         async with asyncio.timeout(0.5):
             return await create_pool(settings)
     except Exception:
-        logger.error("Usage queue unavailable at startup")
+        logger.error("Usage queue unavailable")
         return None
 
 
 async def enqueue_usage(
-    pool: ArqRedis | None,  # Lifespan-owned connection pool.
+    app_state: State,  # Shared lifespan state, including recovery throttle.
     record: UsageRecord,  # Fully priced in the gateway, serialized without floats.
 ) -> None:
     try:
         async with asyncio.timeout(0.5):
+            pool = getattr(app_state, "usage_pool", None)
+            if pool is None:
+                now = monotonic()
+                last_attempt = getattr(
+                    app_state, "usage_pool_last_attempt", -float("inf")
+                )
+                if now - last_attempt >= 10:
+                    # Set before awaiting so concurrent requests cannot start more attempts.
+                    app_state.usage_pool_last_attempt = now
+                    pool = await create_usage_pool()
+                    app_state.usage_pool = pool
             if pool is None:
                 raise ConnectionError("Queue unavailable")
             await pool.enqueue_job(
@@ -95,10 +108,10 @@ class UsageTracker:
         state: dict[str, Any],  # Request start metadata from ASGI middleware.
         auth: AuthContext,  # Authenticated identifiers only, never the API key.
         model: str,  # Validated registry name.
-        pool: ArqRedis | None,  # Shared queue pool, not a DB connection.
+        app_state: State,  # Shared queue state, not a snapshot of the pool.
     ) -> None:
         self.started = state["started"]
-        self.pool = pool
+        self.app_state = app_state
         self.emitted = False
         self.record = UsageRecord(
             request_id=state["request_id"],
@@ -144,7 +157,7 @@ class UsageTracker:
         self.emitted = True
         self.record.latency_ms = int((time.monotonic() - self.started) * 1000)
         with anyio.CancelScope(shield=True):
-            await enqueue_usage(self.pool, self.record)
+            await enqueue_usage(self.app_state, self.record)
 
 
 class UsageMiddleware:

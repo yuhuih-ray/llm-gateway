@@ -1,14 +1,23 @@
+import logging
 from typing import Any
 
 from arq import Retry
 from arq.connections import RedisSettings
 from sqlalchemy.dialects.postgresql import insert
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import (
+    DBAPIError,
+    DisconnectionError,
+    IntegrityError,
+    OperationalError,
+    SQLAlchemyError,
+)
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 from llm_gateway.config import get_settings
 from llm_gateway.models import UsageLog
 from llm_gateway.usage import UsageRecord
+
+logger = logging.getLogger(__name__)
 
 
 async def on_startup(ctx: dict[str, Any]) -> None:  # ARQ worker-owned engine.
@@ -34,10 +43,18 @@ async def write_usage(
                     .values(**record.model_dump())
                     .on_conflict_do_nothing(index_elements=["request_id"])
                 )
-    except (SQLAlchemyError, OSError):
-        if ctx.get("job_try", 1) >= 5:
-            raise
-        raise Retry(defer=min(30, 2 ** (ctx.get("job_try", 1) - 1))) from None
+    except (SQLAlchemyError, OSError) as exc:
+        transient = isinstance(
+            exc, (OperationalError, DisconnectionError, OSError)
+        ) or (isinstance(exc, DBAPIError) and exc.connection_invalidated)
+        if (
+            transient
+            and not isinstance(exc, IntegrityError)
+            and ctx.get("job_try", 1) < 5
+        ):
+            raise Retry(defer=min(30, 2 ** (ctx.get("job_try", 1) - 1))) from None
+        logger.error("usage_record_failed %s", record.model_dump_json())
+        raise
 
 
 class WorkerSettings:

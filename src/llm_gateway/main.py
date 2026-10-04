@@ -1,5 +1,6 @@
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
+from time import monotonic
 from typing import Annotated
 
 from fastapi import Depends, FastAPI, Request
@@ -22,6 +23,7 @@ from llm_gateway.usage import UsageMiddleware, UsageTracker, create_usage_pool
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:  # Application lifecycle.
+    app.state.usage_pool_last_attempt = monotonic()
     app.state.usage_pool = await create_usage_pool()
     try:
         yield
@@ -60,7 +62,7 @@ async def chat_completion(
         http_request.scope["state"],
         auth,
         request.model,
-        getattr(http_request.app.state, "usage_pool", None),
+        http_request.app.state,
     )
     http_request.state.usage_tracker = tracker
     try:
