@@ -15,7 +15,7 @@ from sqlalchemy import (
     text,
 )
 from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, validates
 
 from llm_gateway.db import Base
 
@@ -84,3 +84,29 @@ class UsageLog(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=text("now()")
     )
+
+
+class User(Base):
+    __tablename__ = "users"
+    __table_args__ = (
+        CheckConstraint("role IN ('admin', 'member', 'viewer')", name="role"),
+        CheckConstraint("email = lower(btrim(email))", name="email_normalized"),
+    )
+
+    id: Mapped[UUID] = mapped_column(
+        primary_key=True, server_default=text("gen_random_uuid()")
+    )
+    tenant_id: Mapped[UUID] = mapped_column(
+        ForeignKey("tenants.id", ondelete="RESTRICT"), index=True
+    )
+    email: Mapped[str] = mapped_column(Text, unique=True)
+    password_hash: Mapped[str] = mapped_column(Text)
+    role: Mapped[str] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=text("now()")
+    )
+    disabled_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+    @validates("email")
+    def normalize_email(self, key: str, value: str) -> str:
+        return value.strip().lower()

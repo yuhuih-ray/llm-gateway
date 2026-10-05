@@ -36,11 +36,11 @@ async def test_migration_round_trip(engine, migrate):  # Isolated container reso
     migrate("downgrade", "base")
     async with engine.connect() as connection:
         tables = await connection.run_sync(lambda conn: inspect(conn).get_table_names())
-        assert not {"tenants", "api_keys", "usage_logs"} & set(tables)
+        assert not {"tenants", "api_keys", "usage_logs", "users"} & set(tables)
     migrate("upgrade", "head")
     async with engine.connect() as connection:
         tables = await connection.run_sync(lambda conn: inspect(conn).get_table_names())
-        assert {"tenants", "api_keys", "usage_logs"} <= set(tables)
+        assert {"tenants", "api_keys", "usage_logs", "users"} <= set(tables)
 
 
 async def test_schema_matches_models(engine):  # Migrated container engine.

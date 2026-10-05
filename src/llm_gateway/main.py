@@ -6,6 +6,7 @@ from typing import Annotated
 from fastapi import Depends, FastAPI, Request
 from fastapi.responses import StreamingResponse
 
+from llm_gateway.admin import router as admin_router
 from llm_gateway.auth import (
     AuthContext,
     AuthenticationError,
@@ -36,6 +37,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:  # Application lifecycl
 
 
 app = FastAPI(lifespan=lifespan)
+app.include_router(admin_router)
 app.add_middleware(UsageMiddleware)
 app.add_exception_handler(AuthenticationError, authentication_error_handler)
 app.add_exception_handler(GatewayError, gateway_error_handler)

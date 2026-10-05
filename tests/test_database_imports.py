@@ -8,6 +8,7 @@ def test_imports_do_not_require_database_url(
 ):  # Directory without a .env file.
     environment = os.environ.copy()
     environment.pop("DATABASE_URL", None)
+    environment.pop("JWT_SECRET", None)
     result = subprocess.run(
         [
             sys.executable,

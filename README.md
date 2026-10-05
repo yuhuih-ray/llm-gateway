@@ -231,3 +231,69 @@ expire December 31, 2026 and must be reverified before 2027. Pro uses $4/$18 whe
 prompt tokens exceed 200,000. Registry comments cite the official pricing page.
 Downgrading the usage migration retains cancelled rows as errors because the
 previous schema has no cancelled state.
+
+## Human admin API
+
+Human users authenticate with passwords and short-lived JWTs. Gateway API keys
+only authenticate `/v1/chat/completions`; they cannot authenticate admin or login
+requests. JWTs cannot authenticate gateway completions.
+
+Set `JWT_SECRET` in `.env` to a randomly generated secret of at least 32 bytes
+(for example, generate one with `uv run python -c "import secrets; print(secrets.token_hex(32))"`).
+Keep it private. Missing or short secrets make admin authentication return 503;
+the app and gateway can still start. Tokens expire after 15 minutes; there are
+no refresh tokens or logout endpoint. Role changes and user disablement take
+effect on the next authenticated request because authorization reads the database.
+
+| Endpoint | Viewer | Member | Admin |
+| --- | --- | --- | --- |
+| `POST /auth/login` (email/password) | Yes | Yes | Yes |
+| `GET /admin/keys` | Yes | Yes | Yes |
+| `POST /admin/keys` | No | Yes | Yes |
+| `POST /admin/keys/{id}/revoke` | No | No | Yes |
+| `GET /admin/usage` | Yes | Yes | Yes |
+
+Apply migrations and create a user in an existing tenant. The CLI prompts for
+the password without echoing it; never pass a password as a command-line argument.
+
+```sh
+uv run alembic upgrade head
+uv run python -m llm_gateway.cli create-user --tenant local --email admin@example.com --role admin
+uv run uvicorn llm_gateway.main:app --reload
+```
+
+In another terminal, log in and save the token locally. These examples use `jq`;
+credentials are passed to curl through standard input rather than process arguments.
+
+```bash
+read -r -s -p "Password: " PASSWORD; printf '\n'
+LOGIN=$(printf '%s' "$PASSWORD" | jq -Rs '{email:"admin@example.com", password:.}' |
+  curl -sS http://localhost:8000/auth/login -H 'Content-Type: application/json' --data-binary @-)
+unset PASSWORD
+TOKEN=$(printf '%s' "$LOGIN" | jq -r .access_token)
+unset LOGIN
+
+# Send the bearer header via stdin, keeping it out of curl's argv.
+admin_curl() {
+  printf 'header = "Authorization: Bearer %s"\n' "$TOKEN" |
+    curl -sS --config - "$@"
+}
+admin_curl http://localhost:8000/admin/keys
+admin_curl http://localhost:8000/admin/keys \
+  -H 'Content-Type: application/json' --data '{"name":"local-client"}'
+admin_curl http://localhost:8000/admin/usage
+unset TOKEN
+```
+
+Save the `key` from the create response securely: it is returned once. Lists and
+revocation responses never include the full key or its hash. Revoking an already
+revoked key preserves its original revocation time. Foreign-tenant and missing
+key IDs both return 404.
+
+Usage is scoped to the caller's tenant and includes all recorded statuses.
+Optional `start` (inclusive) and `end` (exclusive) are timezone-aware ISO 8601
+timestamps. The default is the last 30 days; ranges must be positive and at most
+90 days. Results contain `totals` and a `models` breakdown. Unknown token/cost
+values contribute zero to sums, while every record contributes to request count;
+cost strings preserve eight decimal places. Queued records appear after the worker
+writes them.

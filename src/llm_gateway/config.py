@@ -9,6 +9,7 @@ class Settings(BaseSettings):
 
     database_url: str = ""
     redis_url: str = "redis://localhost:6379/0"
+    jwt_secret: SecretStr | None = None
     gemini_api_key: SecretStr | None = None
 
 

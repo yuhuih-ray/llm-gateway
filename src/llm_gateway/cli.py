@@ -1,16 +1,25 @@
 import argparse
 import asyncio
+import getpass
 import sys
 
 from sqlalchemy import func, select, update
 from sqlalchemy.exc import IntegrityError
 
+from llm_gateway.admin_auth import hash_password
 from llm_gateway.auth import generate_key, hash_key, parse_key
 from llm_gateway.db import get_engine, get_sessionmaker
-from llm_gateway.models import ApiKey, Tenant
+from llm_gateway.models import ApiKey, Tenant, User
 
 
 async def run(args: argparse.Namespace) -> None:  # Parsed CLI arguments.
+    # Prompt and hash before opening a session; never put passwords in argv.
+    password_hash = None
+    if args.command == "create-user":
+        password = getpass.getpass("Password: ")
+        if not password:
+            raise ValueError("Password must not be empty")
+        password_hash = hash_password(password)
     try:
         async with get_sessionmaker()() as session:
             async with session.begin():
@@ -29,6 +38,20 @@ async def run(args: argparse.Namespace) -> None:  # Parsed CLI arguments.
                             name=args.name,
                             key_prefix=parse_key(key),
                             key_hash=hash_key(key),
+                        )
+                    )
+                elif args.command == "create-user":
+                    tenant = await session.scalar(
+                        select(Tenant).where(Tenant.name == args.tenant)
+                    )
+                    if tenant is None:
+                        raise ValueError("Tenant not found")
+                    session.add(
+                        User(
+                            tenant_id=tenant.id,
+                            email=args.email,
+                            password_hash=password_hash,
+                            role=args.role,
                         )
                     )
                 else:
@@ -50,6 +73,8 @@ async def run(args: argparse.Namespace) -> None:  # Parsed CLI arguments.
                 print(
                     "Tenant created."
                     if args.command == "create-tenant"
+                    else "User created."
+                    if args.command == "create-user"
                     else "API key revoked."
                 )
     finally:
@@ -64,6 +89,10 @@ def main() -> None:
     create.add_argument("--tenant", required=True)
     create.add_argument("--name", required=True)
     commands.add_parser("revoke-key").add_argument("prefix")
+    user = commands.add_parser("create-user")
+    user.add_argument("--tenant", required=True)
+    user.add_argument("--email", required=True)
+    user.add_argument("--role", required=True, choices=["admin", "member", "viewer"])
     args = parser.parse_args()
     try:
         asyncio.run(run(args))
@@ -72,7 +101,7 @@ def main() -> None:
     except IntegrityError:
         parser.exit(
             1,
-            "Database constraint violation; tenant name or key prefix may already exist.\n",
+            "Database constraint violation; tenant name, email, or key prefix may already exist.\n",
         )
 
 
