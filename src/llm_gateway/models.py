@@ -13,6 +13,7 @@ from sqlalchemy import (
     Integer,
     Numeric,
     Text,
+    UniqueConstraint,
     text,
 )
 from sqlalchemy.dialects.postgresql import JSONB
@@ -60,12 +61,14 @@ class UsageLog(Base):
     __table_args__ = (
         CheckConstraint("status IN ('success', 'error', 'cancelled')", name="status"),
         Index("ix_usage_logs_tenant_id_created_at", "tenant_id", "created_at"),
+        UniqueConstraint("request_id", "created_at"),
+        {"postgresql_partition_by": "RANGE (created_at)"},
     )
 
     # Tenant/time filtering balances report latency with index size and write cost.
     # Measurements and decision: docs/benchmarks/usage-report-index.md
     id: Mapped[int] = mapped_column(BigInteger, Identity(always=True), primary_key=True)
-    request_id: Mapped[UUID] = mapped_column(unique=True)
+    request_id: Mapped[UUID] = mapped_column()
     tenant_id: Mapped[UUID] = mapped_column(
         ForeignKey("tenants.id", ondelete="RESTRICT")
     )
@@ -85,7 +88,7 @@ class UsageLog(Base):
     error_type: Mapped[str | None] = mapped_column(Text)
     router_info: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=text("now()")
+        DateTime(timezone=True), server_default=text("now()"), primary_key=True
     )
 
 

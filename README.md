@@ -312,3 +312,60 @@ timestamps. The default is the last 30 days; ranges must be positive and at most
 values contribute zero to sums, while every record contributes to request count;
 cost strings preserve eight decimal places. Queued records appear after the worker
 writes them.
+
+## Monthly usage partitions and retention
+
+`usage_logs` is range-partitioned by UTC `created_at`. Upgrade attaches the old
+heap as `usage_logs_legacy` without copying rows. Its upper bound is the first day
+of the next UTC month, computed during migration. **Until that cutover, current-month
+rows continue to enter legacy**; creating a separate overlapping current-month
+partition is impossible. Three monthly partitions from cutover and an empty
+`usage_logs_default` partition are created initially.
+
+Stop **all ARQ worker processes** before upgrading or downgrading. Keep the gateway
+queue available if desired; queued jobs retain their original request timestamps.
+Admin usage reports may be unavailable during preparation because the old table
+has been renamed and the new parent is not attached yet.
+
+```sh
+# Stop each worker gracefully with Ctrl-C and wait for it to exit.
+uv run alembic upgrade head
+uv run alembic check
+uv run arq llm_gateway.worker.WorkerSettings
+```
+
+The hand-written migration uses committed preparation steps for concurrent indexes.
+If it fails, keep workers stopped: inspect invalid indexes (see above) and the
+migration state, then restore or finish preparation before retrying. Do not blindly
+rerun a partly completed rename. Future-dated legacy rows at/after cutover cause a
+preflight failure before any rename. Both the primary key `(id, created_at)` and
+unique key `(request_id, created_at)` include the partition key because PostgreSQL
+has no global unique index across partitions. The parent identity sequence starts
+above the legacy high-water mark. Worker retries use the same `created_at` from
+the gateway payload and still deduplicate correctly.
+
+The worker runs `ensure_partitions` at startup and daily at 00:05 UTC. It ensures
+coverage for the current UTC month and the next two months. Any existing range
+that fully contains a month satisfies it, including legacy before cutover; the job
+never creates an overlapping monthly range. Existing partitions, including the extra initial month,
+are left intact. Maintenance jobs use a shared transaction advisory lock so
+multiple workers cannot race each other on partition DDL.
+
+`USAGE_RETENTION_MONTHS` defaults to `12` and must be positive. Daily at 00:15 UTC,
+`drop_expired_partitions` computes the first day of the current UTC month minus
+that many calendar months. It detaches and drops monthly partitions whose upper
+bound is **strictly before** the cutoff, conservatively retaining a partition
+whose upper bound equals it. Legacy is dropped only when its complete range has
+expired by the same rule. Drops permanently remove those rows and are logged.
+The default partition is never dropped by retention.
+
+An ERROR `usage_default_partition_not_empty count=N` requires operator attention:
+check the row timestamps and missing partitions. If default contains rows in a
+month that needs creating, maintenance logs `usage_partition_creation_blocked`
+and leaves those rows untouched; it does not silently move or delete data. Resolve
+the misplaced rows during controlled maintenance, then rerun partition creation.
+
+Downgrade restores the legacy heap without copying rows. It refuses with a clear
+error if monthly/default partitions contain any rows, legacy has already been
+removed by retention, or legacy contains duplicates that violate the old unique
+keys. Resolve those conditions first; downgrade never discards those records.

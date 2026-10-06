@@ -8,6 +8,7 @@ from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.exc import IntegrityError
 
 from llm_gateway.models import ApiKey, Base, Tenant, UsageLog
+from llm_gateway.partitions import CHILD
 
 pytestmark = pytest.mark.anyio
 
@@ -47,7 +48,15 @@ async def test_schema_matches_models(engine):  # Migrated container engine.
     async with engine.connect() as connection:
         differences = await connection.run_sync(
             lambda conn: compare_metadata(
-                MigrationContext.configure(conn, opts={"compare_server_default": True}),
+                MigrationContext.configure(
+                    conn,
+                    opts={
+                        "compare_server_default": True,
+                        "include_object": lambda obj, name, type_, reflected, compare_to: (
+                            not (type_ == "table" and CHILD.fullmatch(name))
+                        ),
+                    },
+                ),
                 Base.metadata,
             )
         )
@@ -78,7 +87,7 @@ async def test_tenant_delete_restricted(engine):  # Migrated container engine.
 
 
 async def test_usage_log_missing_tenant(engine):  # Migrated container engine.
-    with pytest.raises(IntegrityError, match="fk_usage_logs_tenant_id_tenants"):
+    with pytest.raises(IntegrityError, match="fk_usage_logs_legacy_tenant_id_tenants"):
         async with engine.begin() as connection:
             values = await seed(connection)
             values["tenant_id"] = uuid4()
@@ -86,7 +95,7 @@ async def test_usage_log_missing_tenant(engine):  # Migrated container engine.
 
 
 async def test_duplicate_request_id(engine):  # Migrated container engine.
-    with pytest.raises(IntegrityError, match="uq_usage_logs_request_id"):
+    with pytest.raises(IntegrityError, match="uq_usage_logs_legacy_request_id"):
         async with engine.begin() as connection:
             values = await seed(connection)
             await connection.execute(insert(UsageLog).values(**values))
@@ -100,7 +109,7 @@ async def test_duplicate_request_id_do_nothing(engine):  # Migrated container en
         result = await connection.execute(
             pg_insert(UsageLog)
             .values(**values)
-            .on_conflict_do_nothing(index_elements=["request_id"])
+            .on_conflict_do_nothing(index_elements=["request_id", "created_at"])
             .returning(UsageLog.id)
         )
         assert result.all() == []
@@ -160,4 +169,4 @@ async def test_usage_report_can_use_tenant_time_index(engine):
         # LOCAL keeps the planner setting confined to this test transaction.
         await connection.execute(text("SET LOCAL enable_seqscan = off"))
         plan = (await connection.execute(text("EXPLAIN " + sql))).scalars().all()
-        assert "ix_usage_logs_tenant_id_created_at" in "\n".join(plan)
+        assert "ix_usage_logs_legacy_tenant_id_created_at" in "\n".join(plan)
