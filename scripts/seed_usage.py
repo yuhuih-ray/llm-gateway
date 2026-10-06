@@ -45,7 +45,8 @@ async def seed(reset: bool, as_of: datetime):  # Reset is restricted to the benc
     finally:
         await maintenance.close()
     subprocess.run(
-        [sys.executable, "-m", "alembic", "upgrade", "head"],
+        # Keep the measured pre-index schema so variant A remains index-free.
+        [sys.executable, "-m", "alembic", "upgrade", "ec21542ad4e1"],
         env={**os.environ, "DATABASE_URL": url.render_as_string(hide_password=False)},
         check=True,
     )

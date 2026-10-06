@@ -1,5 +1,32 @@
 # Usage report index benchmark
 
+## Decision
+
+Choose **B: (tenant_id, created_at)**, implemented as
+`ix_usage_logs_tenant_id_created_at`. Median tenants are under 0.04 ms with both
+B and C. For the largest tenant over 30 days, B's 21.6 ms versus C's 16.0 ms is
+acceptable for a rarely used admin report.
+
+C costs roughly twice the index space (224.86 MiB versus 116.21 MiB) on the most
+write-heavy table. Covering is brittle: adding a report column not already in the
+index prevents an index-only scan unless the index is enlarged again.
+
+**Reasoning, not measured:** index-only scans depend on the visibility map. The
+most recently written pages, which the 30-day report reads, are least likely to
+be all-visible in production. This benchmark ran immediately after VACUUM and
+therefore gives C more favorable visibility conditions than a busy append workload
+may provide. See PostgreSQL's [index-only scan documentation](https://www.postgresql.org/docs/18/indexes-index-only-scans.html).
+
+Write timings were single samples and noisy across runs; only the direction of
+the trade-off is reliable: a wider covering index costs more to maintain. Do not
+interpret the measured ratios, or B's slightly faster sample than A, as precise
+production write overhead.
+
+The run-specific recommendations below are preserved as historical benchmark
+interpretations; this decision supersedes them. The seed now pins the benchmark
+schema to pre-index revision `ec21542ad4e1` so A/B/C remain comparable. Normal
+application deployments use `alembic upgrade head`.
+
 ## Physical-order correlations
 
 Captured from pg_stats immediately before the reset and after the append-ordered

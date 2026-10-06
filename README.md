@@ -101,6 +101,21 @@ uv run alembic downgrade base
 Migrations read `DATABASE_URL` from the environment or `.env`. The database is
 not connected to endpoints yet; importing the app does not require configuration.
 
+### Checking for invalid indexes
+
+After a failed concurrent index build, check for invalid indexes:
+
+```sql
+SELECT indexrelid::regclass FROM pg_index WHERE NOT indisvalid;
+```
+
+Drop the failed index before retrying the migration. For the usage report index,
+run the following outside a transaction, then rerun `uv run alembic upgrade head`:
+
+```sql
+DROP INDEX CONCURRENTLY public.ix_usage_logs_tenant_id_created_at;
+```
+
 ## API keys
 
 Start local infrastructure and apply migrations before creating a tenant and key:

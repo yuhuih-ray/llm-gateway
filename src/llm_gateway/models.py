@@ -9,6 +9,7 @@ from sqlalchemy import (
     DateTime,
     ForeignKey,
     Identity,
+    Index,
     Integer,
     Numeric,
     Text,
@@ -58,9 +59,11 @@ class UsageLog(Base):
     __tablename__ = "usage_logs"
     __table_args__ = (
         CheckConstraint("status IN ('success', 'error', 'cancelled')", name="status"),
+        Index("ix_usage_logs_tenant_id_created_at", "tenant_id", "created_at"),
     )
 
-    # No extra indexes, including FK indexes: index design is a later EXPLAIN ANALYZE exercise.
+    # Tenant/time filtering balances report latency with index size and write cost.
+    # Measurements and decision: docs/benchmarks/usage-report-index.md
     id: Mapped[int] = mapped_column(BigInteger, Identity(always=True), primary_key=True)
     request_id: Mapped[UUID] = mapped_column(unique=True)
     tenant_id: Mapped[UUID] = mapped_column(

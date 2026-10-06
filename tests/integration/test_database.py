@@ -112,3 +112,52 @@ async def test_invalid_tenant_status(engine):  # Migrated container engine.
             await connection.execute(
                 insert(Tenant).values(name="invalid", status="deleted")
             )
+
+
+async def test_usage_report_index_is_valid(engine):
+    from sqlalchemy import text
+
+    async with engine.connect() as connection:
+        valid = await connection.scalar(
+            text("""
+            SELECT indisvalid FROM pg_index
+            WHERE indexrelid = 'ix_usage_logs_tenant_id_created_at'::regclass
+        """)
+        )
+    assert valid is True
+
+
+async def test_usage_report_can_use_tenant_time_index(engine):
+    from datetime import datetime, timedelta, timezone
+    from unittest.mock import AsyncMock, Mock
+
+    from sqlalchemy import text
+
+    from llm_gateway.admin import usage_report
+    from llm_gateway.admin_auth import UserContext
+
+    async with engine.begin() as connection:
+        values = await seed(connection)
+        await connection.execute(insert(UsageLog).values(**values))
+        # Capture the endpoint's actual statement rather than maintain a query copy.
+        session = AsyncMock()
+        session.__aenter__.return_value = session
+        session.execute.return_value.all = Mock(return_value=[])
+        end = datetime.now(timezone.utc)
+        await usage_report(
+            UserContext(uuid4(), values["tenant_id"], "viewer"),
+            Mock(return_value=session),
+            end - timedelta(days=30),
+            end,
+        )
+        statement = session.execute.call_args.args[0]
+        sql = str(
+            statement.compile(
+                dialect=engine.dialect, compile_kwargs={"literal_binds": True}
+            )
+        )
+        # Tiny fixtures normally favor a seq scan; this checks index eligibility.
+        # LOCAL keeps the planner setting confined to this test transaction.
+        await connection.execute(text("SET LOCAL enable_seqscan = off"))
+        plan = (await connection.execute(text("EXPLAIN " + sql))).scalars().all()
+        assert "ix_usage_logs_tenant_id_created_at" in "\n".join(plan)
