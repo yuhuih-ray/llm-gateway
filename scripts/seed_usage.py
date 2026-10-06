@@ -143,10 +143,10 @@ async def seed(reset: bool, as_of: datetime):  # Reset is restricted to the benc
                     CASE WHEN status_slot<95 THEN 'success' WHEN status_slot<98 THEN 'error' ELSE 'cancelled' END,
                     CASE WHEN status_slot BETWEEN 95 AND 97 THEN 'upstream_error' END,
                     $1::timestamptz - (((hashtextextended(g::text,5)&9223372036854775807)%15552000000000)+1)
-                        * interval '1 microsecond'
+                        * interval '1 microsecond' AS created_at
                 FROM tokens
-                -- Deterministic permutation avoids physically clustering rows by tenant.
-                ORDER BY (g*15485863)%3000001
+                -- Append in time order; independently sampled tenants remain interleaved.
+                ORDER BY created_at, g
             """,
                 as_of,
             )

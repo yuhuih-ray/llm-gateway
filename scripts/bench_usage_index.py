@@ -19,7 +19,6 @@ VARIANTS = {
     "A": None,
     "B": "(tenant_id, created_at)",
     "C": "(tenant_id, created_at) INCLUDE (model_selected, prompt_tokens, completion_tokens, reasoning_tokens, cost)",
-    "D": "(created_at, tenant_id)",
 }
 INDEX = "bench_usage_candidate"
 
@@ -107,6 +106,12 @@ async def main():
             """)
             ),
             "heap_bytes": await conn.fetchval("SELECT pg_relation_size('usage_logs')"),
+            "correlation": {
+                r["attname"]: r["correlation"]
+                for r in await conn.fetch(
+                    "SELECT attname, correlation FROM pg_stats WHERE schemaname='public' AND tablename='usage_logs' AND attname IN ('created_at','tenant_id') ORDER BY attname"
+                )
+            },
             "rows": 3000000,
             "tenants": 1000,
             "as_of": end.isoformat(),
@@ -161,7 +166,7 @@ async def main():
                 if label == "largest / 30d":
                     plans[variant] = representative
                 print(json.dumps(row), flush=True)
-            # Same physically mixed source rows each time; only request IDs differ.
+            # Same first 100,000 baseline rows each time; only request IDs differ.
             started = time.perf_counter()
             async with conn.transaction():
                 await conn.execute("""
@@ -198,7 +203,7 @@ async def main():
                 f"| {r['variant']} | {r['case']} | {r['ms']:.3f} | {r['scan']} | {r['hit']} | {r['read']} | {r['hit'] + r['read']} | {r['index_bytes'] / 1048576:.2f} | {r['insert_ms']:.3f} |"
             )
         counts = "\n".join(f"- {r['name']}: {r['n']:,} rows" for r in tenants[:3])
-        doc = f"""# Usage report index benchmark
+        doc = f"""# Run 2 (append-ordered data)
 
 ## Reproduce
 
@@ -222,8 +227,9 @@ The benchmark drops candidate indexes on completion or failure.
 ```
 
 Deterministic set-based seed: 1,000 tenants and keys; Zipf exponent 1.35, integer
-counts with the remainder assigned to rank 1. A deterministic permutation mixes
-physical insertion order. Hash-derived timestamps cover the preceding 180 days
+counts with the remainder assigned to rank 1. Insert order is created_at ascending,
+with g as a stable tie-breaker. Tenants, models, tokens and statuses retain the same
+independent per-row sampling. Hash-derived timestamps cover the preceding 180 days
 relative to the fixed as_of above. Model choice is uniform across the four registry
 models; prompt tokens 50–12,049 (1% of Pro rows add 200,000), completion tokens
 16–2,048 including reasoning. Fake token counts/cost are zero. Unknown usage on
@@ -237,30 +243,43 @@ completion tokens. This is synthetic data, not a production traffic trace.
 
 VACUUM ANALYZE runs after seeding and before measurements. A retains the schema's
 primary-key and unique-request-ID indexes, but has no report-query index.
-B: (tenant_id, created_at); C: the same keys with all report columns INCLUDEd;
-D: (created_at, tenant_id). The exact SQL is captured by invoking usage_report with
+B: (tenant_id, created_at); C: the same keys with all report columns INCLUDEd.
+D is omitted in Run 2. The exact SQL is captured by invoking usage_report with
 a recording session and compiling its statement with PostgreSQL literal parameters;
 there is no separately maintained query copy and no application-code change.
 
 ## Measurements
 
-Each case runs five times in A/B/C/D order, with no cold-cache reset. Execution
+Each case runs five times in A/B/C order, with no cold-cache reset. Execution
 Time is PostgreSQL EXPLAIN's server execution time, not client round-trip time.
 Buffers and full plan come from the median-time run; root buffer counters include
 children, so they are not summed again. Parallel scans are labeled explicitly.
 Index size excludes baseline constraint indexes. Insert timing is one wall-clock
 sample per variant, including transaction commit, copying the same first 100,000
-baseline rows with fresh request IDs. Extra rows are deleted and VACUUM ANALYZE
+baseline rows with fresh request IDs. Since physical order changed, these are now
+the oldest 100,000 baseline rows; timestamps are copied unchanged, just as in Run 1.
+This retained write test measures index maintenance, not new-timestamp append throughput.
+Extra rows are deleted and VACUUM ANALYZE
 runs before the next variant. Index creation time is not part of query timing.
 
 {chr(10).join(table)}
+
+## Why physical time order matters for B
+
+B locates tenant/time matches in its B-tree but still needs heap columns to compute
+the aggregates. With shuffled timestamps, a 30-day range can touch heap pages
+throughout the full 180-day table. With append ordering, matching rows lie in a
+contiguous recent-time region even though tenants are interleaved. Bitmap scans
+can therefore visit fewer heap pages, and ordinary index scans have better heap
+locality. The measured planner choice is reported rather than forced. C can avoid
+heap access altogether when the visibility map permits index-only scans.
 
 ## Decision
 
 Recommend variant {best} for this report workload: it has the lowest median for
 the largest-tenant 30-day case. The table also exposes its 90-day and small-tenant
 performance, storage and insertion trade-offs. Consider B instead if write/storage
-cost dominates and reports are mainly for small tenants. These repeated-run
+cost dominates; physical time locality can also improve its large-tenant reports. These repeated-run
 synthetic measurements are not an SLA; the single insert sample and fixed variant
 order are susceptible to background load/cache and WAL/checkpoint effects. Shared
 reads may be served by the OS cache; no cold-cache claim is made. No index is
@@ -286,7 +305,9 @@ installed on the development database.
 {json.dumps(results, indent=2)}
 ```
 """
-        Path("docs/benchmarks/usage-report-index.md").write_text(doc)
+        path = Path("docs/benchmarks/usage-report-index.md")
+        previous = path.read_text().split("# Run 2 (append-ordered data)", 1)[0]
+        path.write_text(previous.rstrip() + "\n\n" + doc)
         print(counts)
         print(f"Median: {median['name']} {median['n']}")
         print("\n".join(table), flush=True)
