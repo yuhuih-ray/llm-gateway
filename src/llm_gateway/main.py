@@ -1,10 +1,13 @@
+import asyncio
+import logging
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from time import monotonic
 from typing import Annotated
 
 from fastapi import Depends, FastAPI, Request
-from fastapi.responses import StreamingResponse
+from fastapi.responses import JSONResponse, StreamingResponse
+from sqlalchemy import text
 
 from llm_gateway.admin import router as admin_router
 from llm_gateway.auth import (
@@ -13,6 +16,7 @@ from llm_gateway.auth import (
     authenticate,
     authentication_error_handler,
 )
+from llm_gateway.db import get_sessionmaker
 from llm_gateway.errors import GatewayError, gateway_error_handler
 from llm_gateway.gemini import close_gemini_client
 from llm_gateway.providers import Provider
@@ -43,9 +47,51 @@ app.add_exception_handler(AuthenticationError, authentication_error_handler)
 app.add_exception_handler(GatewayError, gateway_error_handler)
 
 
+logger = logging.getLogger(__name__)
+
+
 @app.get("/health")
-def health() -> dict[str, str]:
+@app.get("/health/live")
+async def health() -> dict[str, str]:
+    # Liveness asks "is this process alive". Dependency checks here would cause
+    # restart storms during a DB outage. A blocked event loop cannot answer,
+    # which is exactly the failure that restarting the process can fix.
     return {"status": "ok"}
+
+
+@app.get("/health/ready")
+async def readiness(request: Request) -> JSONResponse:  # Lifespan-owned queue pool.
+    # Postgres is required for authentication; the usage queue is best-effort
+    # (failed enqueues log the record). Never probe Gemini/providers: failures
+    # are external and per-model, and every health probe would spend quota.
+    # Short deadlines prevent hung probes holding pool connections and piling up.
+    postgres, usage_queue = "unavailable", "unavailable"
+    try:
+        async with asyncio.timeout(1.0):
+            async with get_sessionmaker()() as session:
+                await session.execute(text("SELECT 1"))
+        postgres = "ok"
+    except Exception:
+        logger.warning("Readiness postgres unavailable", exc_info=True)
+
+    pool = getattr(request.app.state, "usage_pool", None)
+    try:
+        async with asyncio.timeout(0.5):
+            if pool is None:
+                logger.warning("Readiness usage queue unavailable: pool missing")
+            elif await pool.ping():
+                usage_queue = "ok"
+            else:
+                logger.warning("Readiness usage queue unavailable: ping returned false")
+    except Exception:
+        logger.warning("Readiness usage queue unavailable", exc_info=True)
+    return JSONResponse(
+        status_code=200 if postgres == "ok" else 503,
+        content={
+            "status": "ready" if postgres == "ok" else "not_ready",
+            "checks": {"postgres": postgres, "usage_queue": usage_queue},
+        },
+    )
 
 
 @app.post("/v1/chat/completions", response_model=ChatCompletionResponse)

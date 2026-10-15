@@ -369,3 +369,20 @@ Downgrade restores the legacy heap without copying rows. It refuses with a clear
 error if monthly/default partitions contain any rows, legacy has already been
 removed by retention, or legacy contains duplicates that violate the old unique
 keys. Resolve those conditions first; downgrade never discards those records.
+
+## Liveness and readiness
+
+- `GET /health/live` returns `200 {"status":"ok"}` without checking dependencies.
+  Use it for orchestrator **restart** decisions. `/health` remains an alias.
+- `GET /health/ready` runs PostgreSQL `SELECT 1` in a short-lived session with a
+  1-second timeout. PostgreSQL failure returns 503; success returns 200. Use this
+  endpoint for **traffic routing**, so an outage removes instances from traffic
+  without restarting them all.
+- Readiness also pings the existing usage queue pool with a 0.5-second timeout.
+  A missing or failing queue reports `unavailable` but does not fail readiness:
+  requests can still succeed, and failed usage enqueues log the full record.
+
+Readiness returns only `status` (`ready` or `not_ready`) and `checks` for
+`postgres` and `usage_queue` (`ok` or `unavailable`). Details are logged server-side.
+All health endpoints are unauthenticated, never record usage, and never call
+Gemini or another model provider.
