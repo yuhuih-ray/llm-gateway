@@ -60,6 +60,10 @@ async def login(
         raise unauthorized()
     buckets = login_buckets(request, body.email)
     pool = getattr(request.app.state, "usage_pool", None)
+    # Attackers control concurrency: security limits cannot check now and charge
+    # later. Reserve before authentication; only successful logins get a refund.
+    # Token usage keeps its debt model: request limits bound overshoot, which
+    # grants an attacker no extra authentication attempts.
     # Charge the IP attempt even when the email gate rejects it.
     for bucket in buckets:
         decision = await rate_limiter.check(pool, [bucket])
@@ -71,8 +75,6 @@ async def login(
     password = body.password.get_secret_value()
     valid = await run_in_threadpool(verify_password, hashed, password)
     if user is None or not valid or user.disabled_at is not None:
-        if user is None or not valid:
-            await rate_limiter.charge(pool, buckets[1], 1)
         raise unauthorized("Invalid email or password")
     if password_hasher.check_needs_rehash(hashed):
         new_hash = await run_in_threadpool(hash_password, password)
@@ -86,7 +88,9 @@ async def login(
                 )
                 .values(password_hash=new_hash)
             )
-    return TokenResponse(access_token=issue_token(user, secret))
+    response = TokenResponse(access_token=issue_token(user, secret))
+    await rate_limiter.refund(pool, buckets[1], 1)
+    return response
 
 
 class KeyInfo(BaseModel):

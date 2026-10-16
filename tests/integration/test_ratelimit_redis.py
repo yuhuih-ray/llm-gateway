@@ -91,3 +91,16 @@ async def test_check_only_zero_and_atomic_rejection(redis_pool):
     assert denied.retry_after_ms == 1
     assert float(await redis_pool.hget(request.key, "tokens")) == 20
     assert not limiter.buckets
+
+
+async def test_refund_redis_caps_balance(redis_pool):
+    limiter = RateLimiter()
+    bucket = Bucket(str(uuid4()), 5, 1 / 60)
+    assert (await limiter.check(redis_pool, [bucket])).allowed
+    await limiter.refund(redis_pool, bucket, 100)
+    assert float(await redis_pool.hget(bucket.key, "tokens")) == 5
+    for _ in range(6):
+        assert (await limiter.check(redis_pool, [bucket])).allowed
+        await limiter.refund(redis_pool, bucket, 1)
+    assert float(await redis_pool.hget(bucket.key, "tokens")) == 5
+    assert not limiter.buckets

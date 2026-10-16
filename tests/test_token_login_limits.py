@@ -262,3 +262,62 @@ def test_endpoint_token_debt_returns_429(monkeypatch, isolated_usage_queue, stre
             assert client.post("/v1/chat/completions", json=payload).status_code == 200
     finally:
         app.dependency_overrides.clear()
+
+
+@pytest.mark.anyio
+async def test_parallel_login_attempts_reserve_before_argon(login_setup, monkeypatch):
+    import httpx2
+
+    limiter, verify, session = login_setup
+    verify.return_value = False
+    release = asyncio.Event()
+    started = []
+
+    async def gated_verify(function, *args):
+        started.append(1)
+        await release.wait()
+        return function(*args)
+
+    monkeypatch.setattr(admin, "run_in_threadpool", gated_verify)
+
+    # Direct peers differ; forwarded headers must not be needed to rotate IPs.
+    async def attempt(index):
+        async with httpx2.AsyncClient(
+            transport=httpx2.ASGITransport(app=app, client=(f"192.0.2.{index}", 1)),
+            base_url="http://test",
+        ) as client:
+            return await client.post(
+                "/auth/login", json={"email": "victim@example.com", "password": "wrong"}
+            )
+
+    tasks = [asyncio.create_task(attempt(index)) for index in range(20)]
+    try:
+        # Keep the admitted password checks in flight until the other 15 reject.
+        async with asyncio.timeout(2):
+            while sum(task.done() for task in tasks) < 15:
+                await asyncio.sleep(0.001)
+        assert len(started) == 5
+        release.set()
+        responses = await asyncio.gather(*tasks)
+        assert sum(response.status_code == 401 for response in responses) == 5
+        assert sum(response.status_code == 429 for response in responses) == 15
+        assert verify.call_count == session.scalar.await_count == 5
+    finally:
+        release.set()
+        await asyncio.gather(*tasks, return_exceptions=True)
+
+
+@pytest.mark.anyio
+async def test_refund_fallback_caps_balance_and_times_out():
+    limiter = RateLimiter()
+    bucket = Bucket("email", 5, 1 / 60)
+    assert (await limiter.check(None, [bucket])).allowed
+    pool = AsyncMock()
+
+    async def hang(*args):
+        await asyncio.sleep(10)
+
+    pool.eval.side_effect = hang
+    async with asyncio.timeout(0.5):
+        await limiter.refund(pool, bucket, 100)
+    assert limiter.buckets[bucket.key][0] == 5

@@ -443,10 +443,10 @@ Redis charge calls have a 100 ms deadline and use the same bounded local fallbac
 
 Login checks run before database lookup and Argon2 verification. Each IP gets a
 capacity of 10 attempts, refilling one per 6 seconds. Each normalized email gets
-capacity 5, refilling one per minute: admission checks for a positive balance,
-only failed password/unknown-email attempts consume a token, and successful logins
-consume none. Fractional refill and concurrent in-flight attempts can permit
-additional attempts before a failed attempt's charge is observed. Redis keys use
+capacity 5, refilling one per minute: each attempt reserves one token before the
+user lookup and Argon2 verification. A successful login refunds it (capped at
+capacity); failed attempts keep the reservation. This prevents parallel attempts
+from bypassing the email limit. Redis keys use
 SHA-256 of the normalized email. Per-email limits let an attacker temporarily lock
 out a victim; these modest limits recover within minutes. Login 429s use the admin
 error body `{"detail":"Rate limit exceeded"}`, with `Retry-After` and

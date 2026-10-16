@@ -68,6 +68,19 @@ return tostring(tokens)
 """
 
 
+REFUND_LUA = """
+local clock = redis.call('TIME')
+local now = tonumber(clock[1]) + tonumber(clock[2]) / 1000000
+local capacity, refill, amount = tonumber(ARGV[1]), tonumber(ARGV[2]), tonumber(ARGV[3])
+local stored = redis.call('HMGET', KEYS[1], 'tokens', 'updated_at')
+local tokens = math.min(capacity, (tonumber(stored[1]) or capacity)
+    + math.max(0, now - (tonumber(stored[2]) or now)) * refill + amount)
+redis.call('HSET', KEYS[1], 'tokens', tokens, 'updated_at', now)
+redis.call('PEXPIRE', KEYS[1], math.max(1, math.ceil(2000 * capacity / refill)))
+return tostring(tokens)
+"""
+
+
 @dataclass(frozen=True)
 class Bucket:
     key: str
@@ -146,7 +159,7 @@ class RateLimiter:
             remaining = math.inf
             for bucket, value in zip(buckets, tokens):
                 if charge is not None:
-                    value = max(-bucket.capacity, value - charge)
+                    value = min(bucket.capacity, max(-bucket.capacity, value - charge))
                 elif allowed and not bucket.check_only:
                     value -= bucket.cost
                 remaining = min(remaining, value)
@@ -201,6 +214,20 @@ class RateLimiter:
         except Exception:
             self.fallback([bucket], charge=amount)
 
+    async def refund(self, pool, bucket: Bucket, amount: float) -> None:
+        # Return a successful login's reservation; never exceed capacity.
+        if not math.isfinite(amount) or amount < 0:
+            raise ValueError("Refund must be finite and nonnegative")
+        try:
+            async with asyncio.timeout(0.1):
+                if pool is None:
+                    raise ConnectionError("Redis pool missing")
+                await pool.eval(
+                    REFUND_LUA, 1, bucket.key, bucket.capacity, bucket.refill, amount
+                )
+        except Exception:
+            self.fallback([bucket], charge=-amount)
+
 
 rate_limiter = RateLimiter()
 
@@ -250,7 +277,7 @@ def login_buckets(request: Request, email: str) -> list[Bucket]:
     digest = hashlib.sha256(email.strip().lower().encode()).hexdigest()
     return [
         Bucket(f"ratelimit:login:ip:{client_ip(request)}", 10, 1 / 6),
-        Bucket(f"ratelimit:login:email:{digest}", 5, 1 / 60, check_only=True),
+        Bucket(f"ratelimit:login:email:{digest}", 5, 1 / 60),
     ]
 
 
