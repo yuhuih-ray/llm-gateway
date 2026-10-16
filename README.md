@@ -419,3 +419,9 @@ failing requests merely because Redis is down. This is approximate: N gateway
 processes can permit up to N times the configured limit during an outage, and
 local state resets on process restart. Fallback warnings occur at most once every
 30 seconds per process. Readiness still treats Redis as non-critical.
+
+The local fallback retains at most 10,000 buckets per process, evicting the least
+recently used. On each fallback check it drops buckets idle for a full
+refill-from-empty interval. Evicted keys restart full if seen again, so high key
+churn can weaken fallback enforcement; the cap protects process memory during
+long Redis outages.

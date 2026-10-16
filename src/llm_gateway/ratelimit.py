@@ -2,6 +2,7 @@ import asyncio
 import logging
 import math
 import threading
+from collections import OrderedDict
 from dataclasses import dataclass
 from time import monotonic
 from uuid import UUID
@@ -11,6 +12,7 @@ from fastapi.responses import JSONResponse
 from llm_gateway.config import get_settings
 
 logger = logging.getLogger(__name__)
+MAX_LOCAL_BUCKETS = 10_000
 
 # Redis executes one script at a time, so this all-or-nothing decision is atomic.
 # Separate GET/SET calls from multiple gateway processes would race.
@@ -75,16 +77,15 @@ class Decision:
 
 class RateLimiter:
     def __init__(self) -> None:
-        self.buckets: dict[str, tuple[float, float, float]] = {}
+        self.buckets: OrderedDict[str, tuple[float, float, float]] = OrderedDict()
         self.lock = threading.Lock()
         self.last_warning = -math.inf
-        self.last_cleanup = -math.inf
 
     def fallback(
         self, buckets: list[Bucket]
     ) -> Decision:  # No await within the decision.
-        now = monotonic()
         with self.lock:
+            now = monotonic()
             # Redis is non-critical for serving (as in readiness), but an outage
             # must not remove limits entirely. N processes can allow N times the
             # configured rate in this degraded, independently bounded mode.
@@ -93,9 +94,11 @@ class RateLimiter:
                     "Rate limit Redis unavailable; using bounded in-process fallback"
                 )
                 self.last_warning = now
-            if now - self.last_cleanup >= 30:
-                self.buckets = {k: v for k, v in self.buckets.items() if v[2] > now}
-                self.last_cleanup = now
+            # Without a bound, a long Redis outage plus many distinct keys
+            # (e.g. rotating IPs) would grow process memory without limit.
+            # Prune on access; expired buckets are fully refilled when recreated.
+            for key in [key for key, value in self.buckets.items() if value[2] <= now]:
+                del self.buckets[key]
             tokens = []
             retry_ms = 0
             for bucket in buckets:
@@ -114,15 +117,22 @@ class RateLimiter:
                         math.ceil((bucket.cost - value) / bucket.refill * 1000),
                     )
             allowed = retry_ms == 0
+            remaining = math.inf
             for bucket, value in zip(buckets, tokens):
+                value = value - bucket.cost if allowed else value
+                remaining = min(remaining, value)
+                if (
+                    bucket.key not in self.buckets
+                    and len(self.buckets) >= MAX_LOCAL_BUCKETS
+                ):
+                    self.buckets.popitem(last=False)
                 self.buckets[bucket.key] = (
-                    value - bucket.cost if allowed else value,
+                    value,
                     now,
-                    now + 2 * bucket.capacity / bucket.refill,
+                    now + bucket.capacity / bucket.refill,
                 )
-            return Decision(
-                allowed, min(self.buckets[b.key][0] for b in buckets), retry_ms
-            )
+                self.buckets.move_to_end(bucket.key)
+            return Decision(allowed, remaining, retry_ms)
 
     async def check(
         self, pool, buckets: list[Bucket]

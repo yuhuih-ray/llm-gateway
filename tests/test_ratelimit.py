@@ -135,3 +135,35 @@ def test_redis_rejection_checks_both_buckets_before_provider(isolated_usage_queu
         isolated_usage_queue.enqueue_job.assert_not_awaited()
     finally:
         app.dependency_overrides.clear()
+
+
+def test_fallback_bucket_cap_and_lru(monkeypatch):
+    from llm_gateway.ratelimit import MAX_LOCAL_BUCKETS
+
+    monkeypatch.setattr("llm_gateway.ratelimit.monotonic", lambda: 0.0)
+    limiter = RateLimiter()
+    for index in range(MAX_LOCAL_BUCKETS):
+        limiter.fallback([Bucket(str(index), 20, 2)])
+    # Accessing the oldest entry makes it newest; the next-oldest must be evicted.
+    limiter.fallback([Bucket("0", 20, 2)])
+    for index in range(MAX_LOCAL_BUCKETS, MAX_LOCAL_BUCKETS + 10):
+        limiter.fallback([Bucket(str(index), 20, 2)])
+        assert len(limiter.buckets) == MAX_LOCAL_BUCKETS
+    assert "0" in limiter.buckets
+    assert all(str(index) not in limiter.buckets for index in range(1, 11))
+
+
+def test_fallback_prunes_idle_buckets_by_refill_time(monkeypatch):
+    clock = [0.0]
+    monkeypatch.setattr("llm_gateway.ratelimit.monotonic", lambda: clock[0])
+    limiter = RateLimiter()
+    slow, fast = Bucket("slow", 20, 2), Bucket("fast", 2, 2)
+    limiter.fallback([slow, fast])
+    clock[0] = 1.1
+    limiter.fallback([Bucket("other", 20, 2)])
+    assert "fast" not in limiter.buckets
+    assert "slow" in limiter.buckets
+    clock[0] = 10.1
+    limiter.fallback([Bucket("other", 20, 2)])
+    assert "slow" not in limiter.buckets
+    assert limiter.fallback([slow]).remaining == 19
