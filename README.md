@@ -8,7 +8,7 @@ Install [uv](https://docs.astral.sh/uv/getting-started/installation/). Python 3.
 
 ```sh
 uv sync
-uv run uvicorn llm_gateway.main:app --reload
+uv run uvicorn llm_gateway.main:app --reload --no-proxy-headers
 ```
 
 Visit `http://127.0.0.1:8000/health` to get `{"status":"ok"}`.
@@ -221,7 +221,7 @@ in separate terminals using the same `.env` (`DATABASE_URL` and `REDIS_URL`):
 ```sh
 docker compose up -d --wait
 uv run alembic upgrade head
-uv run uvicorn llm_gateway.main:app --reload
+uv run uvicorn llm_gateway.main:app --reload --no-proxy-headers
 ```
 
 ```sh
@@ -274,7 +274,7 @@ the password without echoing it; never pass a password as a command-line argumen
 ```sh
 uv run alembic upgrade head
 uv run python -m llm_gateway.cli create-user --tenant local --email admin@example.com --role admin
-uv run uvicorn llm_gateway.main:app --reload
+uv run uvicorn llm_gateway.main:app --reload --no-proxy-headers
 ```
 
 In another terminal, log in and save the token locally. These examples use `jq`;
@@ -422,6 +422,42 @@ local state resets on process restart. Fallback warnings occur at most once ever
 
 The local fallback retains at most 10,000 buckets per process, evicting the least
 recently used. On each fallback check it drops buckets idle for a full
-refill-from-empty interval. Evicted keys restart full if seen again, so high key
+refill-from-empty interval (longer for debt, until fully refilled). Evicted keys
+restart full if seen again, so high key
 churn can weaken fallback enforcement; the cap protects process memory during
 long Redis outages.
+
+### Token and login limits
+
+Each tenant also has a token bucket: `TENANT_TOKEN_CAPACITY=100000` and
+`TENANT_TOKEN_REFILL=1000` tokens/second. Admission checks that its balance is
+positive in the same atomic call as the request limits, without reserving tokens.
+After response delivery, actual prompt plus completion tokens are charged;
+completion includes reasoning tokens. The balance can go negative, floored at
+minus capacity. A 429's `Retry-After` allows the balance to become positive again.
+The debt floor bounds the blocking time from anomalous usage; billing still uses
+`usage_logs`. Concurrent admitted requests can consume beyond the current balance.
+Unknown counts, such as cancelled generations without final usage, are not charged.
+This known gap remains bounded by request limits and the upcoming cost quota.
+Redis charge calls have a 100 ms deadline and use the same bounded local fallback.
+
+Login checks run before database lookup and Argon2 verification. Each IP gets a
+capacity of 10 attempts, refilling one per 6 seconds. Each normalized email gets
+capacity 5, refilling one per minute: admission checks for a positive balance,
+only failed password/unknown-email attempts consume a token, and successful logins
+consume none. Fractional refill and concurrent in-flight attempts can permit
+additional attempts before a failed attempt's charge is observed. Redis keys use
+SHA-256 of the normalized email. Per-email limits let an attacker temporarily lock
+out a victim; these modest limits recover within minutes. Login 429s use the admin
+error body `{"detail":"Rate limit exceeded"}`, with `Retry-After` and
+`X-RateLimit-Remaining` headers. Both limits remain active locally during Redis
+outages, with the same per-process approximation described above.
+
+`TRUSTED_PROXIES` defaults to an empty list. Configure it as a JSON array of IPs or
+CIDRs, for example `TRUSTED_PROXIES='["10.0.0.0/24", "::1"]'`. Only when the direct
+peer is trusted is the right-most untrusted `X-Forwarded-For` address used. Otherwise
+the peer address is used and forwarded headers are ignored. Configure the server
+so `request.client.host` retains the direct peer (for Uvicorn, use
+`uv run uvicorn llm_gateway.main:app --no-proxy-headers`); proxy header rewriting
+before application code would bypass this trust boundary. An untrusted proxy
+makes its clients share that proxy's IP limit.

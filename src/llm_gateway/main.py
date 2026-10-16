@@ -20,7 +20,7 @@ from llm_gateway.db import get_sessionmaker
 from llm_gateway.errors import GatewayError, gateway_error_handler
 from llm_gateway.gemini import close_gemini_client
 from llm_gateway.providers import Provider
-from llm_gateway.ratelimit import RateLimiter, rejected, request_buckets
+from llm_gateway.ratelimit import rate_limiter, rejected, request_buckets
 from llm_gateway.registry import MODELS, apply_token_limits, get_provider
 from llm_gateway.schemas import ChatCompletionRequest, ChatCompletionResponse
 from llm_gateway.streaming import stream_response
@@ -41,7 +41,6 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:  # Application lifecycl
                 await app.state.usage_pool.aclose()
 
 
-rate_limiter = RateLimiter()
 app = FastAPI(lifespan=lifespan)
 app.include_router(admin_router)
 app.add_middleware(UsageMiddleware)
@@ -119,6 +118,7 @@ async def chat_completion(
         auth,
         request.model,
         http_request.app.state,
+        limiter=rate_limiter,
     )
     http_request.state.usage_tracker = tracker
     try:

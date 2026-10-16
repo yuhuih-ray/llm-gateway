@@ -18,6 +18,7 @@ from starlette.types import ASGIApp, Message, Receive, Scope, Send
 from llm_gateway.auth import AuthContext
 from llm_gateway.config import get_settings
 from llm_gateway.errors import GatewayError
+from llm_gateway.ratelimit import RateLimiter, rate_limiter, token_bucket
 from llm_gateway.registry import MODELS, ModelEntry
 from llm_gateway.schemas import Usage
 
@@ -109,7 +110,9 @@ class UsageTracker:
         auth: AuthContext,  # Authenticated identifiers only, never the API key.
         model: str,  # Validated registry name.
         app_state: State,  # Shared queue state, not a snapshot of the pool.
+        limiter: RateLimiter = rate_limiter,  # Same limiter as the admission check.
     ) -> None:
+        self.limiter = limiter
         self.started = state["started"]
         self.app_state = app_state
         self.emitted = False
@@ -150,6 +153,18 @@ class UsageTracker:
             and exc.status == 504
             else "upstream_error"
         )
+
+    async def charge_tokens(self) -> None:
+        # Unknown usage (e.g. cancelled streams) cannot be charged. This gap is
+        # still bounded by request limits and the upcoming cost quota.
+        if self.record.prompt_tokens is None or self.record.completion_tokens is None:
+            return
+        with anyio.CancelScope(shield=True):
+            await self.limiter.charge(
+                getattr(self.app_state, "usage_pool", None),
+                token_bucket(self.record.tenant_id),
+                self.record.prompt_tokens + self.record.completion_tokens,
+            )
 
     async def emit(self) -> None:
         if self.emitted:
@@ -193,4 +208,6 @@ class UsageMiddleware:
         finally:
             tracker = state.get("usage_tracker")
             if tracker is not None:
+                # Runs after the ASGI response, including its final body frame.
+                await tracker.charge_tokens()
                 await tracker.emit()

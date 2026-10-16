@@ -93,7 +93,7 @@ async def test_redis_timeout_is_bounded():
 
 def test_provider_global_key_shared_across_tenants():
     a, b = uuid4(), uuid4()
-    assert len(request_buckets(a, "fake")) == 1
+    assert len(request_buckets(a, "fake")) == 2
     first, second = request_buckets(a, "gemini"), request_buckets(b, "gemini")
     assert first[0].key != second[0].key
     assert first[1] == second[1]
@@ -124,10 +124,11 @@ def test_redis_rejection_checks_both_buckets_before_provider(isolated_usage_queu
         assert response.status_code == 429
         assert response.headers["Retry-After"] == "2"
         args = isolated_usage_queue.eval.call_args.args
-        assert args[1:4] == (
-            2,
+        assert args[1:5] == (
+            3,
             f"ratelimit:tenant:{tenant}",
             "ratelimit:provider:gemini",
+            f"ratelimit:tokens:{tenant}",
         )
         isolated_usage_queue.eval.assert_awaited_once()
         provider.complete.assert_not_called()

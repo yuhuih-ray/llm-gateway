@@ -59,3 +59,35 @@ async def test_all_or_nothing(redis_pool):
     assert not (await limiter.check(redis_pool, [tenant, provider])).allowed
     assert float(await redis_pool.hget(tenant.key, "tokens")) == 10
     assert not limiter.buckets
+
+
+async def test_check_only_charge_and_debt_redis(redis_pool):
+    limiter = RateLimiter()
+    tokens = Bucket(str(uuid4()), 100, 1000, check_only=True)
+    request = Bucket(str(uuid4()), 20, 1)
+    assert (await limiter.check(redis_pool, [request, tokens])).allowed
+    assert float(await redis_pool.hget(tokens.key, "tokens")) == 100
+    await limiter.charge(redis_pool, tokens, 1000)
+    assert float(await redis_pool.hget(tokens.key, "tokens")) == -100
+    denied = await limiter.check(redis_pool, [request, tokens])
+    assert not denied.allowed
+    assert 0 < denied.retry_after_ms <= 101
+    assert abs(denied.retry_after_ms + denied.remaining) <= 1
+    assert float(await redis_pool.hget(request.key, "tokens")) < 20
+    await asyncio.sleep(0.12)
+    assert (await limiter.check(redis_pool, [request, tokens])).allowed
+    assert not limiter.buckets
+
+
+async def test_check_only_zero_and_atomic_rejection(redis_pool):
+    limiter = RateLimiter()
+    tokens = Bucket(str(uuid4()), 100, 1, check_only=True)
+    request = Bucket(str(uuid4()), 20, 1)
+    seconds, microseconds = await redis_pool.time()
+    # A future timestamp freezes refill for the zero-boundary assertion only.
+    await redis_pool.hset(tokens.key, mapping={"tokens": 0, "updated_at": seconds + 60})
+    denied = await limiter.check(redis_pool, [request, tokens])
+    assert not denied.allowed
+    assert denied.retry_after_ms == 1
+    assert float(await redis_pool.hget(request.key, "tokens")) == 20
+    assert not limiter.buckets

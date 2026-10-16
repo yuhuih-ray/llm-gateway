@@ -3,7 +3,8 @@ from decimal import Decimal
 from typing import Annotated, Literal
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Header, HTTPException
+from fastapi import APIRouter, Depends, Header, HTTPException, Request
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field, SecretStr, field_validator
 from sqlalchemy import func, select, update
 from starlette.concurrency import run_in_threadpool
@@ -22,6 +23,7 @@ from llm_gateway.admin_auth import (
 )
 from llm_gateway.auth import generate_key, hash_key, parse_key
 from llm_gateway.models import ApiKey, UsageLog, User
+from llm_gateway.ratelimit import login_buckets, rate_limiter, rejected
 
 router = APIRouter()
 Viewer = Annotated[UserContext, Depends(require_role("viewer"))]
@@ -48,19 +50,29 @@ class TokenResponse(BaseModel):
 @router.post("/auth/login", response_model=TokenResponse)
 async def login(
     body: LoginRequest,
+    request: Request,  # Peer address and lifespan-owned Redis pool.
     secret: Secret,
     sessions: Sessions,
     authorization: Annotated[str | None, Header()] = None,
-) -> TokenResponse:
+) -> TokenResponse | JSONResponse:
     # Login accepts passwords only, never API-key or bearer-token authentication.
     if authorization is not None:
         raise unauthorized()
+    buckets = login_buckets(request, body.email)
+    pool = getattr(request.app.state, "usage_pool", None)
+    # Charge the IP attempt even when the email gate rejects it.
+    for bucket in buckets:
+        decision = await rate_limiter.check(pool, [bucket])
+        if not decision.allowed:
+            return rejected(decision, admin=True)
     async with sessions() as session:
         user = await session.scalar(select(User).where(User.email == body.email))
     hashed = user.password_hash if user is not None else DUMMY_HASH
     password = body.password.get_secret_value()
     valid = await run_in_threadpool(verify_password, hashed, password)
     if user is None or not valid or user.disabled_at is not None:
+        if user is None or not valid:
+            await rate_limiter.charge(pool, buckets[1], 1)
         raise unauthorized("Invalid email or password")
     if password_hasher.check_needs_rehash(hashed):
         new_hash = await run_in_threadpool(hash_password, password)
