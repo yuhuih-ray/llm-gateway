@@ -2,7 +2,7 @@ import asyncio
 import json
 import logging
 import time
-from collections.abc import AsyncGenerator
+from collections.abc import AsyncGenerator, Awaitable, Callable
 from uuid import uuid4
 
 import anyio
@@ -14,10 +14,14 @@ from llm_gateway.providers import FinalEvent, Provider, StreamEvent, TextEvent
 from llm_gateway.registry import MODELS
 from llm_gateway.retries import with_retries
 from llm_gateway.schemas import (
+    AssistantMessage,
     ChatCompletionChunk,
     ChatCompletionRequest,
+    ChatCompletionResponse,
+    Choice,
     ChunkChoice,
     Delta,
+    Usage,
 )
 from llm_gateway.usage import UsageTracker
 
@@ -32,7 +36,12 @@ class SSEStream:
         request: ChatCompletionRequest,  # Gateway model and usage preference.
         timeout: float,  # Maximum idle wait for the next provider event.
         tracker: UsageTracker | None = None,  # Request accounting without DB access.
+        capture: bool = False,  # Accumulate text only for cacheable misses.
     ) -> None:
+        self.capture = capture
+        self.visible_text: list[str] = []
+        self.answer: ChatCompletionResponse | None = None
+        self.delivered = False
         self.tracker = tracker
         self.upstream = upstream
         self.first = first
@@ -82,6 +91,8 @@ class SSEStream:
             event = self.first
             while True:
                 if isinstance(event, TextEvent):
+                    if self.capture:
+                        self.visible_text.append(event.text)
                     yield self.encode(ChunkChoice(delta=Delta(content=event.text)))
                 else:
                     if self.tracker is not None:
@@ -92,8 +103,28 @@ class SSEStream:
                         and self.request.stream_options.include_usage
                     ):
                         yield self.encode(None, event)
+                    if self.capture:
+                        self.answer = ChatCompletionResponse(
+                            id=self.id,
+                            model=self.request.model,
+                            choices=[
+                                Choice(
+                                    message=AssistantMessage(
+                                        content="".join(self.visible_text)
+                                    ),
+                                    finish_reason=event.finish_reason,
+                                )
+                            ],
+                            usage=event.usage
+                            or Usage(
+                                prompt_tokens=None,
+                                completion_tokens=None,
+                                completion_tokens_details={"reasoning_tokens": None},
+                            ),
+                        )
                     self.finished = True
                     yield "data: [DONE]\n\n"
+                    self.delivered = True
                     return
                 async with asyncio.timeout(self.timeout):
                     event = await anext(self.upstream)
@@ -128,8 +159,11 @@ class SSEStream:
 
 class GatewayStreamingResponse(StreamingResponse):
     def __init__(
-        self, stream: SSEStream
+        self,
+        stream: SSEStream,
+        on_complete: Callable[[ChatCompletionResponse], Awaitable[None]] | None = None,
     ) -> None:  # Own cleanup even before body starts.
+        self.on_complete = on_complete
         self.stream = stream
         self.event_body = stream.body()
         super().__init__(
@@ -142,6 +176,12 @@ class GatewayStreamingResponse(StreamingResponse):
         # Cancellation can occur while sending headers, before body() is entered.
         try:
             await super().__call__(scope, receive, send)
+            if (
+                self.stream.delivered
+                and self.stream.answer is not None
+                and self.on_complete is not None
+            ):
+                await self.on_complete(self.stream.answer)
         finally:
             with anyio.CancelScope(shield=True):
                 await self.event_body.aclose()
@@ -154,6 +194,8 @@ async def stream_response(
     provider: Provider,  # No SSE knowledge is required of the provider.
     request: ChatCompletionRequest,  # Already authenticated and token-limited.
     tracker: UsageTracker | None = None,  # Optional for standalone adapter tests.
+    on_complete: Callable[[ChatCompletionResponse], Awaitable[None]]
+    | None = None,  # Store only after delivery.
 ) -> StreamingResponse:
     entry = MODELS[request.model]
 
@@ -179,5 +221,13 @@ async def stream_response(
         elif isinstance(first, FinalEvent):
             tracker.success(first.usage)
     return GatewayStreamingResponse(
-        SSEStream(upstream, first, request, entry.idle_timeout, tracker)
+        SSEStream(
+            upstream,
+            first,
+            request,
+            entry.idle_timeout,
+            tracker,
+            capture=on_complete is not None,
+        ),
+        on_complete,
     )

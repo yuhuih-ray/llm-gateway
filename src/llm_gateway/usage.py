@@ -57,6 +57,7 @@ class UsageRecord(BaseModel):
     prompt_tokens: int | None = None
     completion_tokens: int | None = None
     reasoning_tokens: int | None = None
+    cache_hit: bool = False
     cost: Decimal | None = None
     latency_ms: int = 0
     ttft_ms: int | None = None
@@ -140,10 +141,14 @@ class UsageTracker:
             self.record.reasoning_tokens = (
                 usage.completion_tokens_details.reasoning_tokens
             )
-        self.record.cost = calculate_cost(
-            MODELS[self.record.model_selected],
-            self.record.prompt_tokens,
-            self.record.completion_tokens,
+        self.record.cost = (
+            Decimal(0)
+            if self.record.cache_hit
+            else calculate_cost(
+                MODELS[self.record.model_selected],
+                self.record.prompt_tokens,
+                self.record.completion_tokens,
+            )
         )
 
     def failure(self, exc: BaseException) -> None:  # Sanitized classification only.
@@ -159,7 +164,11 @@ class UsageTracker:
     async def charge_tokens(self) -> None:
         # Unknown usage (e.g. cancelled streams) cannot be charged. This gap is
         # still bounded by request limits and the upcoming cost quota.
-        if self.record.prompt_tokens is None or self.record.completion_tokens is None:
+        if (
+            self.record.cache_hit
+            or self.record.prompt_tokens is None
+            or self.record.completion_tokens is None
+        ):
             return
         with anyio.CancelScope(shield=True):
             await self.limiter.charge(
@@ -211,6 +220,7 @@ class UsageMiddleware:
                     "headers": [
                         *message.get("headers", []),
                         (b"x-request-id", str(state["request_id"]).encode()),
+                        (b"x-cache", state.get("cache_status", "MISS").encode()),
                     ],
                 }
             await send(message)

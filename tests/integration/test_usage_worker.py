@@ -34,8 +34,10 @@ async def seed(engine):  # Foreign keys in the throwaway database.
         return AuthContext(tenant.id, key.id)
 
 
+@pytest.mark.parametrize("cache_hit", [False, True])
 async def test_worker_idempotent(
     engine,
+    cache_hit,
 ):  # Same record twice, original timestamp retained.
     auth = await seed(engine)
     when = datetime(2025, 1, 2, 3, 4, 5, 123456, tzinfo=timezone.utc)
@@ -48,7 +50,8 @@ async def test_worker_idempotent(
         upstream_model=None,
         created_at=when,
         status="success",
-        cost=Decimal("0.00000001"),
+        cost=Decimal("0") if cache_hit else Decimal("0.00000001"),
+        cache_hit=cache_hit,
     )
     ctx = {"sessions": async_sessionmaker(engine), "job_try": 1}
     await write_usage(ctx, record.model_dump(mode="json"))
@@ -57,7 +60,8 @@ async def test_worker_idempotent(
         assert await session.scalar(select(func.count()).select_from(UsageLog)) == 1
         row = await session.scalar(select(UsageLog))
         assert row.created_at == when
-        assert row.cost == Decimal("0.00000001")
+        assert row.cost == record.cost
+        assert row.cache_hit is cache_hit
 
 
 async def test_end_to_end_usage(

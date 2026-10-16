@@ -18,6 +18,7 @@ class Settings(BaseSettings):
     trusted_proxies: list[str] = Field(default_factory=list)
     database_url: str = ""
     usage_retention_months: int = Field(default=12, ge=1)
+    cache_redis_url: str = "redis://localhost:6380/0"
     redis_url: str = "redis://localhost:6379/0"
     jwt_secret: SecretStr | None = None
     gemini_api_key: SecretStr | None = None

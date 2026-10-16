@@ -17,6 +17,14 @@ from llm_gateway.auth import (
     authentication_error_handler,
 )
 from llm_gateway.budgets import budget_exceeded
+from llm_gateway.cache import (
+    CachedAnswer,
+    cache_key,
+    cacheable,
+    create_cache_client,
+    read_cache,
+    write_cache,
+)
 from llm_gateway.db import get_sessionmaker
 from llm_gateway.errors import GatewayError, gateway_error_handler
 from llm_gateway.gemini import close_gemini_client
@@ -33,14 +41,18 @@ from llm_gateway.usage import UsageMiddleware, UsageTracker, create_usage_pool
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:  # Application lifecycle.
     app.state.usage_pool_last_attempt = monotonic()
     app.state.usage_pool = await create_usage_pool()
+    app.state.cache_client = create_cache_client()
     try:
         yield
     finally:
         try:
             await close_gemini_client()
         finally:
-            if app.state.usage_pool is not None:
-                await app.state.usage_pool.aclose()
+            try:
+                await app.state.cache_client.aclose()
+            finally:
+                if app.state.usage_pool is not None:
+                    await app.state.usage_pool.aclose()
 
 
 app = FastAPI(lifespan=lifespan)
@@ -110,7 +122,22 @@ async def chat_completion(
     ],  # Injected completion provider.
 ) -> ChatCompletionResponse | StreamingResponse | JSONResponse:
     request = apply_token_limits(request)
-    if await budget_exceeded(
+    decision = await rate_limiter.check(
+        getattr(http_request.app.state, "usage_pool", None),
+        request_buckets(auth.tenant_id, MODELS[request.model].provider),
+    )
+    if not decision.allowed:
+        return rejected(decision)
+    cache = getattr(http_request.app.state, "cache_client", None)
+    key = (
+        cache_key(auth.tenant_id, request)
+        if cacheable(request, ",".join(http_request.headers.getlist("cache-control")))
+        else None
+    )
+    answer = await read_cache(cache, key) if key else None
+    http_request.state.cache_status = "HIT" if answer else "MISS"
+    # Exhausted tenants can still receive free cached answers after request limits.
+    if answer is None and await budget_exceeded(
         getattr(http_request.app.state, "usage_pool", None),
         auth.tenant_id,
         auth.monthly_budget_usd,
@@ -118,12 +145,6 @@ async def chat_completion(
         raise GatewayError(
             429, "Monthly budget exceeded", "insufficient_quota", "insufficient_quota"
         )
-    decision = await rate_limiter.check(
-        getattr(http_request.app.state, "usage_pool", None),
-        request_buckets(auth.tenant_id, MODELS[request.model].provider),
-    )
-    if not decision.allowed:
-        return rejected(decision)
     tracker = UsageTracker(
         http_request.scope["state"],
         auth,
@@ -132,11 +153,30 @@ async def chat_completion(
         limiter=rate_limiter,
     )
     http_request.state.usage_tracker = tracker
+    if answer is not None:
+        tracker.record.cache_hit = True
+        tracker.record.upstream_model = answer.upstream_model
+        provider = answer
+
+    async def store(response: ChatCompletionResponse) -> None:
+        if key and answer is None:
+            await write_cache(
+                cache,
+                key,
+                CachedAnswer(
+                    response=response,
+                    upstream_model=MODELS[request.model].upstream_model,
+                ),
+            )
+
     try:
         if request.stream:
-            return await stream_response(provider, request, tracker)
+            return await stream_response(
+                provider, request, tracker, store if key and answer is None else None
+            )
         response = await provider.complete(request)
         tracker.success(response.usage)
+        await store(response)
         return response
     except Exception as exc:
         tracker.failure(exc)

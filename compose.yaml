@@ -21,7 +21,7 @@ services:
     image: redis:8
     # Without AOF, jobs since the last RDB snapshot are lost on crash/power loss.
     # With everysec, the worst case is about one second of usage records.
-    command: ["redis-server", "--appendonly", "yes", "--appendfsync", "everysec"]
+    command: ["redis-server", "--appendonly", "yes", "--appendfsync", "everysec", "--maxmemory-policy", "noeviction"]
     volumes:
       - redis_data:/data
     ports:
@@ -31,6 +31,15 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+    restart: unless-stopped
+
+  # Queue and rate limits must never be evicted (noeviction, AOF).
+  # Cache entries are disposable and must be evictable; they cannot share Redis.
+  redis-cache:
+    image: redis:8
+    command: ["redis-server", "--maxmemory", "256mb", "--maxmemory-policy", "allkeys-lru", "--appendonly", "no", "--save", ""]
+    ports:
+      - "127.0.0.1:6380:6379"
     restart: unless-stopped
 
 volumes:

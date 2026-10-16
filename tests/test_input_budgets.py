@@ -108,7 +108,8 @@ def test_budget_endpoint(budget, status, isolated_usage_queue):
                 }
             }
             isolated_usage_queue.enqueue_job.assert_not_called()
-            isolated_usage_queue.eval.assert_not_called()
+            # Request rate limits are consumed before checking the budget.
+            isolated_usage_queue.eval.assert_awaited_once()
     finally:
         app.dependency_overrides.clear()
 

@@ -5,6 +5,7 @@ from uuid import UUID
 
 from sqlalchemy import (
     BigInteger,
+    Boolean,
     CheckConstraint,
     DateTime,
     ForeignKey,
@@ -83,6 +84,7 @@ class UsageLog(Base):
     ttft_ms: Mapped[int | None] = mapped_column(Integer)
     prompt_tokens: Mapped[int | None] = mapped_column(Integer)
     completion_tokens: Mapped[int | None] = mapped_column(Integer)
+    cache_hit: Mapped[bool] = mapped_column(Boolean, server_default=text("false"))
     cost: Mapped[Decimal | None] = mapped_column(Numeric(14, 8))
     latency_ms: Mapped[int | None] = mapped_column(Integer)
     status: Mapped[str] = mapped_column(Text)

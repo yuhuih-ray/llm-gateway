@@ -511,3 +511,27 @@ maximum of its existing value and the month's database sum. This restores counte
 after data loss without discarding spend whose usage records are still queued.
 During Redis outages or before reconciliation, budgets are best-effort; request
 and token limits retain their local fallback.
+
+## Exact response cache
+
+`CACHE_REDIS_URL` defaults to `redis://localhost:6380/0`. Compose runs a separate
+`redis-cache` instance with 256 MB, `allkeys-lru`, AOF disabled, and no persistence.
+Queue and rate-limit Redis uses `noeviction` and AOF: those records must never be
+evicted. Cached answers are disposable and must be evictable, so the two workloads
+cannot share an instance.
+
+Only requests explicitly setting `temperature: 0` are cached. Send
+`Cache-Control: no-cache` to bypass both reads and writes. Successful answers with
+finish reason `stop` or `length` expire after 24 hours; errors, filtered answers,
+and cancelled streams are never stored. Keys hash the tenant, gateway and upstream
+models, thinking configuration, full ordered messages, and generation parameters
+including the applied token limit. Streaming and non-streaming share cached answers.
+
+`X-Cache: HIT` identifies replayed answers with fresh response IDs; `X-Cache: MISS`
+includes bypassed requests. Hits retain original token counts in usage logs with
+`cache_hit=true` and zero cost, without charging the token bucket. Request rate
+limits still apply. Cache lookup precedes the budget check, so exhausted tenants
+can receive free hits. Each cache operation has a 50 ms deadline; failures fall
+back to normal generation and warnings are limited to one per 30 seconds.
+
+TODO: Add cache stampede protection for concurrent identical misses.
