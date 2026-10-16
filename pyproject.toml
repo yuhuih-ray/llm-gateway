@@ -42,6 +42,11 @@ check_untyped_defs = true
 warn_unused_ignores = true
 
 [dependency-groups]
+bench = [
+    "pyarrow>=26.0.0",
+    "sentence-transformers>=6.1.0",
+    "torch>=2.14.1",
+]
 dev = [
     "httpx2>=2.13.1",
     "mypy>=2.3.1",

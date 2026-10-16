@@ -12,3 +12,5 @@ dist/
 .env
 .env.*
 !.env.example
+# Downloaded corpora, generated paraphrases, and embedding benchmark intermediates.
+scripts/semantic_cache/.data/
