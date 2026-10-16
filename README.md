@@ -386,3 +386,36 @@ Readiness returns only `status` (`ready` or `not_ready`) and `checks` for
 `postgres` and `usage_queue` (`ok` or `unavailable`). Details are logged server-side.
 All health endpoints are unauthenticated, never record usage, and never call
 Gemini or another model provider.
+
+## Request rate limits
+
+Chat completions use request-based token buckets after authentication and model
+lookup, before provider execution or stream headers. Defaults:
+
+| Bucket | Capacity | Refill |
+| --- | ---: | ---: |
+| Each tenant (all models combined) | 20 requests | 2 requests/second |
+| Gemini provider (all tenants and Gemini models combined) | 60 requests | 5 requests/second |
+
+Fake has no provider-wide bucket. Configure `TENANT_REQUEST_CAPACITY`,
+`TENANT_REQUEST_REFILL`, `GEMINI_REQUEST_CAPACITY`, and `GEMINI_REQUEST_REFILL` in
+the environment. Per-tenant overrides, token-based limits, and login limits are
+not included. One atomic Redis script checks all applicable buckets together;
+a rejected request consumes no tokens and produces no usage record.
+
+Rejections return JSON HTTP 429 (including streaming requests):
+
+```json
+{"error":{"message":"Rate limit exceeded","type":"rate_limit_error","code":"rate_limit_exceeded"}}
+```
+
+`Retry-After` is the wait rounded up to whole seconds (minimum 1).
+`X-RateLimit-Remaining` is the whole tokens remaining in the most constrained
+bucket. Idle Redis hashes expire after approximately twice their refill time.
+
+Redis uses the shared lifespan pool and a 100 ms call deadline. On failure, a
+process-local bucket with the same parameters keeps limits bounded instead of
+failing requests merely because Redis is down. This is approximate: N gateway
+processes can permit up to N times the configured limit during an outage, and
+local state resets on process restart. Fallback warnings occur at most once every
+30 seconds per process. Readiness still treats Redis as non-critical.
