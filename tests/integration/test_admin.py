@@ -398,3 +398,61 @@ async def test_cli_create_user(setup, engine, monkeypatch):
     assert row.tenant_id == setup.tenants[0].id
     assert row.password_hash != PASSWORD
     assert verify_password(row.password_hash, PASSWORD)
+
+
+@pytest.mark.parametrize("redis_available", [False, True])
+async def test_budget_report_and_no_admin_budget_write(
+    setup, monkeypatch, redis_available
+):
+    from unittest.mock import AsyncMock
+
+    async with setup.sessions.begin() as session:
+        await session.execute(
+            update(Tenant)
+            .where(Tenant.id == setup.tenants[0].id)
+            .values(monthly_budget_usd=Decimal("10.50"))
+        )
+        session.add(
+            UsageLog(
+                request_id=uuid4(),
+                tenant_id=setup.tenants[0].id,
+                api_key_id=setup.keys[0].id,
+                model_requested="fake",
+                model_selected="fake",
+                status="success",
+                cost=Decimal("2.12345678"),
+            )
+        )
+        session.add(
+            UsageLog(
+                request_id=uuid4(),
+                tenant_id=setup.tenants[1].id,
+                api_key_id=setup.keys[1].id,
+                model_requested="fake",
+                model_selected="fake",
+                status="success",
+                cost=Decimal("99"),
+            )
+        )
+    pool = AsyncMock()
+    pool.get.return_value = b"300000001"
+    if not redis_available:
+        pool.get.side_effect = ConnectionError("unavailable")
+    monkeypatch.setattr(app.state, "usage_pool", pool, raising=False)
+    response = await setup.client.get("/admin/usage", headers=headers(setup.users[0]))
+    assert response.status_code == 200
+    assert response.json()["monthly_budget_usd"] == "10.50"
+    assert response.json()["spent_this_month"] == (
+        "3.00000001" if redis_available else "2.12345678"
+    )
+    # No budget mutation route exists, and extra key-create input cannot raise it.
+    assert not any("budget" in path for path in app.openapi()["paths"])
+    await setup.client.post(
+        "/admin/keys",
+        headers=headers(setup.users[0]),
+        json={"name": "key", "monthly_budget_usd": "999"},
+    )
+    async with setup.sessions() as session:
+        assert await session.scalar(
+            select(Tenant.monthly_budget_usd).where(Tenant.id == setup.tenants[0].id)
+        ) == Decimal("10.50")

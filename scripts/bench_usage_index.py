@@ -9,6 +9,7 @@ import time
 from datetime import timedelta
 from pathlib import Path
 from types import SimpleNamespace
+from unittest.mock import AsyncMock
 
 from seed_usage import connect
 from sqlalchemy.dialects import postgresql
@@ -31,12 +32,27 @@ async def exact_query(tenant, start, end):  # Capture the actual endpoint statem
         async def __aexit__(self, *args):
             pass
 
+        async def scalar(self, statement):
+            return None
+
         async def execute(self, statement):
             self.statement = statement
             return SimpleNamespace(all=lambda: [])
 
     capture = Capture()
-    await usage_report(SimpleNamespace(tenant_id=tenant), lambda: capture, start, end)
+    await usage_report(
+        SimpleNamespace(
+            app=SimpleNamespace(
+                state=SimpleNamespace(
+                    usage_pool=AsyncMock(get=AsyncMock(return_value=None))
+                )
+            )
+        ),
+        SimpleNamespace(tenant_id=tenant),
+        lambda: capture,
+        start,
+        end,
+    )
     return str(
         capture.statement.compile(
             dialect=postgresql.dialect(), compile_kwargs={"literal_binds": True}

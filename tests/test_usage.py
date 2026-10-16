@@ -282,11 +282,11 @@ async def test_worker_integrity_failure_is_not_retried(caplog):
     assert json.loads(logs[0].split(" ", 1)[1]) == payload
 
 
-def test_queue_recovers_after_startup_failure(monkeypatch):
+def test_queue_recovers_after_startup_failure(monkeypatch, isolated_usage_queue):
     from llm_gateway.usage import create_usage_pool
 
     clock = [100.0]
-    pool = AsyncMock()
+    pool = isolated_usage_queue
     create = AsyncMock(side_effect=[ConnectionError(), ConnectionError(), pool])
     monkeypatch.setattr("llm_gateway.main.create_usage_pool", create_usage_pool)
     monkeypatch.setattr("llm_gateway.usage.create_pool", create)

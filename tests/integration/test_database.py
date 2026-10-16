@@ -153,7 +153,17 @@ async def test_usage_report_can_use_tenant_time_index(engine):
         session.__aenter__.return_value = session
         session.execute.return_value.all = Mock(return_value=[])
         end = datetime.now(timezone.utc)
+        session.scalar.return_value = None
+        from types import SimpleNamespace
+
         await usage_report(
+            SimpleNamespace(
+                app=SimpleNamespace(
+                    state=SimpleNamespace(
+                        usage_pool=AsyncMock(get=AsyncMock(return_value=None))
+                    )
+                )
+            ),
             UserContext(uuid4(), values["tenant_id"], "viewer"),
             Mock(return_value=session),
             end - timedelta(days=30),

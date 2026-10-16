@@ -461,3 +461,53 @@ so `request.client.host` retains the direct peer (for Uvicorn, use
 `uv run uvicorn llm_gateway.main:app --no-proxy-headers`); proxy header rewriting
 before application code would bypass this trust boundary. An untrusted proxy
 makes its clients share that proxy's IP limit.
+
+### Input limits and monthly cost budgets
+
+`MAX_REQUEST_BYTES` defaults to 1,048,576 bytes (1 MiB) for every endpoint.
+Oversized `Content-Length` is rejected immediately; actual bytes are also counted
+for chunked or understated requests before JSON parsing. HTTP 413 uses
+`error.type: invalid_request_error`, `error.code: request_too_large`.
+
+Each registry entry has `max_input_chars`, default 100,000, counting all system,
+history, and user message contents. This is a character limit, not an estimated
+token limit, since tokenization varies by language. After authentication and model
+lookup, oversized input returns HTTP 400 with `context_length_exceeded` before
+rate limiting or provider invocation. Recorded prompt tokens can calibrate this
+limit later.
+
+Operators set budgets using the CLI (after `uv run alembic upgrade head`):
+
+```sh
+uv run python -m llm_gateway.cli set-budget --tenant example --usd 25.00
+uv run python -m llm_gateway.cli set-budget --tenant example --usd none
+```
+
+Amounts are nonnegative USD with at most two decimal places; `none` means unlimited.
+Tenant administrators cannot change their budgets through the admin API.
+`GET /admin/usage` includes `monthly_budget_usd` (a string or null for unlimited)
+and `spent_this_month` (a decimal string), independently of the requested report
+range. Spend comes from Redis, falling back to the current month's database sum
+when Redis is unavailable.
+
+Requests starting when spend is at or above the budget receive HTTP 429 without
+`Retry-After`:
+
+```json
+{"error":{"message":"Monthly budget exceeded","type":"insufficient_quota","code":"insufficient_quota"}}
+```
+
+In-flight requests finish. Overshoot is bounded by in-flight requests times the
+maximum cost per request, bounded by input length and output caps. Fake requests
+cost zero. Cost is added after response delivery as integer units of 1e-8 USD,
+never floating point, using the request-start UTC month; counters expire after
+about 40 days. A warning fires once per tenant-month at 80% of the budget.
+
+Redis operations have a 100 ms deadline. If the budget check cannot read Redis,
+requests are allowed and warnings are throttled to once per 30 seconds per process;
+`usage_logs` remains billing truth. Unknown costs cannot be added. The ARQ worker
+reconciles budgeted tenants at startup and hourly, setting each counter to the
+maximum of its existing value and the month's database sum. This restores counters
+after data loss without discarding spend whose usage records are still queued.
+During Redis outages or before reconciliation, budgets are best-effort; request
+and token limits retain their local fallback.

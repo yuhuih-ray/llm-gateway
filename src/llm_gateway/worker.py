@@ -14,6 +14,7 @@ from sqlalchemy.exc import (
 )
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
+from llm_gateway.budgets import reconcile_budgets
 from llm_gateway.config import get_settings
 from llm_gateway.models import UsageLog
 from llm_gateway.partitions import drop_expired_partitions, ensure_partitions
@@ -28,6 +29,7 @@ async def on_startup(ctx: dict[str, Any]) -> None:  # ARQ worker-owned engine.
     ctx["sessions"] = async_sessionmaker(engine)
     try:
         await ensure_partitions(ctx)
+        await reconcile_budgets(ctx)
     except BaseException:
         await engine.dispose()
         raise
@@ -67,6 +69,7 @@ async def write_usage(
 class WorkerSettings:
     functions = [write_usage]
     cron_jobs = [
+        cron(reconcile_budgets, minute=0),
         cron(ensure_partitions, hour=0, minute=5),
         cron(drop_expired_partitions, hour=0, minute=15),
     ]

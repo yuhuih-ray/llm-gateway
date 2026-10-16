@@ -318,7 +318,17 @@ async def test_report_partition_pruning(partition_db):
     session = AsyncMock()
     session.__aenter__.return_value = session
     session.execute.return_value.all = Mock(return_value=[])
+    session.scalar.return_value = None
+    from types import SimpleNamespace
+
     await usage_report(
+        SimpleNamespace(
+            app=SimpleNamespace(
+                state=SimpleNamespace(
+                    usage_pool=AsyncMock(get=AsyncMock(return_value=None))
+                )
+            )
+        ),
         UserContext(uuid4(), uuid4(), "viewer"),
         Mock(return_value=session),
         end - timedelta(days=30),

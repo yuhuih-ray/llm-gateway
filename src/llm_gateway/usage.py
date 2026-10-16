@@ -16,6 +16,7 @@ from starlette.datastructures import State
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 from llm_gateway.auth import AuthContext
+from llm_gateway.budgets import add_spend
 from llm_gateway.config import get_settings
 from llm_gateway.errors import GatewayError
 from llm_gateway.ratelimit import RateLimiter, rate_limiter, token_bucket
@@ -112,6 +113,7 @@ class UsageTracker:
         app_state: State,  # Shared queue state, not a snapshot of the pool.
         limiter: RateLimiter = rate_limiter,  # Same limiter as the admission check.
     ) -> None:
+        self.budget = auth.monthly_budget_usd
         self.limiter = limiter
         self.started = state["started"]
         self.app_state = app_state
@@ -166,6 +168,16 @@ class UsageTracker:
                 self.record.prompt_tokens + self.record.completion_tokens,
             )
 
+    async def charge_cost(self) -> None:
+        with anyio.CancelScope(shield=True):
+            await add_spend(
+                getattr(self.app_state, "usage_pool", None),
+                self.record.tenant_id,
+                self.record.cost,
+                self.record.created_at,
+                self.budget,
+            )
+
     async def emit(self) -> None:
         if self.emitted:
             return
@@ -210,4 +222,5 @@ class UsageMiddleware:
             if tracker is not None:
                 # Runs after the ASGI response, including its final body frame.
                 await tracker.charge_tokens()
+                await tracker.charge_cost()
                 await tracker.emit()

@@ -22,7 +22,8 @@ from llm_gateway.admin_auth import (
     verify_password,
 )
 from llm_gateway.auth import generate_key, hash_key, parse_key
-from llm_gateway.models import ApiKey, UsageLog, User
+from llm_gateway.budgets import SCALE, db_spend, read_spend, utcnow
+from llm_gateway.models import ApiKey, Tenant, UsageLog, User
 from llm_gateway.ratelimit import login_buckets, rate_limiter, rejected
 
 router = APIRouter()
@@ -167,6 +168,8 @@ class ModelUsage(UsageTotals):
 
 
 class UsageReport(BaseModel):
+    monthly_budget_usd: str | None = None
+    spent_this_month: str = "0.00000000"
     start: datetime
     end: datetime
     totals: UsageTotals
@@ -175,6 +178,7 @@ class UsageReport(BaseModel):
 
 @router.get("/admin/usage", response_model=UsageReport)
 async def usage_report(
+    request: Request,  # Lifespan Redis counter, with a database fallback.
     user: Viewer,
     sessions: Sessions,
     start: datetime | None = None,  # Inclusive UTC timestamp.
@@ -230,4 +234,27 @@ async def usage_report(
         reasoning_tokens=sum(row.reasoning_tokens for row in models),
         cost=format(sum((Decimal(row.cost) for row in models), Decimal(0)), ".8f"),
     )
-    return UsageReport(start=start, end=end, totals=totals, models=models)
+    async with sessions() as session:
+        budget = await session.scalar(
+            select(Tenant.monthly_budget_usd).where(Tenant.id == user.tenant_id)
+        )
+    when = utcnow()
+    try:
+        spent = (
+            Decimal(
+                await read_spend(
+                    getattr(request.app.state, "usage_pool", None), user.tenant_id, when
+                )
+            )
+            / SCALE
+        )
+    except Exception:
+        spent = await db_spend(sessions, user.tenant_id, when)
+    return UsageReport(
+        start=start,
+        end=end,
+        totals=totals,
+        models=models,
+        monthly_budget_usd=format(budget, ".2f") if budget is not None else None,
+        spent_this_month=format(spent, ".8f"),
+    )

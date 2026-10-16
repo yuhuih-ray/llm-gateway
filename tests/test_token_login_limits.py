@@ -156,7 +156,9 @@ def test_email_failed_attempts_across_ips(login_setup, monkeypatch, unknown):
 
 @pytest.mark.anyio
 @pytest.mark.parametrize("known", [True, False])
-async def test_charge_after_final_response_and_unknown_skipped(monkeypatch, known):
+async def test_charge_after_final_response_and_unknown_skipped(
+    monkeypatch, known, isolated_usage_queue
+):
     from datetime import datetime, timezone
 
     from starlette.datastructures import State
@@ -174,6 +176,7 @@ async def test_charge_after_final_response_and_unknown_skipped(monkeypatch, know
         charge_calls.append(args)
         await asyncio.sleep(10)
 
+    pool.pipeline = isolated_usage_queue.pipeline
     pool.eval.side_effect = slow_charge
     tracker = UsageTracker(
         {

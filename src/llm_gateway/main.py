@@ -16,9 +16,11 @@ from llm_gateway.auth import (
     authenticate,
     authentication_error_handler,
 )
+from llm_gateway.budgets import budget_exceeded
 from llm_gateway.db import get_sessionmaker
 from llm_gateway.errors import GatewayError, gateway_error_handler
 from llm_gateway.gemini import close_gemini_client
+from llm_gateway.input_limits import BodySizeMiddleware
 from llm_gateway.providers import Provider
 from llm_gateway.ratelimit import rate_limiter, rejected, request_buckets
 from llm_gateway.registry import MODELS, apply_token_limits, get_provider
@@ -43,6 +45,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:  # Application lifecycl
 
 app = FastAPI(lifespan=lifespan)
 app.include_router(admin_router)
+app.add_middleware(BodySizeMiddleware)
 app.add_middleware(UsageMiddleware)
 app.add_exception_handler(AuthenticationError, authentication_error_handler)
 app.add_exception_handler(GatewayError, gateway_error_handler)
@@ -107,6 +110,14 @@ async def chat_completion(
     ],  # Injected completion provider.
 ) -> ChatCompletionResponse | StreamingResponse | JSONResponse:
     request = apply_token_limits(request)
+    if await budget_exceeded(
+        getattr(http_request.app.state, "usage_pool", None),
+        auth.tenant_id,
+        auth.monthly_budget_usd,
+    ):
+        raise GatewayError(
+            429, "Monthly budget exceeded", "insufficient_quota", "insufficient_quota"
+        )
     decision = await rate_limiter.check(
         getattr(http_request.app.state, "usage_pool", None),
         request_buckets(auth.tenant_id, MODELS[request.model].provider),

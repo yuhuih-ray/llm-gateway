@@ -2,6 +2,7 @@ import argparse
 import asyncio
 import getpass
 import sys
+from decimal import Decimal, InvalidOperation
 
 from sqlalchemy import func, select, update
 from sqlalchemy.exc import IntegrityError
@@ -25,6 +26,15 @@ async def run(args: argparse.Namespace) -> None:  # Parsed CLI arguments.
             async with session.begin():
                 if args.command == "create-tenant":
                     session.add(Tenant(name=args.name))
+                elif args.command == "set-budget":
+                    # Operator CLI only: tenant admins must not raise their own budgets.
+                    budget = parse_budget(args.usd)
+                    tenant = await session.scalar(
+                        select(Tenant).where(Tenant.name == args.tenant)
+                    )
+                    if tenant is None:
+                        raise ValueError("Tenant not found")
+                    tenant.monthly_budget_usd = budget
                 elif args.command == "create-key":
                     tenant = await session.scalar(
                         select(Tenant).where(Tenant.name == args.tenant)
@@ -75,16 +85,40 @@ async def run(args: argparse.Namespace) -> None:  # Parsed CLI arguments.
                     if args.command == "create-tenant"
                     else "User created."
                     if args.command == "create-user"
+                    else "Budget updated."
+                    if args.command == "set-budget"
                     else "API key revoked."
                 )
     finally:
         await get_engine().dispose()
 
 
+def parse_budget(value: str) -> Decimal | None:
+    if value.lower() == "none":
+        return None
+    try:
+        amount = Decimal(value)
+        if (
+            not amount.is_finite()
+            or amount < 0
+            or amount >= Decimal("10000000000")
+            or amount != amount.quantize(Decimal("0.01"))
+        ):
+            raise ValueError(
+                "Budget must be nonnegative USD with at most two decimal places"
+            )
+        return amount
+    except InvalidOperation:
+        raise ValueError("Invalid budget amount") from None
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Manage gateway tenants and API keys")
     commands = parser.add_subparsers(dest="command", required=True)
     commands.add_parser("create-tenant").add_argument("name")
+    budget = commands.add_parser("set-budget")
+    budget.add_argument("--tenant", required=True)
+    budget.add_argument("--usd", required=True)
     create = commands.add_parser("create-key")
     create.add_argument("--tenant", required=True)
     create.add_argument("--name", required=True)

@@ -4,6 +4,7 @@ import logging
 import re
 import secrets
 from dataclasses import dataclass
+from decimal import Decimal
 from typing import Annotated
 from uuid import UUID
 
@@ -42,6 +43,7 @@ def hash_key(key: str) -> str:  # Hash the entire key, including its prefix.
 class AuthContext:
     tenant_id: UUID
     api_key_id: UUID
+    monthly_budget_usd: Decimal | None = None
 
 
 class AuthenticationError(Exception):
@@ -112,4 +114,8 @@ async def authenticate(
     if tenant.status != "active":
         logger.warning("API key rejected: suspended tenant; prefix=%s", prefix)
         raise AuthenticationError("Tenant is suspended", 403)
-    return AuthContext(tenant_id=tenant.id, api_key_id=api_key.id)
+    return AuthContext(
+        tenant_id=tenant.id,
+        api_key_id=api_key.id,
+        monthly_budget_usd=tenant.monthly_budget_usd,
+    )

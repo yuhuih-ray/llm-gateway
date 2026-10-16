@@ -31,6 +31,7 @@ class Tenant(Base):
     id: Mapped[UUID] = mapped_column(
         primary_key=True, server_default=text("gen_random_uuid()")
     )
+    monthly_budget_usd: Mapped[Decimal | None] = mapped_column(Numeric(12, 2))
     name: Mapped[str] = mapped_column(Text, unique=True)
     status: Mapped[str] = mapped_column(Text, server_default=text("'active'"))
     created_at: Mapped[datetime] = mapped_column(

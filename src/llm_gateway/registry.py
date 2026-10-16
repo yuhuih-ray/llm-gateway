@@ -21,6 +21,7 @@ class ModelEntry:
     max_tokens_cap: int | None
     first_event_timeout: float
     idle_timeout: float
+    max_input_chars: int = 100_000
     thinking_budget: int | None = None
     input_price: Decimal = Decimal("0")
     output_price: Decimal = Decimal("0")
@@ -111,6 +112,19 @@ def apply_token_limits(
     if entry is None:
         raise GatewayError(
             404, "Model not found", "invalid_request_error", "model_not_found"
+        )
+    # Characters, not estimated tokens: English averages ~4 chars/token, Chinese
+    # ~1-1.5. 100,000 characters stays below Pro's 200K-token long-context tier
+    # across languages; actual usage_logs prompt_tokens can calibrate this later.
+    if (
+        sum(len(message.content) for message in request.messages)
+        > entry.max_input_chars
+    ):
+        raise GatewayError(
+            400,
+            "Input exceeds model character limit",
+            "invalid_request_error",
+            "context_length_exceeded",
         )
     limit = (
         request.max_tokens
