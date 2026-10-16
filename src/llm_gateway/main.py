@@ -131,7 +131,11 @@ async def chat_completion(
     cache = getattr(http_request.app.state, "cache_client", None)
     key = (
         cache_key(auth.tenant_id, request)
-        if cacheable(request, ",".join(http_request.headers.getlist("cache-control")))
+        if cacheable(
+            request,
+            ",".join(http_request.headers.getlist("cache-control")),
+            ",".join(http_request.headers.getlist("x-gateway-cache")),
+        )
         else None
     )
     answer = await read_cache(cache, key) if key else None

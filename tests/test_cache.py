@@ -78,7 +78,11 @@ def payload(**changes):
 
 
 def post(client, **changes):
-    return client.post("/v1/chat/completions", json=payload(**changes))
+    return client.post(
+        "/v1/chat/completions",
+        json=payload(**changes),
+        headers={"X-Gateway-Cache": "on"},
+    )
 
 
 def test_hit_accounting(setup_cache, isolated_usage_queue, monkeypatch):
@@ -165,7 +169,10 @@ def test_nonzero_or_omitted(setup_cache, temperature):
         del body["temperature"]
     for _ in range(2):
         assert (
-            client.post("/v1/chat/completions", json=body).headers["x-cache"] == "MISS"
+            client.post(
+                "/v1/chat/completions", json=body, headers={"X-Gateway-Cache": "on"}
+            ).headers["x-cache"]
+            == "MISS"
         )
     assert not values
     assert provider.complete.await_count == 2
@@ -178,7 +185,10 @@ def test_bypass_existing_and_no_write(setup_cache):
             client.post(
                 "/v1/chat/completions",
                 json=payload(),
-                headers={"Cache-Control": "max-age=0, No-Cache"},
+                headers={
+                    "X-Gateway-Cache": "on",
+                    "Cache-Control": "max-age=0, No-Cache",
+                },
             ).headers["x-cache"]
             == "MISS"
         )
@@ -188,7 +198,7 @@ def test_bypass_existing_and_no_write(setup_cache):
         client.post(
             "/v1/chat/completions",
             json=payload(),
-            headers={"Cache-Control": "no-cache"},
+            headers={"X-Gateway-Cache": "on", "Cache-Control": "no-cache"},
         ).headers["x-cache"]
         == "MISS"
     )
@@ -369,3 +379,34 @@ def test_corrupt_entry_is_miss(setup_cache, isolated_response_cache):
     assert response.status_code == 200
     assert response.headers["x-cache"] == "MISS"
     provider.complete.assert_awaited_once()
+
+
+@pytest.mark.parametrize("opt_in", [None, "off", "true", ""])
+@pytest.mark.parametrize("stream", [False, True])
+def test_temperature_zero_requires_opt_in(
+    setup_cache, isolated_response_cache, opt_in, stream
+):
+    client, _, _, _, values = setup_cache
+    headers = {} if opt_in is None else {"X-Gateway-Cache": opt_in}
+    for _ in range(2):
+        response = client.post(
+            "/v1/chat/completions", json=payload(stream=stream), headers=headers
+        )
+        assert response.status_code == 200
+        assert response.headers["x-cache"] == "MISS"
+    assert not values
+    isolated_response_cache.get.assert_not_awaited()
+    isolated_response_cache.set.assert_not_awaited()
+
+    # An existing answer still requires explicit consent on every request.
+    assert post(client).headers["x-cache"] == "MISS"
+    assert values
+    isolated_response_cache.get.reset_mock()
+    isolated_response_cache.set.reset_mock()
+    response = client.post(
+        "/v1/chat/completions", json=payload(stream=stream), headers=headers
+    )
+    assert response.status_code == 200
+    assert response.headers["x-cache"] == "MISS"
+    isolated_response_cache.get.assert_not_awaited()
+    isolated_response_cache.set.assert_not_awaited()

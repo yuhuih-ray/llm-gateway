@@ -45,10 +45,21 @@ def cache_key(
     return "cache:v1:" + hashlib.sha256(canonical.encode()).hexdigest()
 
 
-def cacheable(request: ChatCompletionRequest, cache_control: str) -> bool:
-    return request.temperature == 0 and not any(
-        directive.strip().split("=", 1)[0].lower() == "no-cache"
-        for directive in cache_control.split(",")
+def cacheable(
+    request: ChatCompletionRequest,  # Explicit deterministic generation setting.
+    cache_control: str,  # Client directives can always bypass reuse.
+    gateway_cache: str,  # Caller consent to reuse an answer for 24 hours.
+) -> bool:
+    # The gateway cannot tell whether a prompt is time-sensitive. Temperature 0
+    # means deterministic output, not consent to reuse an answer for 24 hours;
+    # the caller who understands the request must explicitly opt in.
+    return (
+        gateway_cache == "on"
+        and request.temperature == 0
+        and not any(
+            directive.strip().split("=", 1)[0].lower() == "no-cache"
+            for directive in cache_control.split(",")
+        )
     )
 
 

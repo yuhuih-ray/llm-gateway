@@ -28,7 +28,9 @@ async def test_dedicated_redis_cache(monkeypatch):
         try:
             async with app.router.lifespan_context(app):
                 async with httpx2.AsyncClient(
-                    transport=httpx2.ASGITransport(app=app), base_url="http://test"
+                    transport=httpx2.ASGITransport(app=app),
+                    base_url="http://test",
+                    headers={"X-Gateway-Cache": "on"},
                 ) as client:
                     body = {
                         "model": "fake",

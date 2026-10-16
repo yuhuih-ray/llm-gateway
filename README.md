@@ -520,7 +520,10 @@ Queue and rate-limit Redis uses `noeviction` and AOF: those records must never b
 evicted. Cached answers are disposable and must be evictable, so the two workloads
 cannot share an instance.
 
-Only requests explicitly setting `temperature: 0` are cached. Send
+Caching requires explicit opt-in: send `X-Gateway-Cache: on` and set
+`temperature: 0`. The gateway cannot tell whether a prompt is time-sensitive;
+deterministic output does not imply consent to reuse an answer for 24 hours.
+The caller who understands the request must opt in. Send
 `Cache-Control: no-cache` to bypass both reads and writes. Successful answers with
 finish reason `stop` or `length` expire after 24 hours; errors, filtered answers,
 and cancelled streams are never stored. Keys hash the tenant, gateway and upstream
