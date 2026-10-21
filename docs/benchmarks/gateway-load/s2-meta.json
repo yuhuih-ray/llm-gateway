@@ -5,7 +5,7 @@
   "requests_sent": 12001,
   "requests_successful": 12001,
   "usage_rows_written": 12001,
-  "usage_rows_before": 103871,
+  "usage_rows_before": 0,
   "usage_rows_minus_requests_sent": 0,
   "arq_at_k6_end": {
     "queue_length": 0,
@@ -15,10 +15,10 @@
     "queue_length": 0,
     "in_progress": 0
   },
-  "drain_wait_seconds": 0.161,
+  "drain_wait_seconds": 0.086,
   "drained": true,
-  "started_at": "2026-10-21T07:09:18.394302+00:00",
-  "recorded_at": "2026-10-21T07:10:19.847652+00:00",
+  "started_at": "2026-10-21T22:51:07.455561+00:00",
+  "recorded_at": "2026-10-21T22:52:09.251815+00:00",
   "fake_delay_ms": 0,
   "server_timing": true
 }
