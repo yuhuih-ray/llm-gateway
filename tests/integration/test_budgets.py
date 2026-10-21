@@ -8,6 +8,7 @@ from arq import create_pool
 from arq.connections import RedisSettings
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import async_sessionmaker
+from starlette.requests import Request
 from testcontainers.redis import RedisContainer
 
 from llm_gateway import budgets, cli
@@ -89,7 +90,7 @@ async def test_reconciliation_and_cli(engine, redis, monkeypatch):
                     created_at=when,
                 )
             )
-    auth = await authenticate(sessions, f"Bearer {full_key}")
+    auth = await authenticate(Request({"type": "http"}), sessions, f"Bearer {full_key}")
     assert auth.monthly_budget_usd == Decimal("10")
     ctx = {"sessions": sessions, "redis": redis}
     counter = budgets.spend_key(tenant.id, now)

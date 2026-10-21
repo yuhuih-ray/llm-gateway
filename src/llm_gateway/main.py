@@ -34,6 +34,7 @@ from llm_gateway.ratelimit import rate_limiter, rejected, request_buckets
 from llm_gateway.registry import MODELS, apply_token_limits, get_provider
 from llm_gateway.schemas import ChatCompletionRequest, ChatCompletionResponse
 from llm_gateway.streaming import stream_response
+from llm_gateway.timing import ServerTimingMiddleware, measure
 from llm_gateway.usage import UsageMiddleware, UsageTracker, create_usage_pool
 
 
@@ -59,6 +60,7 @@ app = FastAPI(lifespan=lifespan)
 app.include_router(admin_router)
 app.add_middleware(BodySizeMiddleware)
 app.add_middleware(UsageMiddleware)
+app.add_middleware(ServerTimingMiddleware)
 app.add_exception_handler(AuthenticationError, authentication_error_handler)
 app.add_exception_handler(GatewayError, gateway_error_handler)
 
@@ -122,33 +124,39 @@ async def chat_completion(
     ],  # Injected completion provider.
 ) -> ChatCompletionResponse | StreamingResponse | JSONResponse:
     request = apply_token_limits(request)
-    decision = await rate_limiter.check(
-        getattr(http_request.app.state, "usage_pool", None),
-        request_buckets(auth.tenant_id, MODELS[request.model].provider),
-    )
+    with measure(http_request, "ratelimit"):
+        decision = await rate_limiter.check(
+            getattr(http_request.app.state, "usage_pool", None),
+            request_buckets(auth.tenant_id, MODELS[request.model].provider),
+        )
     if not decision.allowed:
         return rejected(decision)
     cache = getattr(http_request.app.state, "cache_client", None)
-    key = (
-        cache_key(auth.tenant_id, request)
-        if cacheable(
-            request,
-            ",".join(http_request.headers.getlist("cache-control")),
-            ",".join(http_request.headers.getlist("x-gateway-cache")),
+    with measure(http_request, "cache"):
+        key = (
+            cache_key(auth.tenant_id, request)
+            if cacheable(
+                request,
+                ",".join(http_request.headers.getlist("cache-control")),
+                ",".join(http_request.headers.getlist("x-gateway-cache")),
+            )
+            else None
         )
-        else None
-    )
-    answer = await read_cache(cache, key) if key else None
+        answer = await read_cache(cache, key) if key else None
     http_request.state.cache_status = "HIT" if answer else "MISS"
     # Exhausted tenants can still receive free cached answers after request limits.
-    if answer is None and await budget_exceeded(
-        getattr(http_request.app.state, "usage_pool", None),
-        auth.tenant_id,
-        auth.monthly_budget_usd,
-    ):
-        raise GatewayError(
-            429, "Monthly budget exceeded", "insufficient_quota", "insufficient_quota"
-        )
+    with measure(http_request, "budget"):
+        if answer is None and await budget_exceeded(
+            getattr(http_request.app.state, "usage_pool", None),
+            auth.tenant_id,
+            auth.monthly_budget_usd,
+        ):
+            raise GatewayError(
+                429,
+                "Monthly budget exceeded",
+                "insufficient_quota",
+                "insufficient_quota",
+            )
     tracker = UsageTracker(
         http_request.scope["state"],
         auth,
@@ -164,21 +172,26 @@ async def chat_completion(
 
     async def store(response: ChatCompletionResponse) -> None:
         if key and answer is None:
-            await write_cache(
-                cache,
-                key,
-                CachedAnswer(
-                    response=response,
-                    upstream_model=MODELS[request.model].upstream_model,
-                ),
-            )
+            with measure(http_request, "cache"):
+                await write_cache(
+                    cache,
+                    key,
+                    CachedAnswer(
+                        response=response,
+                        upstream_model=MODELS[request.model].upstream_model,
+                    ),
+                )
 
     try:
-        if request.stream:
-            return await stream_response(
-                provider, request, tracker, store if key and answer is None else None
-            )
-        response = await provider.complete(request)
+        with measure(http_request, "provider"):
+            if request.stream:
+                return await stream_response(
+                    provider,
+                    request,
+                    tracker,
+                    store if key and answer is None else None,
+                )
+            response = await provider.complete(request)
         tracker.success(response.usage)
         await store(response)
         return response

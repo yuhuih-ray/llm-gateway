@@ -15,6 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from llm_gateway.db import get_sessionmaker
 from llm_gateway.models import ApiKey, Tenant
+from llm_gateway.timing import measure
 
 logger = logging.getLogger(__name__)
 
@@ -76,46 +77,48 @@ async def authentication_error_handler(
 
 
 async def authenticate(
+    request: Request,  # Optional Server-Timing stage state.
     session_factory: Annotated[
         async_sessionmaker[AsyncSession], Depends(get_sessionmaker)
     ],  # Factory keeps the lookup session independent of the request lifetime.
     authorization: Annotated[str | None, Header()] = None,  # Raw header; never logged.
 ) -> AuthContext:
-    if authorization is None:
-        logger.warning("API key rejected: missing header; prefix=none")
-        raise AuthenticationError("Missing API key")
-    scheme, separator, key = authorization.partition(" ")
-    if not separator or scheme.lower() != "bearer":
-        logger.warning("API key rejected: invalid scheme; prefix=none")
-        raise AuthenticationError("Invalid API key")
-    try:
-        prefix = parse_key(key)
-    except ValueError:
-        logger.warning("API key rejected: malformed key; prefix=none")
-        raise AuthenticationError("Invalid API key") from None
-    async with session_factory() as session:
-        row = (
-            await session.execute(
-                select(ApiKey, Tenant)
-                .join(Tenant, ApiKey.tenant_id == Tenant.id)
-                .where(ApiKey.key_prefix == prefix)
-            )
-        ).one_or_none()
-    if row is None:
-        logger.warning("API key rejected: unknown prefix; prefix=%s", prefix)
-        raise AuthenticationError("Invalid API key")
-    api_key, tenant = row
-    if not hmac.compare_digest(api_key.key_hash, hash_key(key)):
-        logger.warning("API key rejected: hash mismatch; prefix=%s", prefix)
-        raise AuthenticationError("Invalid API key")
-    if api_key.revoked_at is not None:
-        logger.warning("API key rejected: revoked key; prefix=%s", prefix)
-        raise AuthenticationError("Invalid API key")
-    if tenant.status != "active":
-        logger.warning("API key rejected: suspended tenant; prefix=%s", prefix)
-        raise AuthenticationError("Tenant is suspended", 403)
-    return AuthContext(
-        tenant_id=tenant.id,
-        api_key_id=api_key.id,
-        monthly_budget_usd=tenant.monthly_budget_usd,
-    )
+    with measure(request, "auth"):
+        if authorization is None:
+            logger.warning("API key rejected: missing header; prefix=none")
+            raise AuthenticationError("Missing API key")
+        scheme, separator, key = authorization.partition(" ")
+        if not separator or scheme.lower() != "bearer":
+            logger.warning("API key rejected: invalid scheme; prefix=none")
+            raise AuthenticationError("Invalid API key")
+        try:
+            prefix = parse_key(key)
+        except ValueError:
+            logger.warning("API key rejected: malformed key; prefix=none")
+            raise AuthenticationError("Invalid API key") from None
+        async with session_factory() as session:
+            row = (
+                await session.execute(
+                    select(ApiKey, Tenant)
+                    .join(Tenant, ApiKey.tenant_id == Tenant.id)
+                    .where(ApiKey.key_prefix == prefix)
+                )
+            ).one_or_none()
+        if row is None:
+            logger.warning("API key rejected: unknown prefix; prefix=%s", prefix)
+            raise AuthenticationError("Invalid API key")
+        api_key, tenant = row
+        if not hmac.compare_digest(api_key.key_hash, hash_key(key)):
+            logger.warning("API key rejected: hash mismatch; prefix=%s", prefix)
+            raise AuthenticationError("Invalid API key")
+        if api_key.revoked_at is not None:
+            logger.warning("API key rejected: revoked key; prefix=%s", prefix)
+            raise AuthenticationError("Invalid API key")
+        if tenant.status != "active":
+            logger.warning("API key rejected: suspended tenant; prefix=%s", prefix)
+            raise AuthenticationError("Tenant is suspended", 403)
+        return AuthContext(
+            tenant_id=tenant.id,
+            api_key_id=api_key.id,
+            monthly_budget_usd=tenant.monthly_budget_usd,
+        )

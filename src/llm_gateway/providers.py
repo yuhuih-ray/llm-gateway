@@ -3,6 +3,7 @@ from collections.abc import AsyncGenerator
 from dataclasses import dataclass
 from typing import Literal, Protocol
 
+from llm_gateway.config import get_settings
 from llm_gateway.schemas import (
     AssistantMessage,
     ChatCompletionRequest,
@@ -44,6 +45,7 @@ class FakeProvider:
         fail_after: int | None = None,  # Number of text events before a test failure.
         delay: float = 0.001,  # Simulate incremental upstream delivery.
     ) -> None:
+        self.completion_delay = get_settings().fake_delay_ms / 1000
         self.fail_after = fail_after
         self.delay = delay
 
@@ -51,6 +53,9 @@ class FakeProvider:
         self,
         request: ChatCompletionRequest,  # Same deterministic response as complete().
     ) -> AsyncGenerator[StreamEvent, None]:
+        # Artificial latency applies once, not once per streamed text chunk.
+        if self.completion_delay:
+            await asyncio.sleep(self.completion_delay)
         chunks = ["Hello ", "from ", "FakeProvider."]
         for index, chunk in enumerate(chunks):
             if self.fail_after == index:
@@ -65,6 +70,8 @@ class FakeProvider:
         self,
         request: ChatCompletionRequest,  # Validated chat input.
     ) -> ChatCompletionResponse:
+        if self.completion_delay:
+            await asyncio.sleep(self.completion_delay)
         return ChatCompletionResponse(
             id="chatcmpl-fake",
             model=request.model,

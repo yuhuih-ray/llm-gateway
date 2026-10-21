@@ -1,0 +1,48 @@
+# Always invoked with project name llm-gateway-loadtest; never the dev Compose file.
+services:
+  postgres:
+    image: postgres:18
+    environment:
+      POSTGRES_USER: gateway_loadtest
+      POSTGRES_PASSWORD: ${LOADTEST_DB_PASSWORD:?Run setup.sh first}
+      POSTGRES_DB: gateway_loadtest
+    ports:
+      - "127.0.0.1:15432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gateway_loadtest -d gateway_loadtest"]
+      interval: 1s
+      timeout: 3s
+      retries: 60
+
+  redis:
+    image: redis:8
+    command: ["redis-server", "--appendonly", "yes", "--appendfsync", "everysec", "--maxmemory-policy", "noeviction"]
+    ports:
+      - "127.0.0.1:16379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 1s
+      timeout: 3s
+      retries: 30
+
+  redis-cache:
+    image: redis:8
+    command: ["redis-server", "--appendonly", "no", "--save", "", "--maxmemory", "256mb", "--maxmemory-policy", "allkeys-lru"]
+    ports:
+      - "127.0.0.1:16380:6379"
+    volumes:
+      - cache_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 1s
+      timeout: 3s
+      retries: 30
+
+volumes:
+  postgres_data:
+  redis_data:
+  cache_data:
