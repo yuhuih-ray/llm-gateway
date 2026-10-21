@@ -8,7 +8,7 @@ from uuid import uuid4
 import pytest
 from starlette.datastructures import State
 
-from llm_gateway.accounting import SPEND_LUA, TOKEN_LUA, AccountingBuffer
+from llm_gateway.accounting import BATCH_LUA, AccountingBuffer
 from llm_gateway.usage import UsageRecord
 
 
@@ -77,12 +77,19 @@ async def test_batches_aggregate_tenants_months_and_cache_hits(isolated_usage_qu
     assert [len(call.args[1]) for call in jobs] == [500, 5]
     assert all(call.args[0] == "write_usage_batch" for call in jobs)
     assert len({call.kwargs["_job_id"] for call in jobs}) == 2
-    charges = [c.args for c in pool.eval.call_args_list if c.args[0] == TOKEN_LUA]
-    assert sorted(c[-1] for c in charges) == [30, 60, 15000]
-    spends = [c.args for c in pool.eval.call_args_list if c.args[0] == SPEND_LUA]
-    assert sum(c[-2] for c in spends) == 503 * 12345678
+    batches = [json.loads(c.args[-2]) for c in pool.eval.call_args_list]
+    charges = [charge for batch in batches for charge in batch["tokens"]]
+    assert sorted(c["amount"] for c in charges) == [30, 60, 15000]
+    spends = [spend for batch in batches for spend in batch["spend"]]
+    assert sum(int(c["amount"]) for c in spends) == 503 * 12345678
     assert len(spends) == 4
-    assert sum(c[-2] for c in spends if c[2].endswith("2026-09")) == 12345678
+    prior_spend = [
+        spend
+        for call in pool.eval.call_args_list
+        for spend in json.loads(call.args[-2])["spend"]
+        if call.args[spend["key"] + 1].endswith("2026-09")
+    ]
+    assert sum(int(c["amount"]) for c in prior_spend) == 12345678
 
 
 @pytest.mark.anyio
@@ -143,7 +150,7 @@ async def test_flusher_timer_threshold_and_shutdown(isolated_usage_queue, monkey
 async def test_recovery_and_warning_throttle(isolated_usage_queue, caplog):
     pool = isolated_usage_queue
     pending = buffer(pool)
-    pool.eval.side_effect = [ConnectionError(), ConnectionError(), 1, 12345678]
+    pool.eval.side_effect = [ConnectionError(), ConnectionError(), "[]"]
     pending.record(usage())
     pending.start()
     async with asyncio.timeout(2):
@@ -166,7 +173,7 @@ async def test_cleanup_retry_does_not_reenqueue_or_charge(isolated_usage_queue):
     assert len(pending.records) == 1
     await pending.flush()
     pool.enqueue_job.assert_awaited_once()
-    assert pool.eval.await_count == 2
+    assert pool.eval.await_count == 1
     assert not pending.records
 
 
@@ -219,7 +226,7 @@ async def test_http_response_does_not_wait_for_hung_accounting(
     pool = isolated_usage_queue
 
     async def eval_script(script, *args):
-        if script in (TOKEN_LUA, SPEND_LUA):
+        if script == BATCH_LUA:
             entered.set()
             await asyncio.Event().wait()
         return [1, "100", 0]
@@ -252,3 +259,59 @@ async def test_http_response_does_not_wait_for_hung_accounting(
                 pool.enqueue_job.assert_not_awaited()
     finally:
         app.dependency_overrides.clear()
+
+
+@pytest.mark.anyio
+async def test_shutdown_timeout_cancels_flusher(isolated_usage_queue, caplog):
+    pending = buffer(isolated_usage_queue)
+    isolated_usage_queue.eval.side_effect = ConnectionError("Redis unavailable")
+    pending.record(usage())
+    pending.start()
+    started = asyncio.get_running_loop().time()
+    try:
+        async with asyncio.timeout(6):
+            await pending.close()
+        elapsed = asyncio.get_running_loop().time() - started
+        assert 4.9 <= elapsed < 6
+        assert pending.task.done()
+        assert pending.task.cancelled()
+        assert isolated_usage_queue.eval.await_count > 1
+        isolated_usage_queue.enqueue_job.assert_not_awaited()
+        assert len(pending.records) == 1
+        assert (
+            sum(
+                r.message == "accounting_shutdown_unflushed count=1"
+                for r in caplog.records
+            )
+            == 1
+        )
+    finally:
+        # Keep a regression from leaking a retrying task into subsequent tests.
+        pending.task.cancel()
+        with pytest.raises(asyncio.CancelledError):
+            await pending.task
+
+
+@pytest.mark.anyio
+async def test_fifty_tenants_use_three_redis_calls(isolated_usage_queue, caplog):
+    pool = isolated_usage_queue
+    pending = buffer(pool)
+    tenants = [uuid4() for _ in range(50)]
+    for _ in range(10):
+        for tenant in tenants:
+            pending.record(usage(tenant_id=tenant, monthly_budget_usd=Decimal("1")))
+    pool.eval.side_effect = None
+    pool.eval.return_value = json.dumps(list(range(1, 51)))
+    await pending.flush()
+    assert [call[0] for call in pool.method_calls] == ["eval", "enqueue_job", "delete"]
+    call = pool.eval.call_args
+    assert call.args[0] == BATCH_LUA
+    batch = json.loads(call.args[-2])
+    assert len(batch["tokens"]) == len(batch["spend"]) == 50
+    assert all(charge["amount"] == 300 for charge in batch["tokens"])
+    assert all(spend["amount"] == "123456780" for spend in batch["spend"])
+    assert all(spend["threshold"] == "80000000" for spend in batch["spend"])
+    assert pool.delete.call_args.args == (f"accounting:{pending.batch_id}",)
+    assert len(pool.enqueue_job.call_args.args[1]) == 500
+    assert sum("monthly_budget_80_percent" in r.message for r in caplog.records) == 50
+    assert not pending.records

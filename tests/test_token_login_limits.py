@@ -1,4 +1,5 @@
 import asyncio
+import json
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, Mock
 from uuid import uuid4
@@ -172,8 +173,10 @@ async def test_charge_after_final_response_and_unknown_skipped(
 
     async def slow_charge(*args):
         assert sent_final
-        charge_calls.append(args)
-        await asyncio.sleep(10)
+        if json.loads(args[-2])["tokens"]:
+            charge_calls.append(args)
+            await asyncio.sleep(10)
+        return "[]"
 
     pool.pipeline = isolated_usage_queue.pipeline
     pool.eval.side_effect = slow_charge
@@ -221,7 +224,7 @@ async def test_charge_after_final_response_and_unknown_skipped(
         with pytest.raises(TimeoutError):
             async with asyncio.timeout(0.01):
                 await state.accounting.flush()
-        assert charge_calls[0][-1] == 50
+        assert json.loads(charge_calls[0][-2])["tokens"][0]["amount"] == 50
     else:
         await state.accounting.flush()
         assert charge_calls == []

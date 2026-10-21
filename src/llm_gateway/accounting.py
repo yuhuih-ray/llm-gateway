@@ -1,8 +1,11 @@
 """Bounded, process-local accounting; no request waits on accounting I/O."""
 
 import asyncio
+import json
 import logging
 from collections import defaultdict, deque
+from contextlib import suppress
+from decimal import ROUND_CEILING, Decimal
 from itertools import islice
 from time import monotonic
 from uuid import UUID, uuid4
@@ -11,9 +14,9 @@ from arq import create_pool
 from arq.connections import RedisSettings
 from starlette.datastructures import State
 
-from llm_gateway.budgets import SCALE, TTL, spend_key, warn_threshold
+from llm_gateway.budgets import SCALE, TTL, spend_key
 from llm_gateway.config import get_settings
-from llm_gateway.ratelimit import CHARGE_LUA, token_bucket
+from llm_gateway.ratelimit import token_bucket
 from llm_gateway.usage import UsageRecord
 
 logger = logging.getLogger(__name__)
@@ -21,24 +24,44 @@ BATCH_SIZE = 500
 INTERVAL = 0.1
 SHUTDOWN_TIMEOUT = 5.0
 
-# Receipts make a retry safe even if Redis applied a command but its reply was
-# lost. They have no expiry while a batch is pending, and are deleted on delivery.
+# One batch receipt makes retries safe even if Redis applied the script but its
+# reply was lost. It has no expiry while pending and is deleted on delivery.
 # A process crash can leave small orphan receipts; it cannot replay that buffer.
-TOKEN_LUA = (
-    "if redis.call('EXISTS', KEYS[2]) == 1 then return 0 end\n"
-    + CHARGE_LUA.replace(
-        "return tostring(tokens)", "redis.call('SET', KEYS[2], '1')\nreturn 1"
-    )
-)
-SPEND_LUA = """
-local previous = redis.call('GET', KEYS[2])
+BATCH_LUA = """
+local previous = redis.call('GET', KEYS[1])
 if previous then return previous end
-redis.call('INCRBY', KEYS[1], ARGV[1])
-redis.call('EXPIRE', KEYS[1], ARGV[2])
--- GET preserves integer precision above 2**53, unlike Lua's INCRBY return.
-local spent = redis.call('GET', KEYS[1])
-redis.call('SET', KEYS[2], spent)
-return spent
+local batch = cjson.decode(ARGV[1])
+local clock = redis.call('TIME')
+local now = tonumber(clock[1]) + tonumber(clock[2]) / 1000000
+for _, charge in ipairs(batch.tokens) do
+    local key = KEYS[charge.key]
+    local capacity, refill, amount = charge.capacity, charge.refill, charge.amount
+    local stored = redis.call('HMGET', key, 'tokens', 'updated_at')
+    local tokens = math.min(capacity, (tonumber(stored[1]) or capacity)
+        + math.max(0, now - (tonumber(stored[2]) or now)) * refill)
+    tokens = math.max(-capacity, tokens - amount)
+    redis.call('HSET', key, 'tokens', tokens, 'updated_at', now)
+    redis.call('PEXPIRE', key, math.max(1, math.ceil(2000 * capacity / refill)))
+end
+local warnings = {}
+for index, spend in ipairs(batch.spend) do
+    local key = KEYS[spend.key]
+    redis.call('INCRBY', key, spend.amount)
+    redis.call('EXPIRE', key, ARGV[2])
+    -- GET and integer-string comparisons preserve money above 2**53.
+    local total = redis.call('GET', key)
+    local threshold = spend.threshold
+    if threshold ~= cjson.null and
+        (#total > #threshold or (#total == #threshold and total >= threshold)) then
+        if redis.call('SET', KEYS[spend.warning_key], '1', 'NX', 'EX', ARGV[2]) then
+            table.insert(warnings, index)
+        end
+    end
+end
+-- Replay warning decisions after a lost reply without reapplying any counters.
+local result = #warnings == 0 and '[]' or cjson.encode(warnings)
+redis.call('SET', KEYS[1], result)
+return result
 """
 
 
@@ -56,6 +79,7 @@ class AccountingBuffer:
         self.batch: list[UsageRecord] = []
         self.batch_id = ""
         self.delivered = False
+        self.counters_applied = False
 
     def record(self, record: UsageRecord) -> None:  # Append on the ASGI event loop.
         if len(self.records) >= self.capacity:
@@ -78,6 +102,7 @@ class AccountingBuffer:
                 self.batch = list(islice(self.records, BATCH_SIZE))
                 self.batch_id = str(uuid4())
                 self.delivered = False
+                self.counters_applied = False
             pool = self.state.usage_pool
             if pool is None:
                 settings = RedisSettings.from_dsn(get_settings().redis_url)
@@ -100,48 +125,71 @@ class AccountingBuffer:
                     key = spend_key(record.tenant_id, record.created_at)
                     spend[key] += int(record.cost * SCALE)
                     hints[key] = record
-            receipts = []
+            receipt = f"accounting:{self.batch_id}"
             # Apply counters before publishing rows so budget reconciliation
             # cannot observe this batch's DB rows before its Redis increments.
-            if not self.delivered:
+            if not self.counters_applied:
+                keys = [receipt]
+                charges = []
+                spends = []
                 for tenant, amount in tokens.items():
                     bucket = token_bucket(tenant)
-                    receipt = f"accounting:{self.batch_id}:{bucket.key}"
-                    receipts.append(receipt)
-                    await pool.eval(
-                        TOKEN_LUA,
-                        2,
-                        bucket.key,
-                        receipt,
-                        bucket.capacity,
-                        bucket.refill,
-                        amount,
+                    keys.append(bucket.key)
+                    charges.append(
+                        dict(
+                            key=len(keys),
+                            capacity=bucket.capacity,
+                            refill=bucket.refill,
+                            amount=amount,
+                        )
                     )
                 for key, amount in spend.items():
-                    receipt = f"accounting:{self.batch_id}:{key}"
-                    receipts.append(receipt)
-                    total = await pool.eval(SPEND_LUA, 2, key, receipt, amount, TTL)
                     hint = hints[key]
-                    await warn_threshold(
-                        pool,
-                        hint.tenant_id,
-                        hint.monthly_budget_usd,
-                        int(total),
-                        hint.created_at,
+                    keys.extend([key, key.replace("budget:spent:", "budget:warned:")])
+                    budget = hint.monthly_budget_usd
+                    threshold = (
+                        None
+                        if budget is None
+                        else str(
+                            int(
+                                (budget * SCALE * Decimal("0.8")).to_integral_value(
+                                    rounding=ROUND_CEILING
+                                )
+                            )
+                        )
                     )
+                    spends.append(
+                        dict(
+                            key=len(keys) - 1,
+                            warning_key=len(keys),
+                            amount=str(amount),
+                            threshold=threshold,
+                        )
+                    )
+                warnings = await pool.eval(
+                    BATCH_LUA,
+                    len(keys),
+                    *keys,
+                    json.dumps(dict(tokens=charges, spend=spends)),
+                    TTL,
+                )
+                self.counters_applied = True
+                ordered_hints = list(hints.values())
+                for index in json.loads(warnings):
+                    hint = ordered_hints[index - 1]
+                    logger.warning(
+                        "monthly_budget_80_percent tenant_id=%s month=%s",
+                        hint.tenant_id,
+                        spend_key(hint.tenant_id, hint.created_at).rsplit(":", 1)[1],
+                    )
+            if not self.delivered:
                 await pool.enqueue_job(
                     "write_usage_batch",
                     [record.model_dump(mode="json") for record in self.batch],
                     _job_id=self.batch_id,
                 )
                 self.delivered = True
-            else:
-                receipts = [
-                    f"accounting:{self.batch_id}:{token_bucket(tenant).key}"
-                    for tenant in tokens
-                ] + [f"accounting:{self.batch_id}:{key}" for key in spend]
-            if receipts:
-                await pool.delete(*receipts)
+            await pool.delete(receipt)
             for _ in self.batch:
                 self.records.popleft()
             self.batch = []
@@ -160,6 +208,8 @@ class AccountingBuffer:
                 async with asyncio.timeout(5):
                     await self.flush()
                 backoff = INTERVAL
+            except asyncio.CancelledError:
+                raise
             except Exception:
                 now = monotonic()
                 if now - self.last_warning >= 30:
@@ -174,9 +224,12 @@ class AccountingBuffer:
         if self.task is not None:
             try:
                 async with asyncio.timeout(SHUTDOWN_TIMEOUT):
-                    await self.task
+                    # Own cancellation explicitly after the drain deadline.
+                    await asyncio.shield(self.task)
             except TimeoutError:
-                pass
+                self.task.cancel()
+                with suppress(asyncio.CancelledError):
+                    await self.task
         if self.records:
             logger.error("accounting_shutdown_unflushed count=%d", len(self.records))
 

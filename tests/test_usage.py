@@ -164,6 +164,7 @@ async def test_enqueue_deadline(caplog, monkeypatch):
     async def hang(*args, **kwargs):
         await asyncio.Event().wait()
 
+    pool.eval.return_value = "[]"
     pool.enqueue_job.side_effect = hang
     buffer.start()
     account.emit()

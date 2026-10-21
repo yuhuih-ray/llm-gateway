@@ -109,19 +109,20 @@ def test_hit_accounting(setup_cache, isolated_usage_queue, monkeypatch):
     assert Decimal(first_record["cost"]) > 0
     assert record["upstream_model"] == "original"
     assert (record["prompt_tokens"], record["completion_tokens"]) == (12, 4)
-    from llm_gateway.accounting import SPEND_LUA, TOKEN_LUA
+    from llm_gateway.accounting import BATCH_LUA
 
     client.portal.call(app.state.accounting.flush)
-    charges = [
-        c for c in isolated_usage_queue.eval.call_args_list if c.args[0] == TOKEN_LUA
+    batches = [
+        json.loads(c.args[-2])
+        for c in isolated_usage_queue.eval.call_args_list
+        if c.args[0] == BATCH_LUA
     ]
-    assert sum(c.args[-1] for c in charges) == 16
-    spends = [
-        c for c in isolated_usage_queue.eval.call_args_list if c.args[0] == SPEND_LUA
-    ]
-    assert sum(c.args[-2] for c in spends) == int(
-        Decimal(first_record["cost"]) * 100_000_000
+    assert (
+        sum(charge["amount"] for batch in batches for charge in batch["tokens"]) == 16
     )
+    assert sum(
+        int(spend["amount"]) for batch in batches for spend in batch["spend"]
+    ) == int(Decimal(first_record["cost"]) * 100_000_000)
     assert all(
         "private text" not in key and len(key) == len("cache:v1:") + 64
         for key in values

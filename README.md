@@ -239,12 +239,15 @@ by `(request_id, created_at)` and preserving request time. Previously queued
 `ACCOUNTING_BUFFER_SIZE` defaults to 10,000 records, including batches being retried.
 The flusher wakes every 100 ms or at 500 waiting records and processes up to 500 per
 batch. It aggregates token charges per tenant and exact integer spend per tenant/UTC
-month, then publishes one `write_usage_batch` job. Redis receipts and stable job IDs
-protect retries from duplicate charges. Accounting never waits on the request path.
+month in one Lua call (including 80% warning checks), then publishes one
+`write_usage_batch` job and deletes one batch receipt. These three client calls
+replace per-tenant Redis calls. The receipt and stable job ID protect retries from
+duplicate charges. Accounting never waits on the request path.
 Redis failures retain records with backoff capped at 2 seconds and one warning per
 30 seconds. At capacity, new records are dropped, the dropped counter increases,
 and ERROR `usage_record_dropped` includes the full record for recovery. Shutdown
-allows 5 seconds to drain, then logs `accounting_shutdown_unflushed count=N` if needed.
+allows 5 seconds to drain, then cancels and awaits the flusher before logging
+`accounting_shutdown_unflushed count=N` if needed.
 
 A gateway crash normally loses only the unflushed ~100 ms window; outages or event-loop
 stalls can enlarge that window up to the buffer cap. Redis AOF `everysec` can lose

@@ -201,7 +201,7 @@ async def test_body_at_limit_replayed_without_changes(monkeypatch):
 async def test_cost_charged_after_response_and_bounded(monkeypatch):
     from starlette.datastructures import State
 
-    from llm_gateway.accounting import SPEND_LUA, AccountingBuffer
+    from llm_gateway.accounting import BATCH_LUA, AccountingBuffer
     from llm_gateway.usage import UsageMiddleware, UsageTracker
 
     final_sent = False
@@ -246,5 +246,5 @@ async def test_cost_charged_after_response_and_bounded(monkeypatch):
     flush.cancel()
     with pytest.raises(asyncio.CancelledError):
         await flush
-    assert pool.eval.call_args.args[0] == SPEND_LUA
-    assert pool.eval.call_args.args[-2] == 12345678
+    assert pool.eval.call_args.args[0] == BATCH_LUA
+    assert json.loads(pool.eval.call_args.args[-2])["spend"][0]["amount"] == "12345678"
