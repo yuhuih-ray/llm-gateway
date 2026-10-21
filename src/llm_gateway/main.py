@@ -25,6 +25,7 @@ from llm_gateway.cache import (
     read_cache,
     write_cache,
 )
+from llm_gateway.concurrency import acquire_provider
 from llm_gateway.db import get_sessionmaker
 from llm_gateway.errors import GatewayError, gateway_error_handler
 from llm_gateway.gemini import close_gemini_client
@@ -36,10 +37,12 @@ from llm_gateway.schemas import ChatCompletionRequest, ChatCompletionResponse
 from llm_gateway.streaming import stream_response
 from llm_gateway.timing import ServerTimingMiddleware, measure
 from llm_gateway.usage import UsageMiddleware, UsageTracker, create_usage_pool
+from llm_gateway.vllm import close_vllm_client
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:  # Application lifecycle.
+    app.state.provider_semaphores = {}
     app.state.usage_pool = await create_usage_pool()
     app.state.cache_client = create_cache_client()
     app.state.accounting = AccountingBuffer(app.state)
@@ -52,7 +55,10 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:  # Application lifecycl
             await close_gemini_client()
         finally:
             try:
-                await app.state.cache_client.aclose()
+                try:
+                    await close_vllm_client()
+                finally:
+                    await app.state.cache_client.aclose()
             finally:
                 if app.state.usage_pool is not None:
                     await app.state.usage_pool.aclose()
@@ -159,6 +165,10 @@ async def chat_completion(
                 "insufficient_quota",
                 "insufficient_quota",
             )
+    if answer is None:
+        http_request.state.provider_slot = await acquire_provider(
+            http_request.app.state, MODELS[request.model].provider
+        )
     tracker = UsageTracker(
         http_request.scope["state"],
         auth,

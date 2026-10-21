@@ -10,6 +10,7 @@ from llm_gateway.errors import GatewayError
 from llm_gateway.gemini import GeminiProvider
 from llm_gateway.providers import FakeProvider, Provider
 from llm_gateway.schemas import ChatCompletionRequest
+from llm_gateway.vllm import VllmProvider
 
 
 @dataclass(frozen=True)
@@ -43,6 +44,11 @@ class ModelEntry:
 # https://ai.google.dev/gemini-api/docs/pricing
 # Flash promotional .75/3.75 expires 2026-12-31; reverify before 2027.
 MODELS = {
+    # Marginal cost is approximately zero; Phase 4 routing must consider local
+    # capacity as well as price. Server max-model-len is 8192 tokens.
+    "local-qwen": ModelEntry(
+        "vllm", "qwen2.5-7b-awq", None, 1024, 4096, 60, 30, max_input_chars=20_000
+    ),
     "fake": ModelEntry("fake", None, None, None, None, 30, 30),
     "gemini-flash-lite": ModelEntry(
         "gemini",
@@ -97,6 +103,8 @@ def get_provider(
     if entry.provider == "fake":
         return FakeProvider()
     assert entry.upstream_model is not None
+    if entry.provider == "vllm":
+        return VllmProvider(entry.upstream_model)
     return GeminiProvider(
         entry.upstream_model,
         thinking_level=entry.thinking_level,

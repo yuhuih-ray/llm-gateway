@@ -168,7 +168,13 @@ class UsageMiddleware:
         try:
             await self.app(scope, receive, send_with_id)
         finally:
-            tracker = state.get("usage_tracker")
-            if tracker is not None:
-                # Runs after the ASGI response, including its final body frame.
-                tracker.emit()
+            try:
+                tracker = state.get("usage_tracker")
+                if tracker is not None:
+                    # Runs after the ASGI response, including its final body frame.
+                    tracker.emit()
+            finally:
+                slot = state.pop("provider_slot", None)
+                if slot is not None:
+                    # Own the slot through the entire SSE response, including disconnects.
+                    slot.release()

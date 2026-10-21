@@ -21,14 +21,26 @@ async def with_retries(
         try:
             async with asyncio.timeout(timeout):
                 return await operation()
-        except (TimeoutError, ConnectionError, httpx.TransportError, APIError) as exc:
+        except (
+            TimeoutError,
+            ConnectionError,
+            httpx.TransportError,
+            httpx.HTTPStatusError,
+            APIError,
+        ) as exc:
             # Read/deadline timeouts may follow billed generation; never repeat it.
             if isinstance(exc, (TimeoutError, httpx.ReadTimeout)):
                 raise GatewayError(
                     504, "Upstream request timed out", "upstream_error"
                 ) from None
             timed_out = isinstance(exc, httpx.ConnectTimeout)
-            status = exc.code if isinstance(exc, APIError) else None
+            status = (
+                exc.code
+                if isinstance(exc, APIError)
+                else exc.response.status_code
+                if isinstance(exc, httpx.HTTPStatusError)
+                else None
+            )
             if status in (401, 403):
                 logger.error("Gateway provider credentials are invalid")
                 raise GatewayError(
@@ -38,6 +50,8 @@ async def with_retries(
                 timed_out
                 or isinstance(exc, (ConnectionError, httpx.NetworkError))
                 or status in (429, 500, 502, 503, 504)
+                or isinstance(exc, httpx.HTTPStatusError)
+                and 500 <= exc.response.status_code < 600
             )
             if not retryable:
                 if status == 400:

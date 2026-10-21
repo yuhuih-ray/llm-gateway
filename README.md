@@ -589,3 +589,57 @@ can receive free hits. Each cache operation has a 50 ms deadline; failures fall
 back to normal generation and warnings are limited to one per 30 seconds.
 
 TODO: Add cache stampede protection for concurrent identical misses.
+
+## Self-hosted vLLM
+
+On the GPU machine, install Docker and NVIDIA Container Toolkit, set
+`VLLM_API_KEY` to a private bearer key, then start the pinned server image:
+
+```sh
+docker run --rm --gpus all --ipc=host \
+  -p 8000:8000 \
+  -v ~/.cache/huggingface:/root/.cache/huggingface \
+  -e VLLM_API_KEY \
+  vllm/vllm-openai:v0.11.0 \
+  --model Qwen/Qwen2.5-7B-Instruct-AWQ \
+  --served-model-name qwen2.5-7b-awq \
+  --max-model-len 8192 \
+  --generation-config vllm
+```
+
+The image and serving flags follow the [vLLM Docker documentation](https://docs.vllm.ai/en/v0.11.0/deployment/docker.html)
+and [server arguments](https://docs.vllm.ai/en/v0.11.0/cli/serve.html); the weights
+are [Qwen2.5-7B-Instruct-AWQ](https://huggingface.co/Qwen/Qwen2.5-7B-Instruct-AWQ).
+Set these on the gateway (or in its `.env`):
+
+```sh
+VLLM_BASE_URL=http://gpu-host:8000/v1
+VLLM_API_KEY='<same-private-bearer-key>'
+```
+
+Clients request `model: "local-qwen"`. Neither variable is required to import or
+start the gateway; using this provider without configuration returns 502.
+The shared async HTTP client is created lazily and closed at shutdown. Connect
+attempts time out after 2 seconds; the registry allows 60 seconds to the first
+stream event (or complete response), then 30 seconds between stream events.
+Connect failures and retryable HTTP statuses use the existing three-attempt
+retry policy; read timeouts and streams that have emitted text are not retried.
+
+`VLLM_MAX_CONCURRENCY` defaults to 16 per gateway process. It covers the entire
+response, including streamed delivery and disconnect cleanup. Waiting for a slot
+is limited to 2 seconds; overload returns 503, `Retry-After: 1`, and error type
+`upstream_overloaded`, without usage accounting. Cached answers do not occupy a
+provider slot. Gemini has no concurrency gate. More gateway workers multiply the
+local concurrency allowance; a cross-process limit would require Redis.
+
+The registry defaults to 1024 output tokens, caps output at 4096, and limits input
+to 20,000 characters. Character limits are approximate: the server enforces its
+8192-token combined prompt/output context. Prices are zero for marginal local
+cost; future routing must also account for local capacity. There is no fallback
+or circuit breaker in this step.
+
+Live checks (both response modes, skipped without `VLLM_BASE_URL`):
+
+```sh
+uv run pytest -m live_vllm tests/test_vllm_live.py
+```
