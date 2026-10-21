@@ -2,23 +2,23 @@
   "scenario": "s1",
   "smoke": false,
   "k6_exit_code": 99,
-  "requests_sent": 139796,
-  "requests_successful": 139725,
-  "usage_rows_written": 103871,
+  "requests_sent": 125487,
+  "requests_successful": 125207,
+  "usage_rows_written": 125222,
   "usage_rows_before": 0,
-  "usage_rows_minus_requests_sent": -35925,
+  "usage_rows_minus_requests_sent": -265,
   "arq_at_k6_end": {
-    "queue_length": 16,
-    "in_progress": 1
+    "queue_length": 0,
+    "in_progress": 0
   },
   "arq_after_drain": {
     "queue_length": 0,
     "in_progress": 0
   },
-  "drain_wait_seconds": 30.153,
+  "drain_wait_seconds": 30.306,
   "drained": false,
-  "started_at": "2026-10-21T07:03:13.752854+00:00",
-  "recorded_at": "2026-10-21T07:09:16.956887+00:00",
+  "started_at": "2026-10-21T22:04:00.119263+00:00",
+  "recorded_at": "2026-10-21T22:10:06.500347+00:00",
   "fake_delay_ms": 0,
   "server_timing": false
 }
