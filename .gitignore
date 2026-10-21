@@ -16,4 +16,3 @@ dist/
 scripts/semantic_cache/.data/
 # Private load-test keys, logs, smoke output, and generated scenario summaries.
 scripts/loadtest/.state/
-docs/benchmarks/gateway-load/*.json

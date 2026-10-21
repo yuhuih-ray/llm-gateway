@@ -1,0 +1,24 @@
+{
+  "scenario": "s3",
+  "smoke": false,
+  "k6_exit_code": 0,
+  "requests_sent": 24000,
+  "requests_successful": 24000,
+  "usage_rows_written": 24000,
+  "usage_rows_before": 65037,
+  "usage_rows_minus_requests_sent": 0,
+  "arq_at_k6_end": {
+    "queue_length": 10,
+    "in_progress": 0
+  },
+  "arq_after_drain": {
+    "queue_length": 0,
+    "in_progress": 0
+  },
+  "drain_wait_seconds": 3.947,
+  "drained": true,
+  "started_at": "2026-10-21T06:12:08.056635+00:00",
+  "recorded_at": "2026-10-21T06:14:15.426058+00:00",
+  "fake_delay_ms": 2000,
+  "server_timing": false
+}
