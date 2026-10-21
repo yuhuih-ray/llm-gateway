@@ -16,7 +16,7 @@ from llm_gateway.providers import FakeProvider, TextEvent
 from llm_gateway.registry import MODELS
 from llm_gateway.schemas import ChatCompletionRequest, Usage
 from llm_gateway.streaming import stream_response
-from llm_gateway.usage import UsageTracker, calculate_cost, enqueue_usage
+from llm_gateway.usage import UsageTracker, calculate_cost
 
 
 @pytest.fixture
@@ -40,6 +40,10 @@ def test_cost():
 def tracker(pool):  # Isolated request accounting state.
     import time
 
+    from llm_gateway.accounting import AccountingBuffer
+
+    state = State({"usage_pool": pool})
+    state.accounting = AccountingBuffer(state)
     return UsageTracker(
         dict(
             request_id=uuid4(),
@@ -48,7 +52,7 @@ def tracker(pool):  # Isolated request accounting state.
         ),
         AuthContext(uuid4(), uuid4()),
         "fake",
-        State({"usage_pool": pool}),
+        state,
     )
 
 
@@ -72,15 +76,13 @@ def test_record_response(
                 },
             )
         assert response.status_code == 200
-        record = isolated_usage_queue.enqueue_job.call_args.args[1]
+        record = isolated_usage_queue.enqueue_job.call_args.args[1][0]
         assert record["request_id"] == response.headers["X-Request-ID"]
         assert record["status"] == status
         assert record["ttft_ms"] is not None if stream else record["ttft_ms"] is None
         assert isolated_usage_queue.enqueue_job.call_count == 1
-        assert (
-            isolated_usage_queue.enqueue_job.call_args.kwargs["_job_id"]
-            == record["request_id"]
-        )
+        assert isolated_usage_queue.enqueue_job.call_args.args[0] == "write_usage_batch"
+        assert isolated_usage_queue.enqueue_job.call_args.kwargs["_job_id"]
         if status == "error":
             assert record["error_type"] == "upstream_error"
             assert record["cost"] is None
@@ -90,8 +92,9 @@ def test_record_response(
 
 @pytest.mark.parametrize("stream", [False, True])
 def test_enqueue_failure_preserves_response(
-    stream, isolated_usage_queue, caplog
+    stream, isolated_usage_queue, caplog, monkeypatch
 ):  # Queue failure cannot fail HTTP.
+    monkeypatch.setattr("llm_gateway.accounting.SHUTDOWN_TIMEOUT", 0.15)
     isolated_usage_queue.enqueue_job.side_effect = ConnectionError()
     app.dependency_overrides[authenticate] = lambda: AuthContext(uuid4(), uuid4())
     try:
@@ -108,11 +111,13 @@ def test_enqueue_failure_preserves_response(
         logs = [
             r.message for r in caplog.records if "usage_record_dropped" in r.message
         ]
-        assert len(logs) == 1
+        assert logs == []
+        assert len(app.state.accounting.records) == 1
         assert (
-            json.loads(logs[0].split(" ", 1)[1])["request_id"]
+            str(app.state.accounting.records[0].request_id)
             == response.headers["X-Request-ID"]
         )
+        assert "accounting_shutdown_unflushed count=1" in caplog.text
     finally:
         app.dependency_overrides.clear()
 
@@ -145,22 +150,27 @@ async def test_cancel_record():
     task.cancel()
     with pytest.raises(asyncio.CancelledError):
         await task
-    assert pool.enqueue_job.call_args.args[1]["status"] == "cancelled"
-    assert pool.enqueue_job.call_args.args[1]["prompt_tokens"] is None
+    assert account.app_state.accounting.records[0].status == "cancelled"
+    assert account.app_state.accounting.records[0].prompt_tokens is None
 
 
 @pytest.mark.anyio
-async def test_enqueue_deadline(caplog):
+async def test_enqueue_deadline(caplog, monkeypatch):
+    monkeypatch.setattr("llm_gateway.accounting.SHUTDOWN_TIMEOUT", 0.02)
     pool = AsyncMock()
+    account = tracker(pool)
+    buffer = account.app_state.accounting
 
-    async def hang(*args, **kwargs):  # A stuck queue must remain bounded.
-        await asyncio.sleep(10)
+    async def hang(*args, **kwargs):
+        await asyncio.Event().wait()
 
     pool.enqueue_job.side_effect = hang
-    await asyncio.wait_for(
-        enqueue_usage(State({"usage_pool": pool}), tracker(pool).record), 1
-    )
-    assert "usage_record_dropped" in caplog.text
+    buffer.start()
+    account.emit()
+    await buffer.close()
+    assert len(buffer.records) == 1
+    assert "usage_record_dropped" not in caplog.text
+    assert "accounting_shutdown_unflushed count=1" in caplog.text
 
 
 def test_reasoning_is_not_charged_twice():
@@ -253,7 +263,7 @@ def test_upstream_timeout_record(stream, isolated_usage_queue):
                 },
             )
         assert response.status_code == 504
-        record = isolated_usage_queue.enqueue_job.call_args.args[1]
+        record = isolated_usage_queue.enqueue_job.call_args.args[1][0]
         assert record["request_id"] == response.headers["X-Request-ID"]
         assert record["status"] == "error"
         assert record["error_type"] == "upstream_timeout"
@@ -282,41 +292,18 @@ async def test_worker_integrity_failure_is_not_retried(caplog):
     assert json.loads(logs[0].split(" ", 1)[1]) == payload
 
 
-def test_queue_recovers_after_startup_failure(monkeypatch, isolated_usage_queue):
-    from llm_gateway.usage import create_usage_pool
-
-    clock = [100.0]
-    pool = isolated_usage_queue
-    create = AsyncMock(side_effect=[ConnectionError(), ConnectionError(), pool])
-    monkeypatch.setattr("llm_gateway.main.create_usage_pool", create_usage_pool)
-    monkeypatch.setattr("llm_gateway.usage.create_pool", create)
-    monkeypatch.setattr("llm_gateway.main.monotonic", lambda: clock[0])
-    monkeypatch.setattr("llm_gateway.usage.monotonic", lambda: clock[0])
-    app.dependency_overrides[authenticate] = lambda: AuthContext(uuid4(), uuid4())
-    payload = {"model": "fake", "messages": [{"role": "user", "content": "hi"}]}
-    try:
-        with TestClient(app) as client:
-            assert app.state.usage_pool is None
-            assert client.post("/v1/chat/completions", json=payload).status_code == 200
-            assert create.await_count == 1
-            clock[0] = 110
-            for _ in range(2):
-                assert (
-                    client.post("/v1/chat/completions", json=payload).status_code == 200
-                )
-            assert create.await_count == 2  # One recovery attempt within this window.
-            clock[0] = 120
-            response = client.post("/v1/chat/completions", json=payload)
-            assert response.status_code == 200
-            assert app.state.usage_pool is pool
-            assert (
-                pool.enqueue_job.call_args.args[1]["request_id"]
-                == response.headers["X-Request-ID"]
-            )
-            client.post("/v1/chat/completions", json=payload)
-            assert create.await_count == 3
-            assert pool.enqueue_job.await_count == 2
-            assert all(call.args[0].conn_retries == 0 for call in create.call_args_list)
-        pool.aclose.assert_awaited_once()
-    finally:
-        app.dependency_overrides.clear()
+@pytest.mark.anyio
+async def test_queue_recovers_after_startup_failure(monkeypatch, isolated_usage_queue):
+    account = tracker(None)
+    buffer = account.app_state.accounting
+    create = AsyncMock(side_effect=[ConnectionError(), isolated_usage_queue])
+    monkeypatch.setattr("llm_gateway.accounting.create_pool", create)
+    account.emit()
+    buffer.start()
+    async with asyncio.timeout(1):
+        while buffer.records:
+            await asyncio.sleep(0.01)
+    await buffer.close()
+    assert create.await_count == 2
+    assert isolated_usage_queue.enqueue_job.await_count == 1
+    assert all(call.args[0].conn_retries == 0 for call in create.call_args_list)

@@ -14,7 +14,20 @@ def isolated_usage_queue(monkeypatch):  # Unit/API tests must never use Compose 
     pipeline.__aenter__.return_value = pipeline
     pipeline.execute = AsyncMock(return_value=[0, True])
     pool.pipeline = MagicMock(return_value=pipeline)
+    from llm_gateway.accounting import SPEND_LUA, TOKEN_LUA, AccountingBuffer
+
     pool.eval.return_value = [1, "100", 0]
+    pool.eval.side_effect = lambda script, *args: (
+        0 if script in (SPEND_LUA, TOKEN_LUA) else pool.eval.return_value
+    )
+    pool.recorded = []
+    original_record = AccountingBuffer.record
+
+    def capture(buffer, record):
+        pool.recorded.append(record.model_dump(mode="json"))
+        original_record(buffer, record)
+
+    monkeypatch.setattr(AccountingBuffer, "record", capture)
     monkeypatch.setattr(
         "llm_gateway.main.create_usage_pool", AsyncMock(return_value=pool)
     )

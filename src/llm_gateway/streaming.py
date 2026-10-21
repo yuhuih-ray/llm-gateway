@@ -61,7 +61,7 @@ class SSEStream:
                     await self.upstream.aclose()
                 finally:
                     if self.tracker is not None:
-                        await self.tracker.emit()
+                        self.tracker.emit()
 
     def encode(
         self,

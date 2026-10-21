@@ -16,7 +16,7 @@ from llm_gateway.auth import AuthContext, authenticate
 from llm_gateway.main import app
 from llm_gateway.models import ApiKey, Tenant, UsageLog
 from llm_gateway.usage import UsageRecord
-from llm_gateway.worker import write_usage
+from llm_gateway.worker import write_usage, write_usage_batch
 
 pytestmark = pytest.mark.anyio
 
@@ -90,8 +90,9 @@ async def test_end_to_end_usage(
                         },
                     )
                 assert response.status_code == 200
+                await app.state.accounting.flush()
                 worker = Worker(
-                    [write_usage],
+                    [write_usage, write_usage_batch],
                     redis_pool=pool,
                     burst=True,
                     handle_signals=False,
@@ -117,3 +118,43 @@ async def test_end_to_end_usage(
                     assert row.cost == Decimal("0")
         finally:
             app.dependency_overrides.clear()
+
+
+async def test_batch_worker_idempotent(engine):
+    from sqlalchemy import event
+
+    auth = await seed(engine)
+    records = [
+        UsageRecord(
+            request_id=uuid4(),
+            tenant_id=auth.tenant_id,
+            api_key_id=auth.api_key_id,
+            model_requested="fake",
+            model_selected="fake",
+            upstream_model=None,
+            created_at=datetime(2025, 1, 2, tzinfo=timezone.utc),
+            cost=Decimal("0.00000001"),
+        ).model_dump(mode="json")
+        for _ in range(3)
+    ]
+    statements = []
+
+    def capture(connection, cursor, statement, parameters, context, many):
+        if statement.startswith("INSERT"):
+            statements.append(statement)
+
+    event.listen(engine.sync_engine, "before_cursor_execute", capture)
+    try:
+        ctx = {"sessions": async_sessionmaker(engine)}
+        await write_usage_batch(ctx, records[:2])
+        assert len(statements) == 1
+        assert "ON CONFLICT (request_id, created_at) DO NOTHING" in statements[0]
+        await write_usage_batch(ctx, records)
+        await write_usage(ctx, records[0])
+    finally:
+        event.remove(engine.sync_engine, "before_cursor_execute", capture)
+    async with async_sessionmaker(engine)() as session:
+        assert await session.scalar(select(func.count()).select_from(UsageLog)) == 3
+        assert await session.scalar(select(func.sum(UsageLog.cost))) == Decimal(
+            "0.00000003"
+        )

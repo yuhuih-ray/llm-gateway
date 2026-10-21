@@ -168,7 +168,6 @@ async def test_charge_after_final_response_and_unknown_skipped(
 
     sent_final = False
     charge_calls = []
-    limiter = RateLimiter()
     pool = AsyncMock()
 
     async def slow_charge(*args):
@@ -178,6 +177,10 @@ async def test_charge_after_final_response_and_unknown_skipped(
 
     pool.pipeline = isolated_usage_queue.pipeline
     pool.eval.side_effect = slow_charge
+    from llm_gateway.accounting import AccountingBuffer
+
+    state = State({"usage_pool": pool})
+    state.accounting = AccountingBuffer(state)
     tracker = UsageTracker(
         {
             "started": 0.0,
@@ -186,10 +189,8 @@ async def test_charge_after_final_response_and_unknown_skipped(
         },
         AuthContext(uuid4(), uuid4()),
         "fake",
-        State({"usage_pool": pool}),
-        limiter=limiter,
+        state,
     )
-    bucket = token_bucket(tracker.record.tenant_id)
     if known:
         tracker.success(
             Usage(
@@ -198,8 +199,6 @@ async def test_charge_after_final_response_and_unknown_skipped(
                 completion_tokens_details={"reasoning_tokens": 10},
             )
         )
-    # Isolate queue I/O; exercise the real accounting charge and unknown-count gate.
-    monkeypatch.setattr(tracker, "emit", AsyncMock())
 
     async def inner(scope, receive, send):
         scope["state"]["usage_tracker"] = tracker
@@ -215,13 +214,23 @@ async def test_charge_after_final_response_and_unknown_skipped(
         await UsageMiddleware(inner)(
             {"type": "http", "path": "/v1/chat/completions"}, AsyncMock(), send
         )
-    assert len(charge_calls) == int(known)
+    assert charge_calls == []
+    assert len(state.accounting.records) == 1
+    pool.enqueue_job.assert_not_awaited()
     if known:
-        assert limiter.buckets[bucket.key][0] == bucket.capacity - 50
+        with pytest.raises(TimeoutError):
+            async with asyncio.timeout(0.01):
+                await state.accounting.flush()
+        assert charge_calls[0][-1] == 50
+    else:
+        await state.accounting.flush()
+        assert charge_calls == []
 
 
 @pytest.mark.parametrize("stream", [False, True])
-def test_endpoint_token_debt_returns_429(monkeypatch, isolated_usage_queue, stream):
+def test_endpoint_token_debt_is_retained_during_outage(
+    monkeypatch, isolated_usage_queue, stream
+):
     from llm_gateway.main import get_provider
     from llm_gateway.providers import FakeProvider, FinalEvent, TextEvent
     from llm_gateway.schemas import Usage
@@ -242,6 +251,7 @@ def test_endpoint_token_debt_returns_429(monkeypatch, isolated_usage_queue, stre
     clock = [0.0]
     monkeypatch.setattr("llm_gateway.main.rate_limiter", limiter)
     monkeypatch.setattr("llm_gateway.ratelimit.monotonic", lambda: clock[0])
+    monkeypatch.setattr("llm_gateway.accounting.SHUTDOWN_TIMEOUT", 0.01)
     isolated_usage_queue.eval.side_effect = ConnectionError("down")
     tenant = uuid4()
     limiter.fallback([token_bucket(tenant)], charge=99_999)
@@ -255,14 +265,12 @@ def test_endpoint_token_debt_returns_429(monkeypatch, isolated_usage_queue, stre
     try:
         with TestClient(app) as client:
             assert client.post("/v1/chat/completions", json=payload).status_code == 200
-            assert limiter.buckets[token_bucket(tenant).key][0] == -100_000
-            response = client.post("/v1/chat/completions", json=payload)
-            assert response.status_code == 429
-            assert response.headers["content-type"].startswith("application/json")
-            assert response.headers["retry-after"] == "101"
-            assert isolated_usage_queue.enqueue_job.await_count == 1
-            clock[0] = 100.001
-            assert client.post("/v1/chat/completions", json=payload).status_code == 200
+            assert limiter.buckets[token_bucket(tenant).key][0] == 1
+            assert len(app.state.accounting.records) == 1
+            record = app.state.accounting.records[0]
+            assert record.prompt_tokens + record.completion_tokens == 200_000
+            isolated_usage_queue.enqueue_job.assert_not_awaited()
+        assert len(app.state.accounting.records) == 1
     finally:
         app.dependency_overrides.clear()
 

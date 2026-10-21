@@ -8,6 +8,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
+    accounting_buffer_size: int = Field(default=10_000, ge=1)
     fake_delay_ms: int = Field(default=0, ge=0)
     server_timing: bool = False
     max_request_bytes: int = Field(default=1_048_576, ge=1)

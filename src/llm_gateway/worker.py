@@ -43,13 +43,22 @@ async def write_usage(
     ctx: dict[str, Any],  # ARQ context includes job_try and worker session factory.
     payload: dict[str, Any],  # Gateway-computed cost; never recompute in the worker.
 ) -> None:
-    record = UsageRecord.model_validate(payload)
+    await write_usage_batch(ctx, [payload])
+
+
+async def write_usage_batch(
+    ctx: dict[str, Any],  # Worker-owned session factory and retry number.
+    payloads: list[dict[str, Any]],  # One bounded gateway batch.
+) -> None:
+    records = [UsageRecord.model_validate(payload) for payload in payloads]
+    if not records:
+        return
     try:
         async with ctx["sessions"]() as session:
             async with session.begin():
                 await session.execute(
                     insert(UsageLog)
-                    .values(**record.model_dump())
+                    .values([record.model_dump() for record in records])
                     .on_conflict_do_nothing(index_elements=["request_id", "created_at"])
                 )
     except (SQLAlchemyError, OSError) as exc:
@@ -62,12 +71,13 @@ async def write_usage(
             and ctx.get("job_try", 1) < 5
         ):
             raise Retry(defer=min(30, 2 ** (ctx.get("job_try", 1) - 1))) from None
-        logger.error("usage_record_failed %s", record.model_dump_json())
+        for record in records:
+            logger.error("usage_record_failed %s", record.model_dump_json())
         raise
 
 
 class WorkerSettings:
-    functions = [write_usage]
+    functions = [write_usage, write_usage_batch]
     cron_jobs = [
         cron(reconcile_budgets, minute=0),
         cron(ensure_partitions, hour=0, minute=5),

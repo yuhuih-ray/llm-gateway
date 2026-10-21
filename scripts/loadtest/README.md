@@ -54,7 +54,7 @@ accounting, summary, metadata, and shutdown path. Never commit its output.
 
 | Scenario | Arrival schedule | FAKE_DELAY_MS | SERVER_TIMING |
 | --- | --- | --- | --- |
-| s1 | 100, 200, 400, 800, 1600 RPS; five consecutive 60-second plateaus | 0 | false |
+| s1 | 30-second warm-up at 100 RPS, then 100, 200, 400, 800, 1600 RPS; five consecutive 60-second plateaus | 0 | false |
 | s2 | 200 RPS for 60 seconds | 0 | true |
 | s3 | 200 RPS for 120 seconds | 2000 | false |
 
@@ -122,3 +122,6 @@ stream setup through the first upstream event and `total` ends at the SSE header
 neither claims to measure full stream duration. Post-delivery SSE cache writes also
 cannot appear in an already-sent header. The k6 scenarios use non-streaming
 responses. Timing is diagnostic instrumentation and adds some measurement overhead.
+
+The s1 warm-up is excluded from all `latency_rps_*` stage trends. Overall request
+counters and usage-row accounting include it. The 10-second smoke mode skips warm-up.

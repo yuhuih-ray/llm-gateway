@@ -24,9 +24,12 @@ pytestmark = pytest.mark.anyio
 async def client(engine):  # Dedicated testcontainer engine.
     app.dependency_overrides[get_sessionmaker] = lambda: async_sessionmaker(engine)
     try:
-        async with httpx2.AsyncClient(
-            transport=httpx2.ASGITransport(app=app), base_url="http://test"
-        ) as client:
+        async with (
+            app.router.lifespan_context(app),
+            httpx2.AsyncClient(
+                transport=httpx2.ASGITransport(app=app), base_url="http://test"
+            ) as client,
+        ):
             yield client
     finally:
         del app.dependency_overrides[get_sessionmaker]
@@ -171,9 +174,12 @@ async def test_auth_releases_connection_before_provider(
     )
     app.dependency_overrides[get_provider] = lambda: SlowProvider()
     try:
-        async with httpx2.AsyncClient(
-            transport=httpx2.ASGITransport(app=app), base_url="http://test"
-        ) as client:
+        async with (
+            app.router.lifespan_context(app),
+            httpx2.AsyncClient(
+                transport=httpx2.ASGITransport(app=app), base_url="http://test"
+            ) as client,
+        ):
             # Holding the auth connection during the 2-second provider call makes
             # the other requests exceed the 1-second timeout of this one-slot pool.
             responses = await asyncio.gather(

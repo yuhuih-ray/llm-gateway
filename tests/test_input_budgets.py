@@ -199,31 +199,30 @@ async def test_body_at_limit_replayed_without_changes(monkeypatch):
 
 @pytest.mark.anyio
 async def test_cost_charged_after_response_and_bounded(monkeypatch):
-    from unittest.mock import MagicMock
-
     from starlette.datastructures import State
 
+    from llm_gateway.accounting import SPEND_LUA, AccountingBuffer
     from llm_gateway.usage import UsageMiddleware, UsageTracker
 
     final_sent = False
     pool = AsyncMock()
-    pipeline = MagicMock()
-    pipeline.__aenter__.return_value = pipeline
-    pool.pipeline = MagicMock(return_value=pipeline)
+    state = State({"usage_pool": pool})
+    state.accounting = AccountingBuffer(state)
+    entered = asyncio.Event()
 
-    async def slow_execute():
+    async def slow_eval(*args):
         assert final_sent
-        await asyncio.sleep(10)
+        entered.set()
+        await asyncio.Event().wait()
 
-    pipeline.execute = AsyncMock(side_effect=slow_execute)
+    pool.eval.side_effect = slow_eval
     tracker = UsageTracker(
         {"started": 0, "created_at": datetime.now(timezone.utc), "request_id": uuid4()},
         AuthContext(uuid4(), uuid4()),
         "fake",
-        State({"usage_pool": pool}),
+        state,
     )
     tracker.record.cost = Decimal("0.12345678")
-    monkeypatch.setattr(tracker, "emit", AsyncMock())
 
     async def inner(scope, receive, send):
         scope["state"]["usage_tracker"] = tracker
@@ -235,9 +234,17 @@ async def test_cost_charged_after_response_and_bounded(monkeypatch):
         if message["type"] == "http.response.body":
             final_sent = True
 
-    async with asyncio.timeout(0.5):
+    async with asyncio.timeout(0.05):
         await UsageMiddleware(inner)(
             {"type": "http", "path": "/v1/chat/completions"}, AsyncMock(), send
         )
-    assert pipeline.incrby.call_args.args[1] == 12345678
-    tracker.emit.assert_awaited_once()
+    pool.eval.assert_not_awaited()
+    pool.enqueue_job.assert_not_awaited()
+    assert state.accounting.records[0].cost == Decimal("0.12345678")
+    flush = asyncio.create_task(state.accounting.flush())
+    await entered.wait()
+    flush.cancel()
+    with pytest.raises(asyncio.CancelledError):
+        await flush
+    assert pool.eval.call_args.args[0] == SPEND_LUA
+    assert pool.eval.call_args.args[-2] == 12345678

@@ -45,7 +45,7 @@ def test_endpoint_fallback_burst(stream, monkeypatch, isolated_usage_queue, capl
                     "code": "rate_limit_exceeded",
                 }
             }
-            assert isolated_usage_queue.enqueue_job.await_count == 20
+            assert len(isolated_usage_queue.recorded) == 20
             tenant[0] = uuid4()
             assert client.post("/v1/chat/completions", json=payload).status_code == 200
 

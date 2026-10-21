@@ -3,23 +3,19 @@ import logging
 import time
 from datetime import datetime, timezone
 from decimal import Decimal
-from time import monotonic
 from typing import Any, Literal
 from uuid import UUID, uuid4
 
-import anyio
 import httpx
 from arq import create_pool
 from arq.connections import ArqRedis, RedisSettings
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from starlette.datastructures import State
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 from llm_gateway.auth import AuthContext
-from llm_gateway.budgets import add_spend
 from llm_gateway.config import get_settings
 from llm_gateway.errors import GatewayError
-from llm_gateway.ratelimit import RateLimiter, rate_limiter, token_bucket
 from llm_gateway.registry import MODELS, ModelEntry
 from llm_gateway.schemas import Usage
 
@@ -64,6 +60,7 @@ class UsageRecord(BaseModel):
     status: Literal["success", "error", "cancelled"] = "cancelled"
     error_type: str | None = None
     created_at: datetime
+    monthly_budget_usd: Decimal | None = Field(default=None, exclude=True)
 
 
 async def create_usage_pool() -> ArqRedis | None:
@@ -77,34 +74,6 @@ async def create_usage_pool() -> ArqRedis | None:
         return None
 
 
-async def enqueue_usage(
-    app_state: State,  # Shared lifespan state, including recovery throttle.
-    record: UsageRecord,  # Fully priced in the gateway, serialized without floats.
-) -> None:
-    try:
-        async with asyncio.timeout(0.5):
-            pool = getattr(app_state, "usage_pool", None)
-            if pool is None:
-                now = monotonic()
-                last_attempt = getattr(
-                    app_state, "usage_pool_last_attempt", -float("inf")
-                )
-                if now - last_attempt >= 10:
-                    # Set before awaiting so concurrent requests cannot start more attempts.
-                    app_state.usage_pool_last_attempt = now
-                    pool = await create_usage_pool()
-                    app_state.usage_pool = pool
-            if pool is None:
-                raise ConnectionError("Queue unavailable")
-            await pool.enqueue_job(
-                "write_usage",
-                record.model_dump(mode="json"),
-                _job_id=str(record.request_id),
-            )
-    except Exception:
-        logger.error("usage_record_dropped %s", record.model_dump_json())
-
-
 class UsageTracker:
     def __init__(
         self,
@@ -112,14 +81,12 @@ class UsageTracker:
         auth: AuthContext,  # Authenticated identifiers only, never the API key.
         model: str,  # Validated registry name.
         app_state: State,  # Shared queue state, not a snapshot of the pool.
-        limiter: RateLimiter = rate_limiter,  # Same limiter as the admission check.
     ) -> None:
-        self.budget = auth.monthly_budget_usd
-        self.limiter = limiter
         self.started = state["started"]
         self.app_state = app_state
         self.emitted = False
         self.record = UsageRecord(
+            monthly_budget_usd=auth.monthly_budget_usd,
             request_id=state["request_id"],
             created_at=state["created_at"],
             tenant_id=auth.tenant_id,
@@ -161,39 +128,12 @@ class UsageTracker:
             else "upstream_error"
         )
 
-    async def charge_tokens(self) -> None:
-        # Unknown usage (e.g. cancelled streams) cannot be charged. This gap is
-        # still bounded by request limits and the upcoming cost quota.
-        if (
-            self.record.cache_hit
-            or self.record.prompt_tokens is None
-            or self.record.completion_tokens is None
-        ):
-            return
-        with anyio.CancelScope(shield=True):
-            await self.limiter.charge(
-                getattr(self.app_state, "usage_pool", None),
-                token_bucket(self.record.tenant_id),
-                self.record.prompt_tokens + self.record.completion_tokens,
-            )
-
-    async def charge_cost(self) -> None:
-        with anyio.CancelScope(shield=True):
-            await add_spend(
-                getattr(self.app_state, "usage_pool", None),
-                self.record.tenant_id,
-                self.record.cost,
-                self.record.created_at,
-                self.budget,
-            )
-
-    async def emit(self) -> None:
+    def emit(self) -> None:
         if self.emitted:
             return
         self.emitted = True
         self.record.latency_ms = int((time.monotonic() - self.started) * 1000)
-        with anyio.CancelScope(shield=True):
-            await enqueue_usage(self.app_state, self.record)
+        self.app_state.accounting.record(self.record)
 
 
 class UsageMiddleware:
@@ -231,6 +171,4 @@ class UsageMiddleware:
             tracker = state.get("usage_tracker")
             if tracker is not None:
                 # Runs after the ASGI response, including its final body frame.
-                await tracker.charge_tokens()
-                await tracker.charge_cost()
-                await tracker.emit()
+                tracker.emit()

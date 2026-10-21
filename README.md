@@ -228,17 +228,29 @@ uv run uvicorn llm_gateway.main:app --reload --no-proxy-headers
 uv run arq llm_gateway.worker.WorkerSettings
 ```
 
-Each chat request returns `X-Request-ID`. Requests reaching a provider enqueue a
-record with status `success`, `error`, or `cancelled`. Authentication, validation,
-and model-lookup rejections do not enqueue records. Unknown token counts and cost
-remain null. The gateway calculates Decimal USD cost including reasoning tokens;
-the worker only inserts, deduplicating by request ID and preserving request time.
+Each chat request returns `X-Request-ID`. Requests reaching a provider synchronously
+append a record with status `success`, `error`, or `cancelled` to a per-process
+buffer. Authentication, validation, and model-lookup rejections do not record usage.
+Unknown token counts and cost remain null. The gateway calculates Decimal USD cost
+including reasoning tokens; the worker inserts batches in one statement, deduplicating
+by `(request_id, created_at)` and preserving request time. Previously queued
+`write_usage` jobs remain supported.
 
-Enqueue attempts have a 0.5-second limit. Failures log `usage_record_dropped` with
-the full record for recovery; they do not change the client's response. The worker
-retries database failures up to five tries. Redis uses AOF with `everysec`, so a
-crash can still lose roughly one second of queued records. This is best-effort
-accounting, not a guarantee of lossless billing across gateway process crashes.
+`ACCOUNTING_BUFFER_SIZE` defaults to 10,000 records, including batches being retried.
+The flusher wakes every 100 ms or at 500 waiting records and processes up to 500 per
+batch. It aggregates token charges per tenant and exact integer spend per tenant/UTC
+month, then publishes one `write_usage_batch` job. Redis receipts and stable job IDs
+protect retries from duplicate charges. Accounting never waits on the request path.
+Redis failures retain records with backoff capped at 2 seconds and one warning per
+30 seconds. At capacity, new records are dropped, the dropped counter increases,
+and ERROR `usage_record_dropped` includes the full record for recovery. Shutdown
+allows 5 seconds to drain, then logs `accounting_shutdown_unflushed count=N` if needed.
+
+A gateway crash normally loses only the unflushed ~100 ms window; outages or event-loop
+stalls can enlarge that window up to the buffer cap. Redis AOF `everysec` can lose
+roughly one second. This is best-effort accounting, not lossless billing across
+crashes. The worker retries transient database failures up to five tries, logging
+`usage_record_failed` per record on final failure; integrity errors are not retried.
 
 Prices use the official standard paid text rates verified on 2026-10-04, even if
 an upstream account has a free allowance. Flash's $0.75/$3.75 per-million rates
@@ -380,7 +392,7 @@ keys. Resolve those conditions first; downgrade never discards those records.
   without restarting them all.
 - Readiness also pings the existing usage queue pool with a 0.5-second timeout.
   A missing or failing queue reports `unavailable` but does not fail readiness:
-  requests can still succeed, and failed usage enqueues log the full record.
+  requests can still succeed; accounting retries in its bounded buffer.
 
 Readiness returns only `status` (`ready` or `not_ready`) and `checks` for
 `postgres` and `usage_queue` (`ok` or `unavailable`). Details are logged server-side.
@@ -439,7 +451,8 @@ The debt floor bounds the blocking time from anomalous usage; billing still uses
 `usage_logs`. Concurrent admitted requests can consume beyond the current balance.
 Unknown counts, such as cancelled generations without final usage, are not charged.
 This known gap remains bounded by request limits and the upcoming cost quota.
-Redis charge calls have a 100 ms deadline and use the same bounded local fallback.
+Charges run in the batching flusher and are retained during Redis failures.
+Admission still uses the local fallback; delayed charges allow additional overshoot.
 
 Login checks run before database lookup and Argon2 verification. Each IP gets a
 capacity of 10 attempts, refilling one per 6 seconds. Each normalized email gets
@@ -497,20 +510,20 @@ Requests starting when spend is at or above the budget receive HTTP 429 without
 {"error":{"message":"Monthly budget exceeded","type":"insufficient_quota","code":"insufficient_quota"}}
 ```
 
-In-flight requests finish. Overshoot is bounded by in-flight requests times the
-maximum cost per request, bounded by input length and output caps. Fake requests
+In-flight requests finish. Overshoot includes in-flight requests and accounting
+waiting in the buffer, each bounded by input length and output caps. Fake requests
 cost zero. Cost is added after response delivery as integer units of 1e-8 USD,
 never floating point, using the request-start UTC month; counters expire after
 about 40 days. A warning fires once per tenant-month at 80% of the budget.
 
-Redis operations have a 100 ms deadline. If the budget check cannot read Redis,
+Budget admission reads have a 100 ms deadline. If the check cannot read Redis,
 requests are allowed and warnings are throttled to once per 30 seconds per process;
 `usage_logs` remains billing truth. Unknown costs cannot be added. The ARQ worker
 reconciles budgeted tenants at startup and hourly, setting each counter to the
 maximum of its existing value and the month's database sum. This restores counters
 after data loss without discarding spend whose usage records are still queued.
 During Redis outages or before reconciliation, budgets are best-effort; request
-and token limits retain their local fallback.
+and token admission limits retain their local fallback, with token charges deferred.
 
 ## Exact response cache
 

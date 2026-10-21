@@ -94,23 +94,34 @@ def test_hit_accounting(setup_cache, isolated_usage_queue, monkeypatch):
         replace(MODELS["fake"], upstream_model="original", input_price=Decimal("1")),
     )
     first = post(client)
-    first_record = isolated_usage_queue.enqueue_job.call_args.args[1]
+    first_record = isolated_usage_queue.recorded[-1]
     second = post(client)
     assert first.headers["x-cache"] == "MISS"
     assert second.headers["x-cache"] == "HIT"
     assert first.json()["choices"] == second.json()["choices"]
     assert first.json()["id"] != second.json()["id"]
     provider.complete.assert_awaited_once()
-    charge.assert_awaited_once()
-    record = isolated_usage_queue.enqueue_job.call_args.args[1]
+    charge.assert_not_awaited()
+    record = isolated_usage_queue.recorded[-1]
     assert record["cache_hit"] is True
     assert record["status"] == "success"
     assert Decimal(record["cost"]) == 0
     assert Decimal(first_record["cost"]) > 0
     assert record["upstream_model"] == "original"
     assert (record["prompt_tokens"], record["completion_tokens"]) == (12, 4)
-    assert isolated_usage_queue.pipeline.return_value.incrby.call_args.args[1] == 0
-    assert isolated_usage_queue.eval.await_count == 2
+    from llm_gateway.accounting import SPEND_LUA, TOKEN_LUA
+
+    client.portal.call(app.state.accounting.flush)
+    charges = [
+        c for c in isolated_usage_queue.eval.call_args_list if c.args[0] == TOKEN_LUA
+    ]
+    assert sum(c.args[-1] for c in charges) == 16
+    spends = [
+        c for c in isolated_usage_queue.eval.call_args_list if c.args[0] == SPEND_LUA
+    ]
+    assert sum(c.args[-2] for c in spends) == int(
+        Decimal(first_record["cost"]) * 100_000_000
+    )
     assert all(
         "private text" not in key and len(key) == len("cache:v1:") + 64
         for key in values
@@ -222,8 +233,8 @@ def test_stream_replay(setup_cache, first_stream, isolated_usage_queue):
     assert chunks[2]["choices"][0]["finish_reason"] == "stop"
     assert chunks[3]["choices"] == []
     assert chunks[3]["usage"]["total_tokens"] == 16
-    assert isolated_usage_queue.enqueue_job.call_args.args[1]["cache_hit"] is True
-    charge.assert_awaited_once()
+    assert isolated_usage_queue.recorded[-1]["cache_hit"] is True
+    charge.assert_not_awaited()
     assert post(client).headers["x-cache"] == "HIT"
     assert provider.complete.await_count == (0 if first_stream else 1)
 

@@ -2,13 +2,13 @@ import asyncio
 import logging
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
-from time import monotonic
 from typing import Annotated
 
 from fastapi import Depends, FastAPI, Request
 from fastapi.responses import JSONResponse, StreamingResponse
 from sqlalchemy import text
 
+from llm_gateway.accounting import AccountingBuffer
 from llm_gateway.admin import router as admin_router
 from llm_gateway.auth import (
     AuthContext,
@@ -40,12 +40,14 @@ from llm_gateway.usage import UsageMiddleware, UsageTracker, create_usage_pool
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:  # Application lifecycle.
-    app.state.usage_pool_last_attempt = monotonic()
     app.state.usage_pool = await create_usage_pool()
     app.state.cache_client = create_cache_client()
+    app.state.accounting = AccountingBuffer(app.state)
+    app.state.accounting.start()
     try:
         yield
     finally:
+        await app.state.accounting.close()
         try:
             await close_gemini_client()
         finally:
@@ -162,7 +164,6 @@ async def chat_completion(
         auth,
         request.model,
         http_request.app.state,
-        limiter=rate_limiter,
     )
     http_request.state.usage_tracker = tracker
     if answer is not None:
