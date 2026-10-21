@@ -61,9 +61,12 @@ async def setup(engine, monkeypatch):
         session.add_all(users + keys)
     app.dependency_overrides[get_sessionmaker] = lambda: sessions
     try:
-        async with httpx2.AsyncClient(
-            transport=httpx2.ASGITransport(app=app), base_url="http://test"
-        ) as client:
+        async with (
+            app.router.lifespan_context(app),
+            httpx2.AsyncClient(
+                transport=httpx2.ASGITransport(app=app), base_url="http://test"
+            ) as client,
+        ):
             yield SimpleNamespace(
                 client=client,
                 sessions=sessions,

@@ -262,6 +262,39 @@ prompt tokens exceed 200,000. Registry comments cite the official pricing page.
 Downgrading the usage migration retains cancelled rows as errors because the
 previous schema has no cancelled state.
 
+## API key authentication cache
+
+Verified API keys are cached in the main Redis for 60 seconds under
+`auth:<SHA-256 of the complete key>`. Values contain tenant/key IDs, tenant status,
+and the monthly budget as a decimal string (or null). Neither secrets nor prefixes
+are cache keys. Unknown keys and wrong secrets are never cached. Reads and fills
+have a 100 ms timeout; Redis errors fall back to the database.
+
+After committing, admin API and CLI revocations write a 60-second tombstone.
+Fills use `SET NX` so a delayed lookup cannot overwrite that tombstone. Tenant
+suspension writes tombstones for every key with a status marker preserving 403;
+key revocation returns 401. Reactivation and budget changes delete all of the
+tenant's auth entries. Operator commands are:
+
+```sh
+uv run python -m llm_gateway.cli suspend-tenant --tenant example
+uv run python -m llm_gateway.cli reactivate-tenant --tenant example
+uv run python -m llm_gateway.cli set-budget --tenant example --usd 25.00
+```
+
+Invalidation errors log ERROR `auth_cache_invalidation_failed` without rolling
+back the DB change. Cached authorization or budget data can remain stale until
+its 60-second TTL expires; in-flight lookups may also briefly use their earlier
+DB snapshot. Direct database changes bypass invalidation and have the same TTL
+bound. Use the CLI/admin mutation paths for immediate invalidation.
+
+Failed `/v1` authentications consume one IP token per 401: capacity 20, refill one
+per 3 seconds. Before an uncached DB lookup, a token is reserved and refunded for
+non-401 outcomes, including 403, preventing concurrent failures from bypassing the
+limit. An exhausted bucket returns 429 before DB work. Valid cache hits still work
+without DB lookup. IPs use the existing trusted-proxy rules and Redis outages use
+the bounded local rate-limit fallback.
+
 ## Human admin API
 
 Human users authenticate with passwords and short-lived JWTs. Gateway API keys
@@ -529,6 +562,8 @@ During Redis outages or before reconciliation, budgets are best-effort; request
 and token admission limits retain their local fallback, with token charges deferred.
 
 ## Exact response cache
+
+A semantic cache was [evaluated and rejected](docs/benchmarks/semantic-cache.md).
 
 `CACHE_REDIS_URL` defaults to `redis://localhost:6380/0`. Compose runs a separate
 `redis-cache` instance with 256 MB, `allkeys-lru`, AOF disabled, and no persistence.

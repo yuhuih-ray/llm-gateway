@@ -22,6 +22,7 @@ from llm_gateway.admin_auth import (
     verify_password,
 )
 from llm_gateway.auth import generate_key, hash_key, parse_key
+from llm_gateway.auth_cache import invalidate_auth
 from llm_gateway.budgets import SCALE, db_spend, read_spend, utcnow
 from llm_gateway.models import ApiKey, Tenant, UsageLog, User
 from llm_gateway.ratelimit import login_buckets, rate_limiter, rejected
@@ -141,7 +142,12 @@ async def create_key(
 
 
 @router.post("/admin/keys/{key_id}/revoke", response_model=KeyInfo)
-async def revoke_key(key_id: UUID, user: Admin, sessions: Sessions) -> KeyInfo:
+async def revoke_key(
+    key_id: UUID,
+    user: Admin,
+    sessions: Sessions,
+    request: Request,  # Lifespan main Redis client for post-commit invalidation.
+) -> KeyInfo:
     async with sessions.begin() as session:
         row = await session.scalar(
             update(ApiKey)
@@ -152,6 +158,10 @@ async def revoke_key(key_id: UUID, user: Admin, sessions: Sessions) -> KeyInfo:
         if row is None:
             raise HTTPException(404, "Key not found")
         result = KeyInfo.model_validate(row)
+        digest = row.key_hash
+    await invalidate_auth(
+        getattr(request.app.state, "usage_pool", None), [digest], "revoke"
+    )
     return result
 
 

@@ -116,7 +116,11 @@ async def test_cli_key_storage(
         result = subprocess.run(
             [sys.executable, "-m", "llm_gateway.cli", *arguments],
             cwd=Path(__file__).resolve().parents[2],
-            env={**os.environ, "DATABASE_URL": database_url},
+            env={
+                **os.environ,
+                "DATABASE_URL": database_url,
+                "REDIS_URL": "redis://127.0.0.1:1/0",
+            },
             capture_output=True,
             text=True,
         )

@@ -90,7 +90,18 @@ async def test_reconciliation_and_cli(engine, redis, monkeypatch):
                     created_at=when,
                 )
             )
-    auth = await authenticate(Request({"type": "http"}), sessions, f"Bearer {full_key}")
+    from types import SimpleNamespace
+
+    from starlette.datastructures import State
+
+    request = Request(
+        {
+            "type": "http",
+            "app": SimpleNamespace(state=State({"usage_pool": redis})),
+            "client": ("127.0.0.1", 1234),
+        }
+    )
+    auth = await authenticate(request, sessions, f"Bearer {full_key}")
     assert auth.monthly_budget_usd == Decimal("10")
     ctx = {"sessions": sessions, "redis": redis}
     counter = budgets.spend_key(tenant.id, now)

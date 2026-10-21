@@ -8,8 +8,11 @@ def isolated_usage_queue(monkeypatch):  # Unit/API tests must never use Compose 
     from llm_gateway.ratelimit import RateLimiter
 
     monkeypatch.setattr("llm_gateway.admin.rate_limiter", RateLimiter())
+    monkeypatch.setattr("llm_gateway.auth.failed_auth_limiter", RateLimiter())
     pool = AsyncMock()
     pool.get.return_value = None
+    pool.__aenter__.return_value = pool
+    monkeypatch.setattr("llm_gateway.auth_cache.create_cli_client", lambda: pool)
     pipeline = MagicMock()
     pipeline.__aenter__.return_value = pipeline
     pipeline.execute = AsyncMock(return_value=[0, True])

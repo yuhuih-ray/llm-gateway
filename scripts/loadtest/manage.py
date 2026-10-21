@@ -180,7 +180,7 @@ async def finish(url: str, args: argparse.Namespace) -> None:
         while True:
             state = await queue_state(queue)
             written = await usage_count(url) - before
-            if written >= sent and not any(state.values()):
+            if written >= successful and not any(state.values()):
                 break
             if time.perf_counter() - started >= 30:
                 break
@@ -199,7 +199,7 @@ async def finish(url: str, args: argparse.Namespace) -> None:
             "arq_at_k6_end": initial,
             "arq_after_drain": state,
             "drain_wait_seconds": round(time.perf_counter() - started, 3),
-            "drained": not any(state.values()) and written >= sent,
+            "drained": not any(state.values()) and written >= successful,
             "started_at": baseline["started_at"],
             "recorded_at": datetime.now(timezone.utc).isoformat(),
             "fake_delay_ms": int(os.environ["FAKE_DELAY_MS"]),
