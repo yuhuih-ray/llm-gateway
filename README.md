@@ -620,6 +620,8 @@ back to normal generation and warnings are limited to one per 30 seconds.
 
 TODO: Add cache stampede protection for concurrent identical misses.
 
+TODO: admission by in-flight tokens rather than request count
+
 ## Self-hosted vLLM
 
 On the GPU machine, install Docker and NVIDIA Container Toolkit, set
@@ -661,6 +663,26 @@ is limited to 2 seconds; overload returns 503, `Retry-After: 1`, and error type
 `upstream_overloaded`, without usage accounting. Cached answers do not occupy a
 provider slot. Gemini has no concurrency gate. More gateway workers multiply the
 local concurrency allowance; a cross-process limit would require Redis.
+
+**Measured capacity.** Measured with `vllm bench serve` on the RTX 5070 Ti
+(16 GB), vLLM v0.11.0, Qwen2.5-7B-Instruct-AWQ (`awq_marlin`),
+`--max-model-len 8192`, and `--gpu-memory-utilization 0.90`.
+KV cache: 160,432 tokens. Raw results are in
+[docs/benchmarks/serving/throughput/](docs/benchmarks/serving/throughput/).
+
+- Short requests (512 input / 256 output tokens): a single stream takes about
+  11 ms/token. At concurrency 16, throughput is about 1,050 output tokens/s with
+  p99 time per output token (TPOT) of 17.5 ms; throughput peaks at concurrency 32
+  (about 1,510 output tokens/s).
+- Long requests (4,096 input / 256 output tokens): concurrency 16 degrades
+  (p99 TPOT 63 ms, p99 end-to-end latency about 27 s); concurrency 32 collapses
+  (about 80 output tokens/s, about 380 ms/token) without preemptions.
+  Suspected cause, unverified: Windows driver system-memory fallback when VRAM
+  is overcommitted.
+
+The default of 16 is the largest tested value that avoids the collapse.
+Runs reused the same random prompts with prefix caching enabled, so time to first
+token (TTFT) after the first run in each sweep is optimistic.
 
 The registry defaults to 1024 output tokens, caps output at 4096, and limits input
 to 20,000 characters. Character limits are approximate: the server enforces its
