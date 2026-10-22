@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from decimal import Decimal
 from typing import Annotated
 
@@ -28,6 +28,7 @@ class ModelEntry:
     output_price: Decimal = Decimal("0")
     long_input_price: Decimal | None = None
     long_output_price: Decimal | None = None
+    fallbacks: list[str] = field(default_factory=list)
 
 
 # Thinking tokens count toward this limit and are billed as output tokens,
@@ -47,7 +48,15 @@ MODELS = {
     # Marginal cost is approximately zero; Phase 4 routing must consider local
     # capacity as well as price. Server max-model-len is 8192 tokens.
     "local-qwen": ModelEntry(
-        "vllm", "qwen2.5-7b-awq", None, 1024, 4096, 60, 30, max_input_chars=20_000
+        "vllm",
+        "qwen2.5-7b-awq",
+        None,
+        1024,
+        4096,
+        60,
+        30,
+        max_input_chars=20_000,
+        fallbacks=["gemini-flash-lite"],
     ),
     "fake": ModelEntry("fake", None, None, None, None, 30, 30),
     "gemini-flash-lite": ModelEntry(
@@ -95,7 +104,13 @@ def get_provider(
     request: ChatCompletionRequest,  # Resolve the client's gateway model name.
     auth: Annotated[AuthContext, Depends(authenticate)],  # Authenticate before lookup.
 ) -> Provider:
-    entry = MODELS.get(request.model)
+    return create_provider(request.model)
+
+
+def create_provider(
+    model: str,
+) -> Provider:  # Validated gateway target, including fallback.
+    entry = MODELS.get(model)
     if entry is None:
         raise GatewayError(
             404, "Model not found", "invalid_request_error", "model_not_found"

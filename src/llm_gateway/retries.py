@@ -7,6 +7,7 @@ from typing import TypeVar
 import httpx
 from google.genai.errors import APIError
 
+from llm_gateway.deadline import check_deadline, limited_timeout
 from llm_gateway.errors import GatewayError
 
 logger = logging.getLogger(__name__)
@@ -19,7 +20,7 @@ async def with_retries(
 ) -> T:
     for attempt in range(3):
         try:
-            async with asyncio.timeout(timeout):
+            async with asyncio.timeout(limited_timeout(timeout)):
                 return await operation()
         except (
             TimeoutError,
@@ -28,10 +29,17 @@ async def with_retries(
             httpx.HTTPStatusError,
             APIError,
         ) as exc:
+            check_deadline()
             # Read/deadline timeouts may follow billed generation; never repeat it.
-            if isinstance(exc, (TimeoutError, httpx.ReadTimeout)):
+            if isinstance(
+                exc, (TimeoutError, httpx.TimeoutException)
+            ) and not isinstance(exc, httpx.ConnectTimeout):
                 raise GatewayError(
-                    504, "Upstream request timed out", "upstream_error"
+                    504,
+                    "Upstream request timed out",
+                    "upstream_error",
+                    fallback_reason="timeout",
+                    breaker_failure=True,
                 ) from None
             timed_out = isinstance(exc, httpx.ConnectTimeout)
             status = (
@@ -49,9 +57,8 @@ async def with_retries(
             retryable = (
                 timed_out
                 or isinstance(exc, (ConnectionError, httpx.NetworkError))
-                or status in (429, 500, 502, 503, 504)
-                or isinstance(exc, httpx.HTTPStatusError)
-                and 500 <= exc.response.status_code < 600
+                or status is not None
+                and (status == 429 or 500 <= status < 600)
             )
             if not retryable:
                 if status == 400:
@@ -61,6 +68,13 @@ async def with_retries(
                 raise GatewayError(
                     502, "Upstream request failed", "upstream_error"
                 ) from None
+            reason = (
+                "timeout"
+                if timed_out
+                else f"http_{status}"
+                if status
+                else "connection_error"
+            )
             if attempt == 2:
                 raise GatewayError(
                     504 if timed_out else 502,
@@ -68,6 +82,8 @@ async def with_retries(
                     if timed_out
                     else "Upstream request failed",
                     "upstream_error",
+                    fallback_reason=reason,
+                    breaker_failure=status != 429,
                 ) from None
             reason = (
                 "timeout"
@@ -77,5 +93,8 @@ async def with_retries(
                 else "connection error"
             )
             logger.warning("Upstream retry attempt=%s reason=%s", attempt + 2, reason)
-            await asyncio.sleep(random.uniform(0, min(4.0, 0.5 * 2**attempt)))
+            await asyncio.sleep(
+                limited_timeout(random.uniform(0, min(4.0, 0.5 * 2**attempt)))
+            )
+            check_deadline()
     raise AssertionError("Unreachable")

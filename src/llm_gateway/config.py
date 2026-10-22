@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     vllm_base_url: str | None = None
     vllm_api_key: SecretStr | None = None
     vllm_max_concurrency: int = Field(default=16, ge=1)
+    request_deadline_seconds: float = Field(default=120, gt=0, allow_inf_nan=False)
     fake_delay_ms: int = Field(default=0, ge=0)
     server_timing: bool = False
     max_request_bytes: int = Field(default=1_048_576, ge=1)

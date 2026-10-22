@@ -9,6 +9,7 @@ import httpx
 from pydantic import ValidationError
 
 from llm_gateway.config import get_settings
+from llm_gateway.deadline import limited_timeout
 from llm_gateway.errors import GatewayError
 from llm_gateway.providers import FinalEvent, StreamEvent, TextEvent
 from llm_gateway.retries import with_retries
@@ -133,9 +134,11 @@ class VllmProvider:
         entry = MODELS[request.model]
         client = self.client if self.client is not None else get_vllm_client()
         upstream = None
-        deadline = asyncio.get_running_loop().time() + entry.first_event_timeout
+        deadline = asyncio.get_running_loop().time() + limited_timeout(
+            entry.first_event_timeout
+        )
         try:
-            async with asyncio.timeout(entry.first_event_timeout):
+            async with asyncio.timeout(limited_timeout(entry.first_event_timeout)):
                 upstream = await client.send(
                     client.build_request(
                         "POST", "chat/completions", json=self.payload(request, True)

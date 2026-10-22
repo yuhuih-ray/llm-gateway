@@ -25,14 +25,26 @@ from llm_gateway.cache import (
     read_cache,
     write_cache,
 )
+from llm_gateway.circuit import CircuitBreaker
 from llm_gateway.concurrency import acquire_provider
 from llm_gateway.db import get_sessionmaker
+from llm_gateway.deadline import check_deadline, commit, remaining
 from llm_gateway.errors import GatewayError, gateway_error_handler
 from llm_gateway.gemini import close_gemini_client
 from llm_gateway.input_limits import BodySizeMiddleware
 from llm_gateway.providers import Provider
-from llm_gateway.ratelimit import rate_limiter, rejected, request_buckets
-from llm_gateway.registry import MODELS, apply_token_limits, get_provider
+from llm_gateway.ratelimit import (
+    provider_buckets,
+    rate_limiter,
+    rejected,
+    request_buckets,
+)
+from llm_gateway.registry import (
+    MODELS,
+    apply_token_limits,
+    create_provider,
+    get_provider,
+)
 from llm_gateway.schemas import ChatCompletionRequest, ChatCompletionResponse
 from llm_gateway.streaming import stream_response
 from llm_gateway.timing import ServerTimingMiddleware, measure
@@ -43,6 +55,7 @@ from llm_gateway.vllm import close_vllm_client
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:  # Application lifecycle.
     app.state.provider_semaphores = {}
+    app.state.circuits = {}
     app.state.usage_pool = await create_usage_pool()
     app.state.cache_client = create_cache_client()
     app.state.accounting = AccountingBuffer(app.state)
@@ -131,81 +144,163 @@ async def chat_completion(
         Provider, Depends(get_provider)
     ],  # Injected completion provider.
 ) -> ChatCompletionResponse | StreamingResponse | JSONResponse:
-    request = apply_token_limits(request)
-    with measure(http_request, "ratelimit"):
-        decision = await rate_limiter.check(
-            getattr(http_request.app.state, "usage_pool", None),
-            request_buckets(auth.tenant_id, MODELS[request.model].provider),
+    original = request
+    # An explicitly named model must not silently change: callers may need local
+    # data handling or fixed behavior. Phase 4 model="auto" will opt in by default.
+    targets = [request.model]
+    if http_request.headers.get("x-gateway-fallback", "").lower() == "on":
+        targets.extend(
+            name for name in MODELS[request.model].fallbacks if name != request.model
         )
-    if not decision.allowed:
-        return rejected(decision)
+    fallback_reason = None
+    tracker = None
     cache = getattr(http_request.app.state, "cache_client", None)
-    with measure(http_request, "cache"):
-        key = (
-            cache_key(auth.tenant_id, request)
-            if cacheable(
-                request,
-                ",".join(http_request.headers.getlist("cache-control")),
-                ",".join(http_request.headers.getlist("x-gateway-cache")),
+    pool = getattr(http_request.app.state, "usage_pool", None)
+    for index, model in enumerate(targets):
+        check_deadline()
+        request = apply_token_limits(original.model_copy(update={"model": model}))
+        entry = MODELS[model]
+        with measure(http_request, "ratelimit"):
+            buckets = (
+                request_buckets(auth.tenant_id, entry.provider)
+                if index == 0
+                else provider_buckets(entry.provider)
             )
-            else None
-        )
-        answer = await read_cache(cache, key) if key else None
-    http_request.state.cache_status = "HIT" if answer else "MISS"
-    # Exhausted tenants can still receive free cached answers after request limits.
-    with measure(http_request, "budget"):
-        if answer is None and await budget_exceeded(
-            getattr(http_request.app.state, "usage_pool", None),
-            auth.tenant_id,
-            auth.monthly_budget_usd,
-        ):
-            raise GatewayError(
-                429,
-                "Monthly budget exceeded",
-                "insufficient_quota",
-                "insufficient_quota",
-            )
-    if answer is None:
-        http_request.state.provider_slot = await acquire_provider(
-            http_request.app.state, MODELS[request.model].provider
-        )
-    tracker = UsageTracker(
-        http_request.scope["state"],
-        auth,
-        request.model,
-        http_request.app.state,
-    )
-    http_request.state.usage_tracker = tracker
-    if answer is not None:
-        tracker.record.cache_hit = True
-        tracker.record.upstream_model = answer.upstream_model
-        provider = answer
-
-    async def store(response: ChatCompletionResponse) -> None:
-        if key and answer is None:
-            with measure(http_request, "cache"):
-                await write_cache(
-                    cache,
-                    key,
-                    CachedAnswer(
-                        response=response,
-                        upstream_model=MODELS[request.model].upstream_model,
-                    ),
-                )
-
-    try:
-        with measure(http_request, "provider"):
-            if request.stream:
-                return await stream_response(
-                    provider,
+            if buckets:
+                decision = await rate_limiter.check(pool, buckets)
+                if not decision.allowed:
+                    return rejected(decision)
+        with measure(http_request, "cache"):
+            key = (
+                cache_key(auth.tenant_id, request)
+                if cacheable(
                     request,
-                    tracker,
-                    store if key and answer is None else None,
+                    ",".join(http_request.headers.getlist("cache-control")),
+                    ",".join(http_request.headers.getlist("x-gateway-cache")),
                 )
-            response = await provider.complete(request)
-        tracker.success(response.usage)
-        await store(response)
-        return response
-    except Exception as exc:
-        tracker.failure(exc)
-        raise
+                else None
+            )
+            answer = await read_cache(cache, key) if key else None
+        http_request.state.cache_status = "HIT" if answer else "MISS"
+        # Exhausted tenants can still receive free cached answers after request limits.
+        with measure(http_request, "budget"):
+            if answer is None and await budget_exceeded(
+                pool, auth.tenant_id, auth.monthly_budget_usd
+            ):
+                raise GatewayError(
+                    429,
+                    "Monthly budget exceeded",
+                    "insufficient_quota",
+                    "insufficient_quota",
+                )
+        breaker = http_request.app.state.circuits.setdefault(
+            entry.provider, CircuitBreaker(entry.provider)
+        )
+        permit = None
+        called = False
+        committed = False
+        try:
+            if answer is None:
+                permit = breaker.acquire()
+                http_request.state.provider_slot = await acquire_provider(
+                    http_request.app.state, entry.provider
+                )
+            if tracker is None:
+                tracker = UsageTracker(
+                    http_request.scope["state"],
+                    auth,
+                    original.model,
+                    http_request.app.state,
+                )
+                http_request.state.usage_tracker = tracker
+            tracker.record.model_selected = model
+            tracker.record.upstream_model = (
+                answer.upstream_model if answer else entry.upstream_model
+            )
+            tracker.record.cache_hit = answer is not None
+            if index:
+                tracker.record.router_info = {
+                    "fallback_from": original.model,
+                    "fallback_reason": fallback_reason or "upstream_error",
+                }
+            selected_provider = (
+                answer
+                if answer is not None
+                else provider
+                if index == 0
+                else create_provider(model)
+            )
+
+            async def store(response: ChatCompletionResponse) -> None:
+                # Each target has its own cache key: never reuse a cloud answer as local.
+                if key and answer is None:
+                    with measure(http_request, "cache"):
+                        await write_cache(
+                            cache,
+                            key,
+                            CachedAnswer(
+                                response=response, upstream_model=entry.upstream_model
+                            ),
+                        )
+
+            result: ChatCompletionResponse | StreamingResponse
+            with measure(http_request, "provider"):
+                called = answer is None
+                if request.stream:
+                    result = await stream_response(
+                        selected_provider,
+                        request,
+                        tracker,
+                        store if key and answer is None else None,
+                    )
+                else:
+                    result = await selected_provider.complete(request)
+            commit()
+            committed = True
+            if permit is not None:
+                breaker.finish(permit, True)
+                permit = None
+            http_request.state.selected_model = model
+            if index:
+                http_request.state.fallback_from = original.model
+            if isinstance(result, ChatCompletionResponse):
+                result = result.model_copy(update={"model": model})
+                tracker.success(result.usage)
+                await store(result)
+            return result
+        except asyncio.CancelledError:
+            if permit is not None:
+                left = remaining()
+                breaker.finish(
+                    permit, False if called and left is not None and left <= 0 else None
+                )
+                permit = None
+            raise
+        except Exception as exc:
+            if permit is not None:
+                breaker.finish(
+                    permit,
+                    False
+                    if called and isinstance(exc, GatewayError) and exc.breaker_failure
+                    else None,
+                )
+                permit = None
+            slot = http_request.scope["state"].pop("provider_slot", None)
+            if slot is not None:
+                slot.release()
+            if tracker is not None:
+                tracker.failure(exc)
+            check_deadline()
+            if (
+                not committed
+                and isinstance(exc, GatewayError)
+                and exc.fallback_reason
+                and index + 1 < len(targets)
+            ):
+                fallback_reason = exc.fallback_reason
+                continue
+            raise
+        finally:
+            if permit is not None:
+                breaker.finish(permit, None)
+    raise AssertionError("No routing target")

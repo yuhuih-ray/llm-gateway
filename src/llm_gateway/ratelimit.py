@@ -291,16 +291,24 @@ def request_buckets(tenant_id: UUID, provider: str) -> list[Bucket]:
             settings.tenant_request_refill,
         )
     ]
+    buckets.extend(provider_buckets(provider))
+    buckets.append(token_bucket(tenant_id))
+    return buckets
+
+
+def provider_buckets(
+    provider: str,
+) -> list[Bucket]:  # Fallback consumes no second tenant request.
+    settings = get_settings()
     if provider == "gemini":
-        buckets.append(
+        return [
             Bucket(
                 "ratelimit:provider:gemini",
                 settings.gemini_request_capacity,
                 settings.gemini_request_refill,
             )
-        )
-    buckets.append(token_bucket(tenant_id))
-    return buckets
+        ]
+    return []
 
 
 def rejected(decision: Decision, *, admin: bool = False) -> JSONResponse:

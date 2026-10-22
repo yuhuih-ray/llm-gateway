@@ -10,7 +10,11 @@ class GatewayError(Exception):
         error_type: str,  # OpenAI error category.
         code: str | None = None,  # Optional machine-readable code.
         headers: dict[str, str] | None = None,  # Retry hints, never credentials.
+        fallback_reason: str | None = None,  # Sanitized retryable upstream category.
+        breaker_failure: bool = False,  # Preserve upstream status through HTTP mapping.
     ) -> None:
+        self.fallback_reason = fallback_reason
+        self.breaker_failure = breaker_failure
         self.status = status
         self.message = message
         self.error_type = error_type

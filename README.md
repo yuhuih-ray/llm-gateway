@@ -156,14 +156,44 @@ Both Gemini IDs were verified with real generation requests. Pro is a preview
 model that may retire on short notice; run the live tests to detect availability changes.
 Use one of these gateway names in the authenticated curl example. Requests
 require at least one message and optionally accept positive `max_tokens` and
-`temperature` from 0 to 2. Responses include token `usage` and keep the requested
-gateway model name. Responses are non-streaming by default; usage records are queued for the ARQ worker.
+`temperature` from 0 to 2. Responses include token `usage` and identify the gateway model that answered. Responses are non-streaming by default; usage records are queued for the ARQ worker.
 
-Connection errors, connect timeouts, and HTTP 429/500/502/503/504 get at most
+Connection errors, connect timeouts, and HTTP 429/5xx get at most
 two retries with jittered exponential backoff. Read timeouts and gateway deadlines
 return 504 without retrying potentially billed generation. After SSE headers are
 sent, timeouts instead terminate the stream with an error event; no retry occurs.
-There is no fallback to another model or provider.
+Fallback is disabled unless the caller sends `X-Gateway-Fallback: on`.
+The registry currently permits `local-qwen` to fall back to `gemini-flash-lite`;
+other models have no fallback targets. An explicitly named model must not silently
+change: callers may require local data handling or fixed behavior. Opting in allows
+the prompt to go to the configured cloud target and incur its normal charges.
+Phase 4 `model="auto"` will enable fallback by default.
+
+Before the first event/full completion, connection failures, timeouts, upstream
+429/5xx, concurrency overload, or an open circuit can select a fallback. Validation
+and credential errors and `content_filter` never do. After the first event there
+is no fallback. Each target gets its own input/output limits, provider rate bucket,
+budget check, and concurrency slot; the tenant request limit is consumed once.
+An exhausted paid target returns 429 `insufficient_quota` (cached answers remain
+free). Cache entries stay isolated by the actual model.
+
+`X-Gateway-Model` and the response `model` identify the answering model;
+`X-Gateway-Fallback-From` is present only when fallback answered. Usage keeps the
+original `model_requested`, actual `model_selected` and `upstream_model`, and
+`router_info` with `fallback_from` and a sanitized `fallback_reason`.
+
+Each provider, including Gemini, has a per-process circuit breaker. Five consecutive
+failed calls (after their retries) open it for 30 seconds. Connection errors,
+timeouts, and 5xx count; 4xx and slot overload do not. One half-open probe is allowed;
+a completion or first streaming event closes the circuit, and a failed probe
+reopens it. Without fallback, an open circuit returns 503 `upstream_unavailable`
+with `Retry-After`. Circuit transitions are logged at WARNING.
+
+`REQUEST_DEADLINE_SECONDS` defaults to 120. It bounds the entire request from
+arrival through the first streaming event or full completion, including auth,
+retries, backoff, slot waits, and all fallback attempts. Each wait is limited by
+the remaining budget; expiration returns 504 `Request deadline exceeded`.
+After the streaming commit point, the registry idle timeout applies instead.
 
 Default tests and CI exclude live API calls. To run the live test, export
 `GEMINI_API_KEY` in your shell and run:
@@ -635,8 +665,8 @@ local concurrency allowance; a cross-process limit would require Redis.
 The registry defaults to 1024 output tokens, caps output at 4096, and limits input
 to 20,000 characters. Character limits are approximate: the server enforces its
 8192-token combined prompt/output context. Prices are zero for marginal local
-cost; future routing must also account for local capacity. There is no fallback
-or circuit breaker in this step.
+cost; future routing must also account for local capacity. Opt-in fallback and
+per-provider circuit breakers follow the rules above.
 
 Live checks (both response modes, skipped without `VLLM_BASE_URL`):
 

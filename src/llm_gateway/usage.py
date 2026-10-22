@@ -11,11 +11,13 @@ from arq import create_pool
 from arq.connections import ArqRedis, RedisSettings
 from pydantic import BaseModel, Field
 from starlette.datastructures import State
+from starlette.requests import Request
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 from llm_gateway.auth import AuthContext
 from llm_gateway.config import get_settings
-from llm_gateway.errors import GatewayError
+from llm_gateway.deadline import current_deadline, exceeded
+from llm_gateway.errors import GatewayError, gateway_error_handler
 from llm_gateway.registry import MODELS, ModelEntry
 from llm_gateway.schemas import Usage
 
@@ -50,6 +52,7 @@ class UsageRecord(BaseModel):
     model_requested: str
     model_selected: str
     upstream_model: str | None
+    router_info: dict[str, str] | None = None
     prompt_tokens: int | None = None
     completion_tokens: int | None = None
     reasoning_tokens: int | None = None
@@ -102,6 +105,7 @@ class UsageTracker:
 
     def success(self, usage: Usage | None) -> None:  # Only confirmed provider totals.
         self.record.status = "success"
+        self.record.error_type = None
         if usage is not None:
             self.record.prompt_tokens = usage.prompt_tokens
             self.record.completion_tokens = usage.completion_tokens
@@ -155,6 +159,9 @@ class UsageMiddleware:
 
         async def send_with_id(message: Message) -> None:  # Add header before delivery.
             if message["type"] == "http.response.start":
+                # Error responses also end deadline enforcement before delivery.
+                if not timeout.expired():
+                    timeout.reschedule(None)
                 message = {
                     **message,
                     "headers": [
@@ -163,11 +170,33 @@ class UsageMiddleware:
                         (b"x-cache", state.get("cache_status", "MISS").encode()),
                     ],
                 }
+                if state.get("selected_model"):
+                    message["headers"].append(
+                        (b"x-gateway-model", state["selected_model"].encode())
+                    )
+                if state.get("fallback_from"):
+                    message["headers"].append(
+                        (b"x-gateway-fallback-from", state["fallback_from"].encode())
+                    )
             await send(message)
 
+        timeout = asyncio.timeout(get_settings().request_deadline_seconds)
+        token = current_deadline.set(timeout)
         try:
-            await self.app(scope, receive, send_with_id)
+            try:
+                async with timeout:
+                    await self.app(scope, receive, send_with_id)
+            except TimeoutError:
+                if not timeout.expired():
+                    raise
+                error = exceeded()
+                tracker = state.get("usage_tracker")
+                if tracker is not None:
+                    tracker.failure(error)
+                response = await gateway_error_handler(Request(scope), error)
+                await response(scope, receive, send_with_id)
         finally:
+            current_deadline.reset(token)
             try:
                 tracker = state.get("usage_tracker")
                 if tracker is not None:

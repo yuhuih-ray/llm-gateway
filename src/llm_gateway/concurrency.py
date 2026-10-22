@@ -3,6 +3,7 @@ import asyncio
 from starlette.datastructures import State
 
 from llm_gateway.config import get_settings
+from llm_gateway.deadline import check_deadline, limited_timeout
 from llm_gateway.errors import GatewayError
 
 
@@ -19,13 +20,15 @@ async def acquire_provider(
         provider, asyncio.Semaphore(get_settings().vllm_max_concurrency)
     )
     try:
-        async with asyncio.timeout(2):
+        async with asyncio.timeout(limited_timeout(2)):
             await semaphore.acquire()
     except TimeoutError:
+        check_deadline()
         raise GatewayError(
             503,
             "Upstream concurrency limit reached",
             "upstream_overloaded",
             headers={"Retry-After": "1"},
+            fallback_reason="upstream_overloaded",
         ) from None
     return semaphore
