@@ -16,3 +16,5 @@ dist/
 scripts/semantic_cache/.data/
 # Private load-test keys, logs, smoke output, and generated scenario summaries.
 scripts/loadtest/.state/
+# Downloaded evaluation datasets.
+data/
