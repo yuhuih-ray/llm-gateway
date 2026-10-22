@@ -1,0 +1,2 @@
+vllm:num_preemptions_total{engine="0",model_name="Qwen/Qwen2.5-7B-Instruct-AWQ"} 22.0
+vllm:num_preemptions_created{engine="0",model_name="Qwen/Qwen2.5-7B-Instruct-AWQ"} 1.7926474044952598e+09
