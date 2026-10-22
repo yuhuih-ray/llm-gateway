@@ -30,7 +30,11 @@ def normalize(text: str) -> str | None:  # Numeric answer, not the full reasonin
 def extract_answer(text: str, *, gold: bool = False) -> str | None:
     # The last marker overrides earlier intermediate answers.
     if "####" in text:
-        return normalize(text.rsplit("####", 1)[1])
+        tail = text.rsplit("####", 1)[1]
+        if gold:
+            return normalize(tail)
+        match = NUMBER.search(tail)
+        return normalize(match.group()) if match else None
     if gold:
         return None
     numbers = NUMBER.findall(text)
@@ -99,6 +103,7 @@ async def evaluate(args: argparse.Namespace) -> None:
         async def one(question_id: int, question: dict) -> dict:
             gold = extract_answer(question["answer"], gold=True)
             pred, finish_reason, tokens = None, None, None
+            error = None
             try:
                 async with semaphore:
                     value = await completion(
@@ -128,6 +133,7 @@ async def evaluate(args: argparse.Namespace) -> None:
                 IndexError,
                 TypeError,
             ) as exc:
+                error = type(exc).__name__
                 # Failed requests remain in the denominator; never print secrets/bodies.
                 print(
                     f"Question {question_id} failed: {type(exc).__name__}",
@@ -140,6 +146,7 @@ async def evaluate(args: argparse.Namespace) -> None:
                 "correct": correct_answer(gold, pred),
                 "finish_reason": finish_reason,
                 "completion_tokens": tokens,
+                "error": error,
             }
 
         results = await asyncio.gather(*(one(i, q) for i, q in enumerate(questions)))
@@ -160,6 +167,10 @@ async def evaluate(args: argparse.Namespace) -> None:
     length = sum(row["finish_reason"] == "length" for row in results)
     mean = f"{sum(counts) / len(counts):.2f}" if counts else "n/a"
     print(f"Accuracy: {accuracy:.2%} ({len(results)} questions)")
+    failed = sum(row["error"] is not None for row in results)
+    unparsed = sum(row["pred"] is None and row["error"] is None for row in results)
+    print(f"Failed requests: {failed}")
+    print(f"Successful requests with no parsed answer: {unparsed}")
     print(f"finish_reason=length: {length}")
     print(f"Mean completion_tokens: {mean} ({len(counts)} reported)")
     print(f"Wall time: {elapsed:.2f}s (evaluation only)")

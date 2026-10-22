@@ -32,6 +32,11 @@ compare = script("compare")
         ("#### NaN", None),
         ("#### Infinity", None),
         ("####", None),
+        ("#### 18 dollars", "18"),
+        ("**#### 18**", "18"),
+        ("#### $1,234.50 per day", "1234.50"),
+        ("#### none", None),
+        ("#### 18 dollars for 2 people", "18"),
     ],
 )
 def test_extract(text, expected):
@@ -40,6 +45,7 @@ def test_extract(text, expected):
 
 def test_gold_requires_marker_and_decimal_comparison():
     assert eval_script.extract_answer("42", gold=True) is None
+    assert eval_script.extract_answer("#### 18 dollars", gold=True) is None
     gold = eval_script.extract_answer("Work 99 #### 1,000", gold=True)
     pred = eval_script.extract_answer("#### $1000.00.")
     assert eval_script.correct_answer(gold, pred)
@@ -194,10 +200,74 @@ def test_evaluation_offline_cache_payload_and_outputs(monkeypatch, tmp_path, cap
     assert all(row["correct"] for row in rows)
     assert all(
         set(row)
-        == {"id", "gold", "pred", "correct", "finish_reason", "completion_tokens"}
+        == {
+            "id",
+            "gold",
+            "pred",
+            "correct",
+            "finish_reason",
+            "completion_tokens",
+            "error",
+        }
         for row in rows
     )
     output = capsys.readouterr().out
     assert "Accuracy: 100.00%" in output
     assert "finish_reason=length: 1" in output
     assert "Mean completion_tokens: 10.00" in output
+
+
+def test_evaluation_error_and_unparsed_counts(monkeypatch, tmp_path, capsys):
+    import json
+    from argparse import Namespace
+    from unittest.mock import AsyncMock
+
+    monkeypatch.setattr(
+        eval_script,
+        "dataset",
+        AsyncMock(
+            return_value=[{"question": str(i), "answer": "#### 18"} for i in range(3)]
+        ),
+    )
+    monkeypatch.setattr(
+        eval_script,
+        "completion",
+        AsyncMock(
+            side_effect=[
+                httpx.ReadTimeout("private upstream details"),
+                {
+                    "choices": [
+                        {"message": {"content": "#### none"}, "finish_reason": "stop"}
+                    ]
+                },
+                {
+                    "choices": [
+                        {"message": {"content": "**#### 18**"}, "finish_reason": "stop"}
+                    ]
+                },
+            ]
+        ),
+    )
+    args = Namespace(
+        base_url="http://test/v1",
+        api_key=None,
+        model="test",
+        label="errors",
+        concurrency=1,
+        limit=None,
+        out_dir=tmp_path,
+    )
+    asyncio.run(eval_script.evaluate(args))
+    rows = [
+        json.loads(line)
+        for line in (tmp_path / "errors.jsonl").read_text().splitlines()
+    ]
+    assert [row["error"] for row in rows] == ["ReadTimeout", None, None]
+    assert [row["pred"] for row in rows] == [None, None, "18"]
+    assert [row["correct"] for row in rows] == [False, False, True]
+    captured = capsys.readouterr()
+    assert "Failed requests: 1" in captured.out
+    assert "Successful requests with no parsed answer: 1" in captured.out
+    assert "Accuracy: 33.33%" in captured.out
+    assert "ReadTimeout" in captured.err
+    assert "private upstream details" not in captured.err
