@@ -5,6 +5,30 @@
       "gemini-flash-lite",
       "gemini-flash"
     ],
+    "pricing": "list",
+    "price_table": {
+      "gemini-flash": {
+        "input_usd_per_million_tokens": "1.50",
+        "output_usd_per_million_tokens": "7.50",
+        "source_url": "https://ai.google.dev/gemini-api/docs/pricing",
+        "as_of": "2026-10-26",
+        "effective_from": "2027-01-01",
+        "note": "Regular price, excluding temporary promotions."
+      },
+      "gemini-flash-lite": {
+        "input_usd_per_million_tokens": "0.25",
+        "output_usd_per_million_tokens": "1.50",
+        "source_url": "https://ai.google.dev/gemini-api/docs/pricing",
+        "as_of": "2026-10-26"
+      },
+      "local-qwen": {
+        "input_usd_per_million_tokens": "0",
+        "output_usd_per_million_tokens": "0",
+        "source_url": "https://github.com/yuhuih-ray/llm-gateway/blob/main/src/llm_gateway/registry.py",
+        "as_of": "2026-10-26",
+        "note": "Project marginal-cost assumption; excludes hardware and electricity."
+      }
+    },
     "seed": 42,
     "cv_folds": 5,
     "c_values": [
@@ -37,7 +61,7 @@
     "embedding_task": "CLASSIFICATION",
     "quality_tolerance": 0.01,
     "train_count": 2422,
-    "data_sha256": "fedd8f435d321b442f9ebef98a695e09c94a94bfe6db1ada68270e5d23698f90"
+    "data_sha256": "ac3e8a59b521e7d174f215a070337e2226160396405f1ac3233377a1e2f8c021"
   },
   "baselines": {
     "test": {
@@ -64,7 +88,7 @@
         },
         "gemini-flash": {
           "accuracy": 0.946236559139785,
-          "total_cost": 1.11413025,
+          "total_cost": 2.2282605,
           "mean_latency_ms": 4775.754674347158,
           "shares": {
             "local-qwen": 0.0,
@@ -96,7 +120,7 @@
         },
         {
           "accuracy": 0.946236559139785,
-          "total_cost": 1.11413025,
+          "total_cost": 2.2282605,
           "mean_latency_ms": 4775.754674347158,
           "shares": {
             "local-qwen": 0.0,
@@ -107,7 +131,7 @@
       ],
       "oracle": {
         "accuracy": 0.9539170506912442,
-        "total_cost": 0.3166765,
+        "total_cost": 0.516292,
         "mean_latency_ms": 3903.2890875576036,
         "shares": {
           "local-qwen": 0.6897081413210445,
@@ -140,7 +164,7 @@
         },
         "gemini-flash": {
           "accuracy": 0.8292682926829268,
-          "total_cost": 0.45792525000000006,
+          "total_cost": 0.9158505000000001,
           "mean_latency_ms": 5443.811577235772,
           "shares": {
             "local-qwen": 0.0,
@@ -172,7 +196,7 @@
         },
         {
           "accuracy": 0.8292682926829268,
-          "total_cost": 0.45792525000000006,
+          "total_cost": 0.9158505000000001,
           "mean_latency_ms": 5443.811577235772,
           "shares": {
             "local-qwen": 0.0,
@@ -183,7 +207,7 @@
       ],
       "oracle": {
         "accuracy": 0.8902439024390244,
-        "total_cost": 0.2231085,
+        "total_cost": 0.3672765,
         "mean_latency_ms": 4138.270967479675,
         "shares": {
           "local-qwen": 0.3252032520325203,
@@ -202,7 +226,7 @@
         "oof": {
           "tau": 0.92,
           "accuracy": 0.9331131296449215,
-          "total_cost": 3.6237027499999996,
+          "total_cost": 6.89240075,
           "mean_latency_ms": 4107.897092898431,
           "shares": {
             "local-qwen": 0.042939719240297276,
@@ -1017,7 +1041,7 @@
             {
               "tau": 0.71,
               "accuracy": 0.8463901689708141,
-              "total_cost": 0.22596625,
+              "total_cost": 0.22799125,
               "mean_latency_ms": 2876.525698924731,
               "shares": {
                 "local-qwen": 0.5176651305683564,
@@ -1028,7 +1052,7 @@
             {
               "tau": 0.72,
               "accuracy": 0.8509984639016898,
-              "total_cost": 0.23610625,
+              "total_cost": 0.23891125,
               "mean_latency_ms": 2784.9152703533027,
               "shares": {
                 "local-qwen": 0.4930875576036866,
@@ -1039,7 +1063,7 @@
             {
               "tau": 0.73,
               "accuracy": 0.8556067588325653,
-              "total_cost": 0.24665700000000002,
+              "total_cost": 0.25231575,
               "mean_latency_ms": 2723.833010752688,
               "shares": {
                 "local-qwen": 0.4715821812596006,
@@ -1050,7 +1074,7 @@
             {
               "tau": 0.74,
               "accuracy": 0.8617511520737328,
-              "total_cost": 0.2555445,
+              "total_cost": 0.26120325,
               "mean_latency_ms": 2648.782165898617,
               "shares": {
                 "local-qwen": 0.4470046082949309,
@@ -1061,7 +1085,7 @@
             {
               "tau": 0.75,
               "accuracy": 0.8648233486943164,
-              "total_cost": 0.26386475,
+              "total_cost": 0.27045725,
               "mean_latency_ms": 2597.442059907834,
               "shares": {
                 "local-qwen": 0.42242703533026116,
@@ -1072,7 +1096,7 @@
             {
               "tau": 0.76,
               "accuracy": 0.8725038402457758,
-              "total_cost": 0.27704700000000004,
+              "total_cost": 0.28363950000000004,
               "mean_latency_ms": 2502.6501920122887,
               "shares": {
                 "local-qwen": 0.38402457757296465,
@@ -1083,7 +1107,7 @@
             {
               "tau": 0.77,
               "accuracy": 0.8740399385560675,
-              "total_cost": 0.28251925,
+              "total_cost": 0.28911175,
               "mean_latency_ms": 2461.7221658986173,
               "shares": {
                 "local-qwen": 0.3655913978494624,
@@ -1094,7 +1118,7 @@
             {
               "tau": 0.78,
               "accuracy": 0.8755760368663594,
-              "total_cost": 0.29533575,
+              "total_cost": 0.302994,
               "mean_latency_ms": 2346.520337941628,
               "shares": {
                 "local-qwen": 0.3317972350230415,
@@ -1105,7 +1129,7 @@
             {
               "tau": 0.79,
               "accuracy": 0.8786482334869432,
-              "total_cost": 0.30527,
+              "total_cost": 0.31645775,
               "mean_latency_ms": 2284.7977296466975,
               "shares": {
                 "local-qwen": 0.3087557603686636,
@@ -1116,7 +1140,7 @@
             {
               "tau": 0.8,
               "accuracy": 0.8863287250384024,
-              "total_cost": 0.31664625,
+              "total_cost": 0.33059475,
               "mean_latency_ms": 2205.4114439324117,
               "shares": {
                 "local-qwen": 0.282642089093702,
@@ -1127,7 +1151,7 @@
             {
               "tau": 0.81,
               "accuracy": 0.890937019969278,
-              "total_cost": 0.330306,
+              "total_cost": 0.35566049999999994,
               "mean_latency_ms": 2183.7679784946235,
               "shares": {
                 "local-qwen": 0.2626728110599078,
@@ -1138,7 +1162,7 @@
             {
               "tau": 0.82,
               "accuracy": 0.8940092165898618,
-              "total_cost": 0.34480750000000004,
+              "total_cost": 0.38551375000000004,
               "mean_latency_ms": 2196.571846390169,
               "shares": {
                 "local-qwen": 0.24731182795698925,
@@ -1149,7 +1173,7 @@
             {
               "tau": 0.83,
               "accuracy": 0.8970814132104454,
-              "total_cost": 0.35705675000000003,
+              "total_cost": 0.40997449999999996,
               "mean_latency_ms": 2199.9951781874042,
               "shares": {
                 "local-qwen": 0.23195084485407066,
@@ -1160,7 +1184,7 @@
             {
               "tau": 0.84,
               "accuracy": 0.8986175115207373,
-              "total_cost": 0.36566375000000007,
+              "total_cost": 0.4279925,
               "mean_latency_ms": 2225.7880906298,
               "shares": {
                 "local-qwen": 0.22427035330261136,
@@ -1171,7 +1195,7 @@
             {
               "tau": 0.85,
               "accuracy": 0.8986175115207373,
-              "total_cost": 0.38074800000000003,
+              "total_cost": 0.46331174999999997,
               "mean_latency_ms": 2274.8337649769583,
               "shares": {
                 "local-qwen": 0.2196620583717358,
@@ -1182,7 +1206,7 @@
             {
               "tau": 0.86,
               "accuracy": 0.901689708141321,
-              "total_cost": 0.41724074999999994,
+              "total_cost": 0.5508487499999999,
               "mean_latency_ms": 2383.07352688172,
               "shares": {
                 "local-qwen": 0.2073732718894009,
@@ -1193,7 +1217,7 @@
             {
               "tau": 0.87,
               "accuracy": 0.9062980030721967,
-              "total_cost": 0.49255950000000004,
+              "total_cost": 0.7325325,
               "mean_latency_ms": 2659.4003026113674,
               "shares": {
                 "local-qwen": 0.19047619047619047,
@@ -1204,7 +1228,7 @@
             {
               "tau": 0.88,
               "accuracy": 0.9155145929339478,
-              "total_cost": 0.5898402500000001,
+              "total_cost": 0.9656074999999998,
               "mean_latency_ms": 2995.982494623656,
               "shares": {
                 "local-qwen": 0.17357910906298002,
@@ -1215,7 +1239,7 @@
             {
               "tau": 0.89,
               "accuracy": 0.9262672811059908,
-              "total_cost": 0.7064724999999998,
+              "total_cost": 1.24267825,
               "mean_latency_ms": 3389.274089093702,
               "shares": {
                 "local-qwen": 0.1490015360983103,
@@ -1226,7 +1250,7 @@
             {
               "tau": 0.9,
               "accuracy": 0.9278033794162827,
-              "total_cost": 0.77284025,
+              "total_cost": 1.4040837499999999,
               "mean_latency_ms": 3582.802440860215,
               "shares": {
                 "local-qwen": 0.11981566820276497,
@@ -1237,7 +1261,7 @@
             {
               "tau": 0.91,
               "accuracy": 0.9324116743471582,
-              "total_cost": 0.85099425,
+              "total_cost": 1.5789195,
               "mean_latency_ms": 3728.4703686635944,
               "shares": {
                 "local-qwen": 0.06144393241167435,
@@ -1248,7 +1272,7 @@
             {
               "tau": 0.92,
               "accuracy": 0.9370199692780338,
-              "total_cost": 0.9281174999999999,
+              "total_cost": 1.770993,
               "mean_latency_ms": 4000.7087972350228,
               "shares": {
                 "local-qwen": 0.03379416282642089,
@@ -1259,7 +1283,7 @@
             {
               "tau": 0.93,
               "accuracy": 0.9400921658986175,
-              "total_cost": 0.9905517499999998,
+              "total_cost": 1.9202705,
               "mean_latency_ms": 4212.319436251921,
               "shares": {
                 "local-qwen": 0.007680491551459293,
@@ -1270,7 +1294,7 @@
             {
               "tau": 0.94,
               "accuracy": 0.9400921658986175,
-              "total_cost": 1.01346925,
+              "total_cost": 1.97731825,
               "mean_latency_ms": 4300.827847926267,
               "shares": {
                 "local-qwen": 0.004608294930875576,
@@ -1281,7 +1305,7 @@
             {
               "tau": 0.95,
               "accuracy": 0.9431643625192012,
-              "total_cost": 1.08647,
+              "total_cost": 2.1625475,
               "mean_latency_ms": 4668.523542242703,
               "shares": {
                 "local-qwen": 0.0030721966205837174,
@@ -1292,7 +1316,7 @@
             {
               "tau": 0.96,
               "accuracy": 0.9447004608294931,
-              "total_cost": 1.108447,
+              "total_cost": 2.21531125,
               "mean_latency_ms": 4762.209580645161,
               "shares": {
                 "local-qwen": 0.0015360983102918587,
@@ -1303,7 +1327,7 @@
             {
               "tau": 0.97,
               "accuracy": 0.9447004608294931,
-              "total_cost": 1.1116905,
+              "total_cost": 2.223381,
               "mean_latency_ms": 4774.861864823348,
               "shares": {
                 "local-qwen": 0.0015360983102918587,
@@ -1314,7 +1338,7 @@
             {
               "tau": 0.98,
               "accuracy": 0.946236559139785,
-              "total_cost": 1.11413025,
+              "total_cost": 2.2282605,
               "mean_latency_ms": 4775.754674347158,
               "shares": {
                 "local-qwen": 0.0,
@@ -1325,7 +1349,7 @@
             {
               "tau": 0.99,
               "accuracy": 0.946236559139785,
-              "total_cost": 1.11413025,
+              "total_cost": 2.2282605,
               "mean_latency_ms": 4775.754674347158,
               "shares": {
                 "local-qwen": 0.0,
@@ -1336,7 +1360,7 @@
             {
               "tau": 1.0,
               "accuracy": 0.946236559139785,
-              "total_cost": 1.11413025,
+              "total_cost": 2.2282605,
               "mean_latency_ms": 4775.754674347158,
               "shares": {
                 "local-qwen": 0.0,
@@ -1347,17 +1371,17 @@
           ],
           "selected": {
             "accuracy": 0.9370199692780338,
-            "total_cost": 0.9281174999999999,
+            "total_cost": 1.770993,
             "mean_latency_ms": 4000.7087972350228,
             "shares": {
               "local-qwen": 0.03379416282642089,
               "gemini-flash-lite": 0.30261136712749614,
               "gemini-flash": 0.663594470046083
             },
-            "cost_reduction_vs_last": 0.16695781305641788,
+            "cost_reduction_vs_last": 0.20521276574260505,
             "gap_recovered": 0.9640718562874249,
-            "accuracy_vs_hull": 0.0009259186106618245,
-            "oracle_savings_captured": 0.23325835510836854
+            "accuracy_vs_hull": 0.0006732637538860997,
+            "oracle_savings_captured": 0.2671004168593056
           }
         },
         "ood": {
@@ -1387,7 +1411,7 @@
             {
               "tau": 0.01,
               "accuracy": 0.32926829268292684,
-              "total_cost": 0.003474,
+              "total_cost": 0.00639375,
               "mean_latency_ms": 5411.837508130082,
               "shares": {
                 "local-qwen": 0.991869918699187,
@@ -1398,7 +1422,7 @@
             {
               "tau": 0.02,
               "accuracy": 0.32926829268292684,
-              "total_cost": 0.003474,
+              "total_cost": 0.00639375,
               "mean_latency_ms": 5411.837508130082,
               "shares": {
                 "local-qwen": 0.991869918699187,
@@ -1409,7 +1433,7 @@
             {
               "tau": 0.03,
               "accuracy": 0.3333333333333333,
-              "total_cost": 0.004284,
+              "total_cost": 0.00720375,
               "mean_latency_ms": 5394.594963414635,
               "shares": {
                 "local-qwen": 0.9878048780487805,
@@ -1420,7 +1444,7 @@
             {
               "tau": 0.04,
               "accuracy": 0.33739837398373984,
-              "total_cost": 0.00586675,
+              "total_cost": 0.0087865,
               "mean_latency_ms": 5370.5611260162605,
               "shares": {
                 "local-qwen": 0.9796747967479674,
@@ -1431,7 +1455,7 @@
             {
               "tau": 0.05,
               "accuracy": 0.34146341463414637,
-              "total_cost": 0.0066075,
+              "total_cost": 0.009527250000000001,
               "mean_latency_ms": 5356.27381300813,
               "shares": {
                 "local-qwen": 0.975609756097561,
@@ -1442,7 +1466,7 @@
             {
               "tau": 0.06,
               "accuracy": 0.34146341463414637,
-              "total_cost": 0.0066075,
+              "total_cost": 0.009527250000000001,
               "mean_latency_ms": 5356.27381300813,
               "shares": {
                 "local-qwen": 0.975609756097561,
@@ -1453,7 +1477,7 @@
             {
               "tau": 0.07,
               "accuracy": 0.34552845528455284,
-              "total_cost": 0.0073455,
+              "total_cost": 0.01026525,
               "mean_latency_ms": 5338.305857723578,
               "shares": {
                 "local-qwen": 0.9715447154471545,
@@ -1464,7 +1488,7 @@
             {
               "tau": 0.08,
               "accuracy": 0.34959349593495936,
-              "total_cost": 0.008775499999999999,
+              "total_cost": 0.01169525,
               "mean_latency_ms": 5314.686800813009,
               "shares": {
                 "local-qwen": 0.9634146341463414,
@@ -1475,7 +1499,7 @@
             {
               "tau": 0.09,
               "accuracy": 0.34959349593495936,
-              "total_cost": 0.00969425,
+              "total_cost": 0.012614,
               "mean_latency_ms": 5298.719886178863,
               "shares": {
                 "local-qwen": 0.959349593495935,
@@ -1486,7 +1510,7 @@
             {
               "tau": 0.1,
               "accuracy": 0.35772357723577236,
-              "total_cost": 0.012910999999999999,
+              "total_cost": 0.01583075,
               "mean_latency_ms": 5256.354662601626,
               "shares": {
                 "local-qwen": 0.943089430894309,
@@ -1497,7 +1521,7 @@
             {
               "tau": 0.11,
               "accuracy": 0.35772357723577236,
-              "total_cost": 0.012910999999999999,
+              "total_cost": 0.01583075,
               "mean_latency_ms": 5256.354662601626,
               "shares": {
                 "local-qwen": 0.943089430894309,
@@ -1508,7 +1532,7 @@
             {
               "tau": 0.12,
               "accuracy": 0.3617886178861789,
-              "total_cost": 0.0141985,
+              "total_cost": 0.01711825,
               "mean_latency_ms": 5216.7936910569115,
               "shares": {
                 "local-qwen": 0.9349593495934959,
@@ -1519,7 +1543,7 @@
             {
               "tau": 0.13,
               "accuracy": 0.3617886178861789,
-              "total_cost": 0.01692275,
+              "total_cost": 0.019842500000000002,
               "mean_latency_ms": 5175.899780487805,
               "shares": {
                 "local-qwen": 0.9186991869918699,
@@ -1530,7 +1554,7 @@
             {
               "tau": 0.14,
               "accuracy": 0.36585365853658536,
-              "total_cost": 0.020006000000000003,
+              "total_cost": 0.02292575,
               "mean_latency_ms": 5114.8910203252035,
               "shares": {
                 "local-qwen": 0.9024390243902439,
@@ -1541,7 +1565,7 @@
             {
               "tau": 0.15,
               "accuracy": 0.36585365853658536,
-              "total_cost": 0.020006000000000003,
+              "total_cost": 0.02292575,
               "mean_latency_ms": 5114.8910203252035,
               "shares": {
                 "local-qwen": 0.9024390243902439,
@@ -1552,7 +1576,7 @@
             {
               "tau": 0.16,
               "accuracy": 0.37398373983739835,
-              "total_cost": 0.022396000000000003,
+              "total_cost": 0.02531575,
               "mean_latency_ms": 5062.852296747968,
               "shares": {
                 "local-qwen": 0.8902439024390244,
@@ -1563,7 +1587,7 @@
             {
               "tau": 0.17,
               "accuracy": 0.3780487804878049,
-              "total_cost": 0.02387475,
+              "total_cost": 0.0267945,
               "mean_latency_ms": 5035.602906504066,
               "shares": {
                 "local-qwen": 0.8821138211382114,
@@ -1574,7 +1598,7 @@
             {
               "tau": 0.18,
               "accuracy": 0.3821138211382114,
-              "total_cost": 0.025521750000000003,
+              "total_cost": 0.0284415,
               "mean_latency_ms": 4996.4059715447165,
               "shares": {
                 "local-qwen": 0.8739837398373984,
@@ -1585,7 +1609,7 @@
             {
               "tau": 0.19,
               "accuracy": 0.3821138211382114,
-              "total_cost": 0.030179499999999998,
+              "total_cost": 0.03309925,
               "mean_latency_ms": 4894.110195121952,
               "shares": {
                 "local-qwen": 0.8495934959349594,
@@ -1596,7 +1620,7 @@
             {
               "tau": 0.2,
               "accuracy": 0.3861788617886179,
-              "total_cost": 0.03156275,
+              "total_cost": 0.0344825,
               "mean_latency_ms": 4863.883142276423,
               "shares": {
                 "local-qwen": 0.8414634146341463,
@@ -1607,7 +1631,7 @@
             {
               "tau": 0.21,
               "accuracy": 0.3861788617886179,
-              "total_cost": 0.033024,
+              "total_cost": 0.03594375,
               "mean_latency_ms": 4823.8158414634145,
               "shares": {
                 "local-qwen": 0.8333333333333334,
@@ -1618,7 +1642,7 @@
             {
               "tau": 0.22,
               "accuracy": 0.3861788617886179,
-              "total_cost": 0.033024,
+              "total_cost": 0.03594375,
               "mean_latency_ms": 4823.8158414634145,
               "shares": {
                 "local-qwen": 0.8333333333333334,
@@ -1629,7 +1653,7 @@
             {
               "tau": 0.23,
               "accuracy": 0.3902439024390244,
-              "total_cost": 0.0343475,
+              "total_cost": 0.03726725,
               "mean_latency_ms": 4790.238597560975,
               "shares": {
                 "local-qwen": 0.8252032520325203,
@@ -1640,7 +1664,7 @@
             {
               "tau": 0.24,
               "accuracy": 0.3983739837398374,
-              "total_cost": 0.0376075,
+              "total_cost": 0.04052725,
               "mean_latency_ms": 4707.806105691057,
               "shares": {
                 "local-qwen": 0.8089430894308943,
@@ -1651,7 +1675,7 @@
             {
               "tau": 0.25,
               "accuracy": 0.4024390243902439,
-              "total_cost": 0.04030925,
+              "total_cost": 0.043229,
               "mean_latency_ms": 4663.656654471545,
               "shares": {
                 "local-qwen": 0.7967479674796748,
@@ -1662,7 +1686,7 @@
             {
               "tau": 0.26,
               "accuracy": 0.4065040650406504,
-              "total_cost": 0.041750499999999996,
+              "total_cost": 0.044670249999999995,
               "mean_latency_ms": 4636.574223577236,
               "shares": {
                 "local-qwen": 0.7886178861788617,
@@ -1673,7 +1697,7 @@
             {
               "tau": 0.27,
               "accuracy": 0.4186991869918699,
-              "total_cost": 0.0473045,
+              "total_cost": 0.05022425,
               "mean_latency_ms": 4543.416329268292,
               "shares": {
                 "local-qwen": 0.7601626016260162,
@@ -1684,7 +1708,7 @@
             {
               "tau": 0.28,
               "accuracy": 0.4268292682926829,
-              "total_cost": 0.04940699999999999,
+              "total_cost": 0.05232674999999999,
               "mean_latency_ms": 4477.9020325203255,
               "shares": {
                 "local-qwen": 0.7479674796747967,
@@ -1695,7 +1719,7 @@
             {
               "tau": 0.29,
               "accuracy": 0.4349593495934959,
-              "total_cost": 0.05264049999999999,
+              "total_cost": 0.05556025,
               "mean_latency_ms": 4420.408971544715,
               "shares": {
                 "local-qwen": 0.7317073170731707,
@@ -1706,7 +1730,7 @@
             {
               "tau": 0.3,
               "accuracy": 0.4349593495934959,
-              "total_cost": 0.05264049999999999,
+              "total_cost": 0.05556025,
               "mean_latency_ms": 4420.408971544715,
               "shares": {
                 "local-qwen": 0.7317073170731707,
@@ -1717,7 +1741,7 @@
             {
               "tau": 0.31,
               "accuracy": 0.43902439024390244,
-              "total_cost": 0.05558249999999999,
+              "total_cost": 0.05850224999999999,
               "mean_latency_ms": 4372.9912926829265,
               "shares": {
                 "local-qwen": 0.7154471544715447,
@@ -1728,7 +1752,7 @@
             {
               "tau": 0.32,
               "accuracy": 0.45121951219512196,
-              "total_cost": 0.057661,
+              "total_cost": 0.060580749999999996,
               "mean_latency_ms": 4320.678719512196,
               "shares": {
                 "local-qwen": 0.7032520325203252,
@@ -1739,7 +1763,7 @@
             {
               "tau": 0.33,
               "accuracy": 0.45121951219512196,
-              "total_cost": 0.059541750000000004,
+              "total_cost": 0.0624615,
               "mean_latency_ms": 4297.444329268294,
               "shares": {
                 "local-qwen": 0.6951219512195121,
@@ -1750,7 +1774,7 @@
             {
               "tau": 0.34,
               "accuracy": 0.45934959349593496,
-              "total_cost": 0.061776750000000005,
+              "total_cost": 0.0646965,
               "mean_latency_ms": 4255.490605691058,
               "shares": {
                 "local-qwen": 0.6829268292682927,
@@ -1761,7 +1785,7 @@
             {
               "tau": 0.35,
               "accuracy": 0.4634146341463415,
-              "total_cost": 0.06255225,
+              "total_cost": 0.065472,
               "mean_latency_ms": 4246.425264227642,
               "shares": {
                 "local-qwen": 0.6788617886178862,
@@ -1772,7 +1796,7 @@
             {
               "tau": 0.36,
               "accuracy": 0.483739837398374,
-              "total_cost": 0.0670605,
+              "total_cost": 0.06998025,
               "mean_latency_ms": 4136.861004065041,
               "shares": {
                 "local-qwen": 0.6544715447154471,
@@ -1783,7 +1807,7 @@
             {
               "tau": 0.37,
               "accuracy": 0.4878048780487805,
-              "total_cost": 0.06838375000000001,
+              "total_cost": 0.0713035,
               "mean_latency_ms": 4096.06969105691,
               "shares": {
                 "local-qwen": 0.6463414634146342,
@@ -1794,7 +1818,7 @@
             {
               "tau": 0.38,
               "accuracy": 0.5040650406504065,
-              "total_cost": 0.071339,
+              "total_cost": 0.07425875,
               "mean_latency_ms": 4057.1287235772356,
               "shares": {
                 "local-qwen": 0.6300813008130082,
@@ -1805,7 +1829,7 @@
             {
               "tau": 0.39,
               "accuracy": 0.5121951219512195,
-              "total_cost": 0.07452800000000001,
+              "total_cost": 0.07744775000000001,
               "mean_latency_ms": 3996.3284024390246,
               "shares": {
                 "local-qwen": 0.6138211382113821,
@@ -1816,7 +1840,7 @@
             {
               "tau": 0.4,
               "accuracy": 0.516260162601626,
-              "total_cost": 0.07879349999999999,
+              "total_cost": 0.08171324999999999,
               "mean_latency_ms": 3934.5399471544715,
               "shares": {
                 "local-qwen": 0.5934959349593496,
@@ -1827,7 +1851,7 @@
             {
               "tau": 0.41,
               "accuracy": 0.524390243902439,
-              "total_cost": 0.08249200000000001,
+              "total_cost": 0.08541175000000001,
               "mean_latency_ms": 3814.4049308943086,
               "shares": {
                 "local-qwen": 0.573170731707317,
@@ -1838,7 +1862,7 @@
             {
               "tau": 0.42,
               "accuracy": 0.5365853658536586,
-              "total_cost": 0.0889655,
+              "total_cost": 0.09188525,
               "mean_latency_ms": 3701.066731707317,
               "shares": {
                 "local-qwen": 0.5365853658536586,
@@ -1849,7 +1873,7 @@
             {
               "tau": 0.43,
               "accuracy": 0.5487804878048781,
-              "total_cost": 0.09358925,
+              "total_cost": 0.096509,
               "mean_latency_ms": 3608.1143170731707,
               "shares": {
                 "local-qwen": 0.5121951219512195,
@@ -1860,7 +1884,7 @@
             {
               "tau": 0.44,
               "accuracy": 0.5447154471544715,
-              "total_cost": 0.0943315,
+              "total_cost": 0.09725125,
               "mean_latency_ms": 3596.6462032520326,
               "shares": {
                 "local-qwen": 0.508130081300813,
@@ -1871,7 +1895,7 @@
             {
               "tau": 0.45,
               "accuracy": 0.5487804878048781,
-              "total_cost": 0.09583649999999999,
+              "total_cost": 0.09875624999999999,
               "mean_latency_ms": 3566.591406504065,
               "shares": {
                 "local-qwen": 0.5,
@@ -1882,7 +1906,7 @@
             {
               "tau": 0.46,
               "accuracy": 0.556910569105691,
-              "total_cost": 0.09740399999999999,
+              "total_cost": 0.10032374999999999,
               "mean_latency_ms": 3541.729284552846,
               "shares": {
                 "local-qwen": 0.491869918699187,
@@ -1893,7 +1917,7 @@
             {
               "tau": 0.47,
               "accuracy": 0.5650406504065041,
-              "total_cost": 0.09891724999999998,
+              "total_cost": 0.10183699999999998,
               "mean_latency_ms": 3518.0128373983744,
               "shares": {
                 "local-qwen": 0.483739837398374,
@@ -1904,7 +1928,7 @@
             {
               "tau": 0.48,
               "accuracy": 0.573170731707317,
-              "total_cost": 0.10094,
+              "total_cost": 0.10385975,
               "mean_latency_ms": 3476.2415081300815,
               "shares": {
                 "local-qwen": 0.4715447154471545,
@@ -1915,7 +1939,7 @@
             {
               "tau": 0.49,
               "accuracy": 0.5772357723577236,
-              "total_cost": 0.10305624999999999,
+              "total_cost": 0.10597599999999999,
               "mean_latency_ms": 3425.9055853658538,
               "shares": {
                 "local-qwen": 0.45934959349593496,
@@ -1926,7 +1950,7 @@
             {
               "tau": 0.5,
               "accuracy": 0.5772357723577236,
-              "total_cost": 0.10305624999999999,
+              "total_cost": 0.10597599999999999,
               "mean_latency_ms": 3425.9055853658538,
               "shares": {
                 "local-qwen": 0.45934959349593496,
@@ -1937,7 +1961,7 @@
             {
               "tau": 0.51,
               "accuracy": 0.5853658536585366,
-              "total_cost": 0.10927675,
+              "total_cost": 0.1121965,
               "mean_latency_ms": 3308.323768292683,
               "shares": {
                 "local-qwen": 0.4268292682926829,
@@ -1948,7 +1972,7 @@
             {
               "tau": 0.52,
               "accuracy": 0.5894308943089431,
-              "total_cost": 0.1101405,
+              "total_cost": 0.11306025,
               "mean_latency_ms": 3300.5822032520323,
               "shares": {
                 "local-qwen": 0.42276422764227645,
@@ -1959,7 +1983,7 @@
             {
               "tau": 0.53,
               "accuracy": 0.5894308943089431,
-              "total_cost": 0.1101405,
+              "total_cost": 0.11306025,
               "mean_latency_ms": 3300.5822032520323,
               "shares": {
                 "local-qwen": 0.42276422764227645,
@@ -1970,7 +1994,7 @@
             {
               "tau": 0.54,
               "accuracy": 0.5975609756097561,
-              "total_cost": 0.11324225,
+              "total_cost": 0.116162,
               "mean_latency_ms": 3226.6389268292683,
               "shares": {
                 "local-qwen": 0.4065040650406504,
@@ -1981,7 +2005,7 @@
             {
               "tau": 0.55,
               "accuracy": 0.5975609756097561,
-              "total_cost": 0.11619525,
+              "total_cost": 0.119115,
               "mean_latency_ms": 3180.7082682926825,
               "shares": {
                 "local-qwen": 0.3902439024390244,
@@ -1992,7 +2016,7 @@
             {
               "tau": 0.56,
               "accuracy": 0.5975609756097561,
-              "total_cost": 0.11800825000000001,
+              "total_cost": 0.12092800000000001,
               "mean_latency_ms": 3156.4276747967474,
               "shares": {
                 "local-qwen": 0.3780487804878049,
@@ -2003,7 +2027,7 @@
             {
               "tau": 0.57,
               "accuracy": 0.6056910569105691,
-              "total_cost": 0.1203275,
+              "total_cost": 0.12324725,
               "mean_latency_ms": 3103.1439674796748,
               "shares": {
                 "local-qwen": 0.36585365853658536,
@@ -2014,7 +2038,7 @@
             {
               "tau": 0.58,
               "accuracy": 0.6178861788617886,
-              "total_cost": 0.12507925,
+              "total_cost": 0.127999,
               "mean_latency_ms": 2989.7612195121947,
               "shares": {
                 "local-qwen": 0.33739837398373984,
@@ -2025,7 +2049,7 @@
             {
               "tau": 0.59,
               "accuracy": 0.6300813008130082,
-              "total_cost": 0.13186550000000002,
+              "total_cost": 0.13478525000000002,
               "mean_latency_ms": 2880.8651788617885,
               "shares": {
                 "local-qwen": 0.2967479674796748,
@@ -2036,7 +2060,7 @@
             {
               "tau": 0.6,
               "accuracy": 0.6504065040650406,
-              "total_cost": 0.13862375,
+              "total_cost": 0.14288374999999998,
               "mean_latency_ms": 2770.4334552845526,
               "shares": {
                 "local-qwen": 0.2601626016260163,
@@ -2047,7 +2071,7 @@
             {
               "tau": 0.61,
               "accuracy": 0.6585365853658537,
-              "total_cost": 0.1406865,
+              "total_cost": 0.14494649999999998,
               "mean_latency_ms": 2730.605829268293,
               "shares": {
                 "local-qwen": 0.24796747967479674,
@@ -2058,7 +2082,7 @@
             {
               "tau": 0.62,
               "accuracy": 0.6707317073170732,
-              "total_cost": 0.14477825,
+              "total_cost": 0.14903824999999998,
               "mean_latency_ms": 2662.1631910569104,
               "shares": {
                 "local-qwen": 0.22357723577235772,
@@ -2069,7 +2093,7 @@
             {
               "tau": 0.63,
               "accuracy": 0.6707317073170732,
-              "total_cost": 0.14604625,
+              "total_cost": 0.15030625,
               "mean_latency_ms": 2633.6333617886175,
               "shares": {
                 "local-qwen": 0.21544715447154472,
@@ -2080,7 +2104,7 @@
             {
               "tau": 0.64,
               "accuracy": 0.6869918699186992,
-              "total_cost": 0.1515105,
+              "total_cost": 0.15577049999999998,
               "mean_latency_ms": 2541.778329268292,
               "shares": {
                 "local-qwen": 0.18292682926829268,
@@ -2091,7 +2115,7 @@
             {
               "tau": 0.65,
               "accuracy": 0.6910569105691057,
-              "total_cost": 0.15424875,
+              "total_cost": 0.15850874999999998,
               "mean_latency_ms": 2504.7988780487804,
               "shares": {
                 "local-qwen": 0.16260162601626016,
@@ -2102,7 +2126,7 @@
             {
               "tau": 0.66,
               "accuracy": 0.6951219512195121,
-              "total_cost": 0.15755425,
+              "total_cost": 0.16181425,
               "mean_latency_ms": 2461.6893861788612,
               "shares": {
                 "local-qwen": 0.14634146341463414,
@@ -2113,7 +2137,7 @@
             {
               "tau": 0.67,
               "accuracy": 0.6951219512195121,
-              "total_cost": 0.15829499999999996,
+              "total_cost": 0.162555,
               "mean_latency_ms": 2452.2988455284544,
               "shares": {
                 "local-qwen": 0.14227642276422764,
@@ -2124,7 +2148,7 @@
             {
               "tau": 0.68,
               "accuracy": 0.6910569105691057,
-              "total_cost": 0.16118575,
+              "total_cost": 0.16544575,
               "mean_latency_ms": 2390.6893008130082,
               "shares": {
                 "local-qwen": 0.12601626016260162,
@@ -2135,7 +2159,7 @@
             {
               "tau": 0.69,
               "accuracy": 0.6951219512195121,
-              "total_cost": 0.16601925,
+              "total_cost": 0.17027925,
               "mean_latency_ms": 2323.348906504065,
               "shares": {
                 "local-qwen": 0.0975609756097561,
@@ -2146,7 +2170,7 @@
             {
               "tau": 0.7,
               "accuracy": 0.6951219512195121,
-              "total_cost": 0.1671095,
+              "total_cost": 0.172475,
               "mean_latency_ms": 2325.720341463414,
               "shares": {
                 "local-qwen": 0.09349593495934959,
@@ -2157,7 +2181,7 @@
             {
               "tau": 0.71,
               "accuracy": 0.7032520325203252,
-              "total_cost": 0.17040699999999998,
+              "total_cost": 0.1757725,
               "mean_latency_ms": 2275.76506504065,
               "shares": {
                 "local-qwen": 0.07317073170731707,
@@ -2168,7 +2192,7 @@
             {
               "tau": 0.72,
               "accuracy": 0.7073170731707317,
-              "total_cost": 0.1731345,
+              "total_cost": 0.17954625,
               "mean_latency_ms": 2235.3029186991866,
               "shares": {
                 "local-qwen": 0.056910569105691054,
@@ -2179,7 +2203,7 @@
             {
               "tau": 0.73,
               "accuracy": 0.7113821138211383,
-              "total_cost": 0.17510575,
+              "total_cost": 0.1815175,
               "mean_latency_ms": 2193.264776422764,
               "shares": {
                 "local-qwen": 0.044715447154471545,
@@ -2190,7 +2214,7 @@
             {
               "tau": 0.74,
               "accuracy": 0.7154471544715447,
-              "total_cost": 0.1772435,
+              "total_cost": 0.18529774999999998,
               "mean_latency_ms": 2180.522792682927,
               "shares": {
                 "local-qwen": 0.036585365853658534,
@@ -2201,7 +2225,7 @@
             {
               "tau": 0.75,
               "accuracy": 0.7235772357723578,
-              "total_cost": 0.17992075,
+              "total_cost": 0.187975,
               "mean_latency_ms": 2139.150199186992,
               "shares": {
                 "local-qwen": 0.02032520325203252,
@@ -2212,7 +2236,7 @@
             {
               "tau": 0.76,
               "accuracy": 0.7276422764227642,
-              "total_cost": 0.1840125,
+              "total_cost": 0.19641225,
               "mean_latency_ms": 2155.795731707317,
               "shares": {
                 "local-qwen": 0.012195121951219513,
@@ -2223,7 +2247,7 @@
             {
               "tau": 0.77,
               "accuracy": 0.7317073170731707,
-              "total_cost": 0.1848865,
+              "total_cost": 0.19838499999999998,
               "mean_latency_ms": 2160.914613821138,
               "shares": {
                 "local-qwen": 0.008130081300813009,
@@ -2234,7 +2258,7 @@
             {
               "tau": 0.78,
               "accuracy": 0.7317073170731707,
-              "total_cost": 0.1848865,
+              "total_cost": 0.19838499999999998,
               "mean_latency_ms": 2160.914613821138,
               "shares": {
                 "local-qwen": 0.008130081300813009,
@@ -2245,7 +2269,7 @@
             {
               "tau": 0.79,
               "accuracy": 0.7317073170731707,
-              "total_cost": 0.18535425,
+              "total_cost": 0.19990575,
               "mean_latency_ms": 2169.6166869918698,
               "shares": {
                 "local-qwen": 0.008130081300813009,
@@ -2256,7 +2280,7 @@
             {
               "tau": 0.8,
               "accuracy": 0.7317073170731707,
-              "total_cost": 0.18812425,
+              "total_cost": 0.20541175,
               "mean_latency_ms": 2182.806524390244,
               "shares": {
                 "local-qwen": 0.0040650406504065045,
@@ -2267,7 +2291,7 @@
             {
               "tau": 0.81,
               "accuracy": 0.7317073170731707,
-              "total_cost": 0.19018949999999998,
+              "total_cost": 0.2111745,
               "mean_latency_ms": 2208.9781869918697,
               "shares": {
                 "local-qwen": 0.0040650406504065045,
@@ -2278,7 +2302,7 @@
             {
               "tau": 0.82,
               "accuracy": 0.7357723577235772,
-              "total_cost": 0.19228475,
+              "total_cost": 0.21700024999999998,
               "mean_latency_ms": 2234.536081300813,
               "shares": {
                 "local-qwen": 0.0040650406504065045,
@@ -2289,7 +2313,7 @@
             {
               "tau": 0.83,
               "accuracy": 0.7317073170731707,
-              "total_cost": 0.19803325,
+              "total_cost": 0.23300574999999996,
               "mean_latency_ms": 2299.127569105691,
               "shares": {
                 "local-qwen": 0.0040650406504065045,
@@ -2300,7 +2324,7 @@
             {
               "tau": 0.84,
               "accuracy": 0.7357723577235772,
-              "total_cost": 0.20328200000000002,
+              "total_cost": 0.2496155,
               "mean_latency_ms": 2366.0982357723574,
               "shares": {
                 "local-qwen": 0.0040650406504065045,
@@ -2311,7 +2335,7 @@
             {
               "tau": 0.85,
               "accuracy": 0.7398373983739838,
-              "total_cost": 0.21779349999999997,
+              "total_cost": 0.28629775,
               "mean_latency_ms": 2533.3524674796745,
               "shares": {
                 "local-qwen": 0.0040650406504065045,
@@ -2322,7 +2346,7 @@
             {
               "tau": 0.86,
               "accuracy": 0.7317073170731707,
-              "total_cost": 0.23856300000000003,
+              "total_cost": 0.34084275,
               "mean_latency_ms": 2781.1380121951215,
               "shares": {
                 "local-qwen": 0.0040650406504065045,
@@ -2333,7 +2357,7 @@
             {
               "tau": 0.87,
               "accuracy": 0.7560975609756098,
-              "total_cost": 0.27539775,
+              "total_cost": 0.4359885,
               "mean_latency_ms": 3229.6089715447156,
               "shares": {
                 "local-qwen": 0.0040650406504065045,
@@ -2344,7 +2368,7 @@
             {
               "tau": 0.88,
               "accuracy": 0.7642276422764228,
-              "total_cost": 0.32508675,
+              "total_cost": 0.56332725,
               "mean_latency_ms": 3821.046760162602,
               "shares": {
                 "local-qwen": 0.0040650406504065045,
@@ -2355,7 +2379,7 @@
             {
               "tau": 0.89,
               "accuracy": 0.7723577235772358,
-              "total_cost": 0.3532845,
+              "total_cost": 0.6389475,
               "mean_latency_ms": 4172.2018699187,
               "shares": {
                 "local-qwen": 0.0,
@@ -2366,7 +2390,7 @@
             {
               "tau": 0.9,
               "accuracy": 0.7845528455284553,
-              "total_cost": 0.37858450000000005,
+              "total_cost": 0.7099915,
               "mean_latency_ms": 4501.815373983741,
               "shares": {
                 "local-qwen": 0.0,
@@ -2377,7 +2401,7 @@
             {
               "tau": 0.91,
               "accuracy": 0.7926829268292683,
-              "total_cost": 0.41014675,
+              "total_cost": 0.79336075,
               "mean_latency_ms": 4877.223004065041,
               "shares": {
                 "local-qwen": 0.0,
@@ -2388,7 +2412,7 @@
             {
               "tau": 0.92,
               "accuracy": 0.8130081300813008,
-              "total_cost": 0.44581000000000004,
+              "total_cost": 0.88298125,
               "mean_latency_ms": 5292.555296747968,
               "shares": {
                 "local-qwen": 0.0,
@@ -2399,7 +2423,7 @@
             {
               "tau": 0.93,
               "accuracy": 0.8292682926829268,
-              "total_cost": 0.45328725000000003,
+              "total_cost": 0.9038152500000001,
               "mean_latency_ms": 5396.676,
               "shares": {
                 "local-qwen": 0.0,
@@ -2410,7 +2434,7 @@
             {
               "tau": 0.94,
               "accuracy": 0.8292682926829268,
-              "total_cost": 0.45328725000000003,
+              "total_cost": 0.9038152500000001,
               "mean_latency_ms": 5396.676,
               "shares": {
                 "local-qwen": 0.0,
@@ -2421,7 +2445,7 @@
             {
               "tau": 0.95,
               "accuracy": 0.8292682926829268,
-              "total_cost": 0.45792525000000006,
+              "total_cost": 0.9158505000000001,
               "mean_latency_ms": 5443.811577235772,
               "shares": {
                 "local-qwen": 0.0,
@@ -2432,7 +2456,7 @@
             {
               "tau": 0.96,
               "accuracy": 0.8292682926829268,
-              "total_cost": 0.45792525000000006,
+              "total_cost": 0.9158505000000001,
               "mean_latency_ms": 5443.811577235772,
               "shares": {
                 "local-qwen": 0.0,
@@ -2443,7 +2467,7 @@
             {
               "tau": 0.97,
               "accuracy": 0.8292682926829268,
-              "total_cost": 0.45792525000000006,
+              "total_cost": 0.9158505000000001,
               "mean_latency_ms": 5443.811577235772,
               "shares": {
                 "local-qwen": 0.0,
@@ -2454,7 +2478,7 @@
             {
               "tau": 0.98,
               "accuracy": 0.8292682926829268,
-              "total_cost": 0.45792525000000006,
+              "total_cost": 0.9158505000000001,
               "mean_latency_ms": 5443.811577235772,
               "shares": {
                 "local-qwen": 0.0,
@@ -2465,7 +2489,7 @@
             {
               "tau": 0.99,
               "accuracy": 0.8292682926829268,
-              "total_cost": 0.45792525000000006,
+              "total_cost": 0.9158505000000001,
               "mean_latency_ms": 5443.811577235772,
               "shares": {
                 "local-qwen": 0.0,
@@ -2476,7 +2500,7 @@
             {
               "tau": 1.0,
               "accuracy": 0.8292682926829268,
-              "total_cost": 0.45792525000000006,
+              "total_cost": 0.9158505000000001,
               "mean_latency_ms": 5443.811577235772,
               "shares": {
                 "local-qwen": 0.0,
@@ -2487,17 +2511,17 @@
           ],
           "selected": {
             "accuracy": 0.8130081300813008,
-            "total_cost": 0.44581000000000004,
+            "total_cost": 0.88298125,
             "mean_latency_ms": 5292.555296747968,
             "shares": {
               "local-qwen": 0.0,
               "gemini-flash-lite": 0.04878048780487805,
               "gemini-flash": 0.9512195121951219
             },
-            "cost_reduction_vs_last": 0.026456828925681686,
+            "cost_reduction_vs_last": 0.03588931818020524,
             "gap_recovered": 0.967741935483871,
-            "accuracy_vs_hull": -0.012023045443076419,
-            "oracle_savings_captured": 0.05159448804227134
+            "accuracy_vs_hull": -0.011908376516850616,
+            "oracle_savings_captured": 0.05991762278197666
           }
         }
       }
@@ -2510,7 +2534,7 @@
         "oof": {
           "tau": 0.99,
           "accuracy": 0.9322873658133773,
-          "total_cost": 3.6331355,
+          "total_cost": 6.887804750000001,
           "mean_latency_ms": 4084.666660611065,
           "shares": {
             "local-qwen": 0.018992568125516102,
@@ -2881,7 +2905,7 @@
             {
               "tau": 0.31,
               "accuracy": 0.7219662058371735,
-              "total_cost": 0.04419175,
+              "total_cost": 0.04636825,
               "mean_latency_ms": 4332.733110599078,
               "shares": {
                 "local-qwen": 0.9231950844854071,
@@ -2892,7 +2916,7 @@
             {
               "tau": 0.32,
               "accuracy": 0.728110599078341,
-              "total_cost": 0.04927425,
+              "total_cost": 0.05145075,
               "mean_latency_ms": 4291.386491551459,
               "shares": {
                 "local-qwen": 0.9109062980030722,
@@ -2903,7 +2927,7 @@
             {
               "tau": 0.33,
               "accuracy": 0.7311827956989247,
-              "total_cost": 0.0526195,
+              "total_cost": 0.054796000000000004,
               "mean_latency_ms": 4259.5588033794165,
               "shares": {
                 "local-qwen": 0.9047619047619048,
@@ -2914,7 +2938,7 @@
             {
               "tau": 0.34,
               "accuracy": 0.7357910906298003,
-              "total_cost": 0.055558750000000004,
+              "total_cost": 0.05773525,
               "mean_latency_ms": 4234.268285714285,
               "shares": {
                 "local-qwen": 0.8986175115207373,
@@ -2925,7 +2949,7 @@
             {
               "tau": 0.35,
               "accuracy": 0.738863287250384,
-              "total_cost": 0.06289975,
+              "total_cost": 0.0668815,
               "mean_latency_ms": 4185.043010752688,
               "shares": {
                 "local-qwen": 0.8847926267281107,
@@ -2936,7 +2960,7 @@
             {
               "tau": 0.36,
               "accuracy": 0.7403993855606759,
-              "total_cost": 0.066881,
+              "total_cost": 0.07086275,
               "mean_latency_ms": 4136.141076804915,
               "shares": {
                 "local-qwen": 0.8771121351766513,
@@ -2947,7 +2971,7 @@
             {
               "tau": 0.37,
               "accuracy": 0.7434715821812596,
-              "total_cost": 0.068829,
+              "total_cost": 0.07281075000000001,
               "mean_latency_ms": 4120.806910906298,
               "shares": {
                 "local-qwen": 0.8725038402457758,
@@ -2958,7 +2982,7 @@
             {
               "tau": 0.38,
               "accuracy": 0.7480798771121352,
-              "total_cost": 0.07614225,
+              "total_cost": 0.080124,
               "mean_latency_ms": 4060.7753978494625,
               "shares": {
                 "local-qwen": 0.8571428571428571,
@@ -2969,7 +2993,7 @@
             {
               "tau": 0.39,
               "accuracy": 0.7511520737327189,
-              "total_cost": 0.078578,
+              "total_cost": 0.08255975000000002,
               "mean_latency_ms": 4052.5958463901684,
               "shares": {
                 "local-qwen": 0.8509984639016898,
@@ -2980,7 +3004,7 @@
             {
               "tau": 0.4,
               "accuracy": 0.7572964669738863,
-              "total_cost": 0.09206175,
+              "total_cost": 0.1064175,
               "mean_latency_ms": 4059.5102519201223,
               "shares": {
                 "local-qwen": 0.8402457757296466,
@@ -2991,7 +3015,7 @@
             {
               "tau": 0.41,
               "accuracy": 0.7634408602150538,
-              "total_cost": 0.09540375000000001,
+              "total_cost": 0.10975950000000001,
               "mean_latency_ms": 4027.2268894009217,
               "shares": {
                 "local-qwen": 0.8310291858678955,
@@ -3002,7 +3026,7 @@
             {
               "tau": 0.42,
               "accuracy": 0.7649769585253456,
-              "total_cost": 0.09989,
+              "total_cost": 0.11485550000000001,
               "mean_latency_ms": 4002.214947772657,
               "shares": {
                 "local-qwen": 0.8218125960061444,
@@ -3013,7 +3037,7 @@
             {
               "tau": 0.43,
               "accuracy": 0.7665130568356375,
-              "total_cost": 0.10301249999999999,
+              "total_cost": 0.11871899999999999,
               "mean_latency_ms": 3983.8336927803384,
               "shares": {
                 "local-qwen": 0.815668202764977,
@@ -3024,7 +3048,7 @@
             {
               "tau": 0.44,
               "accuracy": 0.7665130568356375,
-              "total_cost": 0.105113,
+              "total_cost": 0.12081949999999998,
               "mean_latency_ms": 3966.552895545314,
               "shares": {
                 "local-qwen": 0.8095238095238095,
@@ -3035,7 +3059,7 @@
             {
               "tau": 0.45,
               "accuracy": 0.7695852534562212,
-              "total_cost": 0.1089555,
+              "total_cost": 0.12733275,
               "mean_latency_ms": 3945.3410168970813,
               "shares": {
                 "local-qwen": 0.804915514592934,
@@ -3046,7 +3070,7 @@
             {
               "tau": 0.46,
               "accuracy": 0.7695852534562212,
-              "total_cost": 0.11159675000000001,
+              "total_cost": 0.129974,
               "mean_latency_ms": 3921.8811059907835,
               "shares": {
                 "local-qwen": 0.7987711213517665,
@@ -3057,7 +3081,7 @@
             {
               "tau": 0.47,
               "accuracy": 0.7757296466973886,
-              "total_cost": 0.11817575,
+              "total_cost": 0.1385495,
               "mean_latency_ms": 3880.1054009216587,
               "shares": {
                 "local-qwen": 0.7864823348694316,
@@ -3068,7 +3092,7 @@
             {
               "tau": 0.48,
               "accuracy": 0.7772657450076805,
-              "total_cost": 0.12070575,
+              "total_cost": 0.14107950000000002,
               "mean_latency_ms": 3850.18314592934,
               "shares": {
                 "local-qwen": 0.7803379416282642,
@@ -3079,7 +3103,7 @@
             {
               "tau": 0.49,
               "accuracy": 0.7803379416282642,
-              "total_cost": 0.126126,
+              "total_cost": 0.14703375,
               "mean_latency_ms": 3807.302889400922,
               "shares": {
                 "local-qwen": 0.7695852534562212,
@@ -3090,7 +3114,7 @@
             {
               "tau": 0.5,
               "accuracy": 0.783410138248848,
-              "total_cost": 0.12992925,
+              "total_cost": 0.15179175,
               "mean_latency_ms": 3782.4496221198156,
               "shares": {
                 "local-qwen": 0.7649769585253456,
@@ -3101,7 +3125,7 @@
             {
               "tau": 0.51,
               "accuracy": 0.7849462365591398,
-              "total_cost": 0.131143,
+              "total_cost": 0.15300550000000002,
               "mean_latency_ms": 3772.949628264209,
               "shares": {
                 "local-qwen": 0.7619047619047619,
@@ -3112,7 +3136,7 @@
             {
               "tau": 0.52,
               "accuracy": 0.7849462365591398,
-              "total_cost": 0.13198900000000002,
+              "total_cost": 0.15385149999999997,
               "mean_latency_ms": 3764.5557035330266,
               "shares": {
                 "local-qwen": 0.7588325652841782,
@@ -3123,7 +3147,7 @@
             {
               "tau": 0.53,
               "accuracy": 0.7895545314900153,
-              "total_cost": 0.1387645,
+              "total_cost": 0.16062700000000002,
               "mean_latency_ms": 3701.761390168971,
               "shares": {
                 "local-qwen": 0.7450076804915514,
@@ -3134,7 +3158,7 @@
             {
               "tau": 0.54,
               "accuracy": 0.7926267281105991,
-              "total_cost": 0.141826,
+              "total_cost": 0.16368850000000001,
               "mean_latency_ms": 3683.6420276497697,
               "shares": {
                 "local-qwen": 0.7373271889400922,
@@ -3145,7 +3169,7 @@
             {
               "tau": 0.55,
               "accuracy": 0.7956989247311828,
-              "total_cost": 0.14812424999999999,
+              "total_cost": 0.17390100000000003,
               "mean_latency_ms": 3677.860580645161,
               "shares": {
                 "local-qwen": 0.7296466973886329,
@@ -3156,7 +3180,7 @@
             {
               "tau": 0.56,
               "accuracy": 0.804915514592934,
-              "total_cost": 0.1536695,
+              "total_cost": 0.17944625,
               "mean_latency_ms": 3621.4251059907833,
               "shares": {
                 "local-qwen": 0.7188940092165899,
@@ -3167,7 +3191,7 @@
             {
               "tau": 0.57,
               "accuracy": 0.8079877112135176,
-              "total_cost": 0.156696,
+              "total_cost": 0.18247275000000002,
               "mean_latency_ms": 3599.6251244239634,
               "shares": {
                 "local-qwen": 0.7112135176651305,
@@ -3178,7 +3202,7 @@
             {
               "tau": 0.58,
               "accuracy": 0.8095238095238095,
-              "total_cost": 0.15974825,
+              "total_cost": 0.18791000000000002,
               "mean_latency_ms": 3599.870984639017,
               "shares": {
                 "local-qwen": 0.7081413210445469,
@@ -3189,7 +3213,7 @@
             {
               "tau": 0.59,
               "accuracy": 0.8125960061443932,
-              "total_cost": 0.1683245,
+              "total_cost": 0.202565,
               "mean_latency_ms": 3589.4841551459294,
               "shares": {
                 "local-qwen": 0.6989247311827957,
@@ -3200,7 +3224,7 @@
             {
               "tau": 0.6,
               "accuracy": 0.8141321044546851,
-              "total_cost": 0.17228225,
+              "total_cost": 0.20788774999999998,
               "mean_latency_ms": 3571.6256620583717,
               "shares": {
                 "local-qwen": 0.6912442396313364,
@@ -3211,7 +3235,7 @@
             {
               "tau": 0.61,
               "accuracy": 0.815668202764977,
-              "total_cost": 0.18442950000000002,
+              "total_cost": 0.23211299999999999,
               "mean_latency_ms": 3579.70879109063,
               "shares": {
                 "local-qwen": 0.6835637480798771,
@@ -3222,7 +3246,7 @@
             {
               "tau": 0.62,
               "accuracy": 0.815668202764977,
-              "total_cost": 0.18801975,
+              "total_cost": 0.23570325,
               "mean_latency_ms": 3557.6318832565285,
               "shares": {
                 "local-qwen": 0.6758832565284179,
@@ -3233,7 +3257,7 @@
             {
               "tau": 0.63,
               "accuracy": 0.8202764976958525,
-              "total_cost": 0.194764,
+              "total_cost": 0.244726,
               "mean_latency_ms": 3524.705671274962,
               "shares": {
                 "local-qwen": 0.6620583717357911,
@@ -3244,7 +3268,7 @@
             {
               "tau": 0.64,
               "accuracy": 0.8218125960061444,
-              "total_cost": 0.201023,
+              "total_cost": 0.253547,
               "mean_latency_ms": 3489.177726574501,
               "shares": {
                 "local-qwen": 0.6543778801843319,
@@ -3255,7 +3279,7 @@
             {
               "tau": 0.65,
               "accuracy": 0.8218125960061444,
-              "total_cost": 0.20997849999999998,
+              "total_cost": 0.2659945,
               "mean_latency_ms": 3447.0846927803377,
               "shares": {
                 "local-qwen": 0.6405529953917051,
@@ -3266,7 +3290,7 @@
             {
               "tau": 0.66,
               "accuracy": 0.82642089093702,
-              "total_cost": 0.21554525,
+              "total_cost": 0.27156125000000003,
               "mean_latency_ms": 3402.310058371736,
               "shares": {
                 "local-qwen": 0.6282642089093702,
@@ -3277,7 +3301,7 @@
             {
               "tau": 0.67,
               "accuracy": 0.8279569892473119,
-              "total_cost": 0.2256665,
+              "total_cost": 0.28644425,
               "mean_latency_ms": 3356.7124623655914,
               "shares": {
                 "local-qwen": 0.6098310291858678,
@@ -3288,7 +3312,7 @@
             {
               "tau": 0.68,
               "accuracy": 0.8310291858678955,
-              "total_cost": 0.24169575,
+              "total_cost": 0.31895249999999997,
               "mean_latency_ms": 3378.835486943164,
               "shares": {
                 "local-qwen": 0.6006144393241167,
@@ -3299,7 +3323,7 @@
             {
               "tau": 0.69,
               "accuracy": 0.8325652841781874,
-              "total_cost": 0.24750450000000002,
+              "total_cost": 0.32804325,
               "mean_latency_ms": 3359.1518172043006,
               "shares": {
                 "local-qwen": 0.5913978494623656,
@@ -3310,7 +3334,7 @@
             {
               "tau": 0.7,
               "accuracy": 0.8356374807987711,
-              "total_cost": 0.25349975,
+              "total_cost": 0.3359337499999999,
               "mean_latency_ms": 3324.0951136712747,
               "shares": {
                 "local-qwen": 0.5806451612903226,
@@ -3321,7 +3345,7 @@
             {
               "tau": 0.71,
               "accuracy": 0.8356374807987711,
-              "total_cost": 0.26198675,
+              "total_cost": 0.35414075,
               "mean_latency_ms": 3340.355331797235,
               "shares": {
                 "local-qwen": 0.576036866359447,
@@ -3332,7 +3356,7 @@
             {
               "tau": 0.72,
               "accuracy": 0.8402457757296466,
-              "total_cost": 0.27578475,
+              "total_cost": 0.37820849999999995,
               "mean_latency_ms": 3324.5615806451615,
               "shares": {
                 "local-qwen": 0.5622119815668203,
@@ -3343,7 +3367,7 @@
             {
               "tau": 0.73,
               "accuracy": 0.8448540706605223,
-              "total_cost": 0.28462375,
+              "total_cost": 0.39311950000000007,
               "mean_latency_ms": 3308.074866359447,
               "shares": {
                 "local-qwen": 0.5483870967741935,
@@ -3354,7 +3378,7 @@
             {
               "tau": 0.74,
               "accuracy": 0.8433179723502304,
-              "total_cost": 0.29039375,
+              "total_cost": 0.4018505,
               "mean_latency_ms": 3272.1165176651307,
               "shares": {
                 "local-qwen": 0.5391705069124424,
@@ -3365,7 +3389,7 @@
             {
               "tau": 0.75,
               "accuracy": 0.8433179723502304,
-              "total_cost": 0.30044275000000004,
+              "total_cost": 0.4168315,
               "mean_latency_ms": 3229.8053917050693,
               "shares": {
                 "local-qwen": 0.5238095238095238,
@@ -3376,7 +3400,7 @@
             {
               "tau": 0.76,
               "accuracy": 0.8463901689708141,
-              "total_cost": 0.3093395,
+              "total_cost": 0.4314725,
               "mean_latency_ms": 3208.3673333333336,
               "shares": {
                 "local-qwen": 0.5130568356374808,
@@ -3387,7 +3411,7 @@
             {
               "tau": 0.77,
               "accuracy": 0.8494623655913979,
-              "total_cost": 0.31513599999999997,
+              "total_cost": 0.440146,
               "mean_latency_ms": 3192.336035330261,
               "shares": {
                 "local-qwen": 0.49923195084485406,
@@ -3398,7 +3422,7 @@
             {
               "tau": 0.78,
               "accuracy": 0.8540706605222734,
-              "total_cost": 0.3232335,
+              "total_cost": 0.45357149999999996,
               "mean_latency_ms": 3162.957357910906,
               "shares": {
                 "local-qwen": 0.4869431643625192,
@@ -3409,7 +3433,7 @@
             {
               "tau": 0.79,
               "accuracy": 0.8540706605222734,
-              "total_cost": 0.32714774999999996,
+              "total_cost": 0.458223,
               "mean_latency_ms": 3136.6790983102915,
               "shares": {
                 "local-qwen": 0.47772657450076805,
@@ -3420,7 +3444,7 @@
             {
               "tau": 0.8,
               "accuracy": 0.8556067588325653,
-              "total_cost": 0.34231875,
+              "total_cost": 0.48804899999999996,
               "mean_latency_ms": 3155.2086267281106,
               "shares": {
                 "local-qwen": 0.4700460829493088,
@@ -3431,7 +3455,7 @@
             {
               "tau": 0.81,
               "accuracy": 0.8632872503840245,
-              "total_cost": 0.35017925000000005,
+              "total_cost": 0.49902500000000005,
               "mean_latency_ms": 3108.752494623656,
               "shares": {
                 "local-qwen": 0.45468509984639016,
@@ -3442,7 +3466,7 @@
             {
               "tau": 0.82,
               "accuracy": 0.8678955453149002,
-              "total_cost": 0.36432775000000006,
+              "total_cost": 0.5231395,
               "mean_latency_ms": 3065.0303241167435,
               "shares": {
                 "local-qwen": 0.4362519201228879,
@@ -3453,7 +3477,7 @@
             {
               "tau": 0.83,
               "accuracy": 0.8709677419354839,
-              "total_cost": 0.37058225,
+              "total_cost": 0.536798,
               "mean_latency_ms": 3055.7417004608296,
               "shares": {
                 "local-qwen": 0.4270353302611367,
@@ -3464,7 +3488,7 @@
             {
               "tau": 0.84,
               "accuracy": 0.8725038402457758,
-              "total_cost": 0.38112075,
+              "total_cost": 0.55932,
               "mean_latency_ms": 3068.555913978495,
               "shares": {
                 "local-qwen": 0.41781874039938555,
@@ -3475,7 +3499,7 @@
             {
               "tau": 0.85,
               "accuracy": 0.8755760368663594,
-              "total_cost": 0.39802225,
+              "total_cost": 0.5920494999999999,
               "mean_latency_ms": 3055.266044546851,
               "shares": {
                 "local-qwen": 0.39477726574500765,
@@ -3486,7 +3510,7 @@
             {
               "tau": 0.86,
               "accuracy": 0.8847926267281107,
-              "total_cost": 0.40914575,
+              "total_cost": 0.6071855,
               "mean_latency_ms": 2989.0340875576035,
               "shares": {
                 "local-qwen": 0.37327188940092165,
@@ -3497,7 +3521,7 @@
             {
               "tau": 0.87,
               "accuracy": 0.8924731182795699,
-              "total_cost": 0.424102,
+              "total_cost": 0.63455575,
               "mean_latency_ms": 2979.224777265745,
               "shares": {
                 "local-qwen": 0.36251920122887865,
@@ -3508,7 +3532,7 @@
             {
               "tau": 0.88,
               "accuracy": 0.8955453149001537,
-              "total_cost": 0.44284425,
+              "total_cost": 0.674163,
               "mean_latency_ms": 2987.009938556067,
               "shares": {
                 "local-qwen": 0.3425499231950845,
@@ -3519,7 +3543,7 @@
             {
               "tau": 0.89,
               "accuracy": 0.8970814132104454,
-              "total_cost": 0.46564125,
+              "total_cost": 0.7224817499999999,
               "mean_latency_ms": 3009.784213517665,
               "shares": {
                 "local-qwen": 0.31797235023041476,
@@ -3530,7 +3554,7 @@
             {
               "tau": 0.9,
               "accuracy": 0.9001536098310292,
-              "total_cost": 0.48288074999999997,
+              "total_cost": 0.75332475,
               "mean_latency_ms": 2980.005188940092,
               "shares": {
                 "local-qwen": 0.2903225806451613,
@@ -3541,7 +3565,7 @@
             {
               "tau": 0.91,
               "accuracy": 0.901689708141321,
-              "total_cost": 0.50579325,
+              "total_cost": 0.80219175,
               "mean_latency_ms": 2997.4130015360984,
               "shares": {
                 "local-qwen": 0.27342549923195086,
@@ -3552,7 +3576,7 @@
             {
               "tau": 0.92,
               "accuracy": 0.9062980030721967,
-              "total_cost": 0.5286249999999999,
+              "total_cost": 0.8516575,
               "mean_latency_ms": 2988.861534562212,
               "shares": {
                 "local-qwen": 0.24731182795698925,
@@ -3563,7 +3587,7 @@
             {
               "tau": 0.93,
               "accuracy": 0.9109062980030722,
-              "total_cost": 0.56076925,
+              "total_cost": 0.92049925,
               "mean_latency_ms": 3017.1823686635944,
               "shares": {
                 "local-qwen": 0.21351766513056836,
@@ -3574,7 +3598,7 @@
             {
               "tau": 0.94,
               "accuracy": 0.9155145929339478,
-              "total_cost": 0.60446,
+              "total_cost": 1.01313875,
               "mean_latency_ms": 3062.9999339477727,
               "shares": {
                 "local-qwen": 0.17204301075268819,
@@ -3585,7 +3609,7 @@
             {
               "tau": 0.95,
               "accuracy": 0.9201228878648233,
-              "total_cost": 0.65803175,
+              "total_cost": 1.1263999999999998,
               "mean_latency_ms": 3149.326814132104,
               "shares": {
                 "local-qwen": 0.12749615975422426,
@@ -3596,7 +3620,7 @@
             {
               "tau": 0.96,
               "accuracy": 0.9231950844854071,
-              "total_cost": 0.7164189999999999,
+              "total_cost": 1.2609474999999999,
               "mean_latency_ms": 3278.760660522274,
               "shares": {
                 "local-qwen": 0.09216589861751152,
@@ -3607,7 +3631,7 @@
             {
               "tau": 0.97,
               "accuracy": 0.9324116743471582,
-              "total_cost": 0.77351275,
+              "total_cost": 1.39163875,
               "mean_latency_ms": 3403.3417342549915,
               "shares": {
                 "local-qwen": 0.055299539170506916,
@@ -3618,7 +3642,7 @@
             {
               "tau": 0.98,
               "accuracy": 0.9354838709677419,
-              "total_cost": 0.84810325,
+              "total_cost": 1.56981025,
               "mean_latency_ms": 3624.8482549923197,
               "shares": {
                 "local-qwen": 0.019969278033794162,
@@ -3629,7 +3653,7 @@
             {
               "tau": 0.99,
               "accuracy": 0.9416282642089093,
-              "total_cost": 0.96871975,
+              "total_cost": 1.8701207499999999,
               "mean_latency_ms": 4123.977774193549,
               "shares": {
                 "local-qwen": 0.006144393241167435,
@@ -3640,7 +3664,7 @@
             {
               "tau": 1.0,
               "accuracy": 0.946236559139785,
-              "total_cost": 1.11413025,
+              "total_cost": 2.2282605,
               "mean_latency_ms": 4775.754674347158,
               "shares": {
                 "local-qwen": 0.0,
@@ -3651,17 +3675,17 @@
           ],
           "selected": {
             "accuracy": 0.9416282642089093,
-            "total_cost": 0.96871975,
+            "total_cost": 1.8701207499999999,
             "mean_latency_ms": 4123.977774193549,
             "shares": {
               "local-qwen": 0.006144393241167435,
               "gemini-flash-lite": 0.19969278033794163,
               "gemini-flash": 0.794162826420891
             },
-            "cost_reduction_vs_last": 0.1305148118902616,
+            "cost_reduction_vs_last": 0.16072615836433857,
             "gap_recovered": 0.9820359281437122,
-            "accuracy_vs_hull": 0.003320340220358986,
-            "oracle_savings_captured": 0.1823434901397104
+            "accuracy_vs_hull": 0.0031376080721607913,
+            "oracle_savings_captured": 0.20919762834421327
           }
         },
         "ood": {
@@ -4076,7 +4100,7 @@
             {
               "tau": 0.36,
               "accuracy": 0.4349593495934959,
-              "total_cost": 0.0450715,
+              "total_cost": 0.045988,
               "mean_latency_ms": 4569.205707317073,
               "shares": {
                 "local-qwen": 0.7520325203252033,
@@ -4087,7 +4111,7 @@
             {
               "tau": 0.37,
               "accuracy": 0.44308943089430897,
-              "total_cost": 0.04722725,
+              "total_cost": 0.04814375,
               "mean_latency_ms": 4508.418613821138,
               "shares": {
                 "local-qwen": 0.7398373983739838,
@@ -4098,7 +4122,7 @@
             {
               "tau": 0.38,
               "accuracy": 0.44715447154471544,
-              "total_cost": 0.05152575000000001,
+              "total_cost": 0.05244225000000001,
               "mean_latency_ms": 4429.594520325204,
               "shares": {
                 "local-qwen": 0.7154471544715447,
@@ -4109,7 +4133,7 @@
             {
               "tau": 0.39,
               "accuracy": 0.45121951219512196,
-              "total_cost": 0.05219300000000001,
+              "total_cost": 0.05310950000000001,
               "mean_latency_ms": 4410.652390243902,
               "shares": {
                 "local-qwen": 0.7113821138211383,
@@ -4120,7 +4144,7 @@
             {
               "tau": 0.4,
               "accuracy": 0.45121951219512196,
-              "total_cost": 0.05365500000000001,
+              "total_cost": 0.05457150000000001,
               "mean_latency_ms": 4396.9742886178865,
               "shares": {
                 "local-qwen": 0.7032520325203252,
@@ -4131,7 +4155,7 @@
             {
               "tau": 0.41,
               "accuracy": 0.45934959349593496,
-              "total_cost": 0.057589,
+              "total_cost": 0.0585055,
               "mean_latency_ms": 4343.735056910569,
               "shares": {
                 "local-qwen": 0.6788617886178862,
@@ -4142,7 +4166,7 @@
             {
               "tau": 0.42,
               "accuracy": 0.4634146341463415,
-              "total_cost": 0.06008675000000001,
+              "total_cost": 0.06100325000000001,
               "mean_latency_ms": 4284.910666666667,
               "shares": {
                 "local-qwen": 0.6666666666666666,
@@ -4153,7 +4177,7 @@
             {
               "tau": 0.43,
               "accuracy": 0.4634146341463415,
-              "total_cost": 0.06150800000000001,
+              "total_cost": 0.06242450000000001,
               "mean_latency_ms": 4257.132581300813,
               "shares": {
                 "local-qwen": 0.6585365853658537,
@@ -4164,7 +4188,7 @@
             {
               "tau": 0.44,
               "accuracy": 0.46747967479674796,
-              "total_cost": 0.0630005,
+              "total_cost": 0.063917,
               "mean_latency_ms": 4233.167085365853,
               "shares": {
                 "local-qwen": 0.6504065040650406,
@@ -4175,7 +4199,7 @@
             {
               "tau": 0.45,
               "accuracy": 0.47560975609756095,
-              "total_cost": 0.06579575,
+              "total_cost": 0.06671225,
               "mean_latency_ms": 4161.474243902439,
               "shares": {
                 "local-qwen": 0.6341463414634146,
@@ -4186,7 +4210,7 @@
             {
               "tau": 0.46,
               "accuracy": 0.483739837398374,
-              "total_cost": 0.071011,
+              "total_cost": 0.0719275,
               "mean_latency_ms": 4063.7937154471547,
               "shares": {
                 "local-qwen": 0.6056910569105691,
@@ -4197,7 +4221,7 @@
             {
               "tau": 0.47,
               "accuracy": 0.5,
-              "total_cost": 0.076461,
+              "total_cost": 0.07849875,
               "mean_latency_ms": 4011.434658536585,
               "shares": {
                 "local-qwen": 0.5813008130081301,
@@ -4208,7 +4232,7 @@
             {
               "tau": 0.48,
               "accuracy": 0.508130081300813,
-              "total_cost": 0.07930800000000002,
+              "total_cost": 0.08134575000000001,
               "mean_latency_ms": 3962.2186463414637,
               "shares": {
                 "local-qwen": 0.5650406504065041,
@@ -4219,7 +4243,7 @@
             {
               "tau": 0.49,
               "accuracy": 0.5121951219512195,
-              "total_cost": 0.0844455,
+              "total_cost": 0.08648325000000001,
               "mean_latency_ms": 3869.1551016260164,
               "shares": {
                 "local-qwen": 0.5365853658536586,
@@ -4230,7 +4254,7 @@
             {
               "tau": 0.5,
               "accuracy": 0.5121951219512195,
-              "total_cost": 0.08526475,
+              "total_cost": 0.0873025,
               "mean_latency_ms": 3860.646711382114,
               "shares": {
                 "local-qwen": 0.532520325203252,
@@ -4241,7 +4265,7 @@
             {
               "tau": 0.51,
               "accuracy": 0.516260162601626,
-              "total_cost": 0.08772225,
+              "total_cost": 0.08976,
               "mean_latency_ms": 3796.057581300813,
               "shares": {
                 "local-qwen": 0.5203252032520326,
@@ -4252,7 +4276,7 @@
             {
               "tau": 0.52,
               "accuracy": 0.524390243902439,
-              "total_cost": 0.09124,
+              "total_cost": 0.09327774999999999,
               "mean_latency_ms": 3708.3943821138214,
               "shares": {
                 "local-qwen": 0.5,
@@ -4263,7 +4287,7 @@
             {
               "tau": 0.53,
               "accuracy": 0.5365853658536586,
-              "total_cost": 0.09558375,
+              "total_cost": 0.0976215,
               "mean_latency_ms": 3620.7144593495937,
               "shares": {
                 "local-qwen": 0.47560975609756095,
@@ -4274,7 +4298,7 @@
             {
               "tau": 0.54,
               "accuracy": 0.5487804878048781,
-              "total_cost": 0.10098475000000001,
+              "total_cost": 0.10302249999999999,
               "mean_latency_ms": 3538.5964796747967,
               "shares": {
                 "local-qwen": 0.44715447154471544,
@@ -4285,7 +4309,7 @@
             {
               "tau": 0.55,
               "accuracy": 0.556910569105691,
-              "total_cost": 0.10250025000000001,
+              "total_cost": 0.10453799999999999,
               "mean_latency_ms": 3507.962073170732,
               "shares": {
                 "local-qwen": 0.43902439024390244,
@@ -4296,7 +4320,7 @@
             {
               "tau": 0.56,
               "accuracy": 0.5609756097560976,
-              "total_cost": 0.105932,
+              "total_cost": 0.10796975,
               "mean_latency_ms": 3429.0422154471544,
               "shares": {
                 "local-qwen": 0.4186991869918699,
@@ -4307,7 +4331,7 @@
             {
               "tau": 0.57,
               "accuracy": 0.5609756097560976,
-              "total_cost": 0.10819200000000001,
+              "total_cost": 0.11022975,
               "mean_latency_ms": 3394.4939146341458,
               "shares": {
                 "local-qwen": 0.4065040650406504,
@@ -4318,7 +4342,7 @@
             {
               "tau": 0.58,
               "accuracy": 0.5691056910569106,
-              "total_cost": 0.111038,
+              "total_cost": 0.11307574999999999,
               "mean_latency_ms": 3327.389459349594,
               "shares": {
                 "local-qwen": 0.3902439024390244,
@@ -4329,7 +4353,7 @@
             {
               "tau": 0.59,
               "accuracy": 0.5813008130081301,
-              "total_cost": 0.11424699999999999,
+              "total_cost": 0.11628474999999999,
               "mean_latency_ms": 3258.6419471544714,
               "shares": {
                 "local-qwen": 0.37398373983739835,
@@ -4340,7 +4364,7 @@
             {
               "tau": 0.6,
               "accuracy": 0.5894308943089431,
-              "total_cost": 0.1181865,
+              "total_cost": 0.12170025000000001,
               "mean_latency_ms": 3215.6738780487804,
               "shares": {
                 "local-qwen": 0.35365853658536583,
@@ -4351,7 +4375,7 @@
             {
               "tau": 0.61,
               "accuracy": 0.5975609756097561,
-              "total_cost": 0.12200074999999999,
+              "total_cost": 0.12551449999999997,
               "mean_latency_ms": 3128.5639512195125,
               "shares": {
                 "local-qwen": 0.3333333333333333,
@@ -4362,7 +4386,7 @@
             {
               "tau": 0.62,
               "accuracy": 0.6097560975609756,
-              "total_cost": 0.1246055,
+              "total_cost": 0.12811925000000002,
               "mean_latency_ms": 3076.123121951219,
               "shares": {
                 "local-qwen": 0.3170731707317073,
@@ -4373,7 +4397,7 @@
             {
               "tau": 0.63,
               "accuracy": 0.6056910569105691,
-              "total_cost": 0.12831975,
+              "total_cost": 0.1318335,
               "mean_latency_ms": 3017.999589430894,
               "shares": {
                 "local-qwen": 0.2967479674796748,
@@ -4384,7 +4408,7 @@
             {
               "tau": 0.64,
               "accuracy": 0.6138211382113821,
-              "total_cost": 0.13326849999999998,
+              "total_cost": 0.13898425,
               "mean_latency_ms": 2960.3693739837395,
               "shares": {
                 "local-qwen": 0.2764227642276423,
@@ -4395,7 +4419,7 @@
             {
               "tau": 0.65,
               "accuracy": 0.6219512195121951,
-              "total_cost": 0.13649899999999998,
+              "total_cost": 0.1431095,
               "mean_latency_ms": 2895.3541422764224,
               "shares": {
                 "local-qwen": 0.2601626016260163,
@@ -4406,7 +4430,7 @@
             {
               "tau": 0.66,
               "accuracy": 0.6300813008130082,
-              "total_cost": 0.139371,
+              "total_cost": 0.1459815,
               "mean_latency_ms": 2847.2591666666663,
               "shares": {
                 "local-qwen": 0.24390243902439024,
@@ -4417,7 +4441,7 @@
             {
               "tau": 0.67,
               "accuracy": 0.6300813008130082,
-              "total_cost": 0.14016625,
+              "total_cost": 0.14677675,
               "mean_latency_ms": 2834.2443170731704,
               "shares": {
                 "local-qwen": 0.23983739837398374,
@@ -4428,7 +4452,7 @@
             {
               "tau": 0.68,
               "accuracy": 0.6422764227642277,
-              "total_cost": 0.14356575,
+              "total_cost": 0.15017625,
               "mean_latency_ms": 2754.8377154471546,
               "shares": {
                 "local-qwen": 0.21951219512195122,
@@ -4439,7 +4463,7 @@
             {
               "tau": 0.69,
               "accuracy": 0.6504065040650406,
-              "total_cost": 0.14483049999999997,
+              "total_cost": 0.151441,
               "mean_latency_ms": 2725.239597560975,
               "shares": {
                 "local-qwen": 0.21138211382113822,
@@ -4450,7 +4474,7 @@
             {
               "tau": 0.7,
               "accuracy": 0.6544715447154471,
-              "total_cost": 0.15204025,
+              "total_cost": 0.16447375,
               "mean_latency_ms": 2708.9145569105685,
               "shares": {
                 "local-qwen": 0.1951219512195122,
@@ -4461,7 +4485,7 @@
             {
               "tau": 0.71,
               "accuracy": 0.6544715447154471,
-              "total_cost": 0.15600025,
+              "total_cost": 0.16843375,
               "mean_latency_ms": 2651.3100772357716,
               "shares": {
                 "local-qwen": 0.17479674796747968,
@@ -4472,7 +4496,7 @@
             {
               "tau": 0.72,
               "accuracy": 0.6626016260162602,
-              "total_cost": 0.15821775,
+              "total_cost": 0.17065125,
               "mean_latency_ms": 2617.1437276422757,
               "shares": {
                 "local-qwen": 0.16260162601626016,
@@ -4483,7 +4507,7 @@
             {
               "tau": 0.73,
               "accuracy": 0.6626016260162602,
-              "total_cost": 0.16126049999999997,
+              "total_cost": 0.17719574999999999,
               "mean_latency_ms": 2626.2678983739834,
               "shares": {
                 "local-qwen": 0.15853658536585366,
@@ -4494,7 +4518,7 @@
             {
               "tau": 0.74,
               "accuracy": 0.6626016260162602,
-              "total_cost": 0.16464599999999996,
+              "total_cost": 0.18245699999999998,
               "mean_latency_ms": 2597.876788617886,
               "shares": {
                 "local-qwen": 0.14634146341463414,
@@ -4505,7 +4529,7 @@
             {
               "tau": 0.75,
               "accuracy": 0.6747967479674797,
-              "total_cost": 0.17178474999999999,
+              "total_cost": 0.19398325,
               "mean_latency_ms": 2584.8083983739834,
               "shares": {
                 "local-qwen": 0.13008130081300814,
@@ -4516,7 +4540,7 @@
             {
               "tau": 0.76,
               "accuracy": 0.6869918699186992,
-              "total_cost": 0.17614775,
+              "total_cost": 0.19968799999999998,
               "mean_latency_ms": 2535.8278495934956,
               "shares": {
                 "local-qwen": 0.10975609756097561,
@@ -4527,7 +4551,7 @@
             {
               "tau": 0.77,
               "accuracy": 0.6829268292682927,
-              "total_cost": 0.180421,
+              "total_cost": 0.20685175,
               "mean_latency_ms": 2533.1511991869916,
               "shares": {
                 "local-qwen": 0.0975609756097561,
@@ -4538,7 +4562,7 @@
             {
               "tau": 0.78,
               "accuracy": 0.6991869918699187,
-              "total_cost": 0.18298749999999997,
+              "total_cost": 0.20941824999999997,
               "mean_latency_ms": 2504.8592886178862,
               "shares": {
                 "local-qwen": 0.08130081300813008,
@@ -4549,7 +4573,7 @@
             {
               "tau": 0.79,
               "accuracy": 0.7113821138211383,
-              "total_cost": 0.18773099999999998,
+              "total_cost": 0.21741224999999997,
               "mean_latency_ms": 2473.626158536585,
               "shares": {
                 "local-qwen": 0.06504065040650407,
@@ -4560,7 +4584,7 @@
             {
               "tau": 0.8,
               "accuracy": 0.7154471544715447,
-              "total_cost": 0.18830249999999998,
+              "total_cost": 0.21798374999999998,
               "mean_latency_ms": 2462.791292682927,
               "shares": {
                 "local-qwen": 0.06097560975609756,
@@ -4571,7 +4595,7 @@
             {
               "tau": 0.81,
               "accuracy": 0.7154471544715447,
-              "total_cost": 0.189799,
+              "total_cost": 0.21948025,
               "mean_latency_ms": 2436.234630081301,
               "shares": {
                 "local-qwen": 0.052845528455284556,
@@ -4582,7 +4606,7 @@
             {
               "tau": 0.82,
               "accuracy": 0.7154471544715447,
-              "total_cost": 0.190293,
+              "total_cost": 0.221133,
               "mean_latency_ms": 2448.044296747967,
               "shares": {
                 "local-qwen": 0.052845528455284556,
@@ -4593,7 +4617,7 @@
             {
               "tau": 0.83,
               "accuracy": 0.7235772357723578,
-              "total_cost": 0.19914224999999997,
+              "total_cost": 0.23891099999999998,
               "mean_latency_ms": 2487.3723292682926,
               "shares": {
                 "local-qwen": 0.04065040650406504,
@@ -4604,7 +4628,7 @@
             {
               "tau": 0.84,
               "accuracy": 0.7317073170731707,
-              "total_cost": 0.20144849999999997,
+              "total_cost": 0.24121725,
               "mean_latency_ms": 2470.7595487804874,
               "shares": {
                 "local-qwen": 0.028455284552845527,
@@ -4615,7 +4639,7 @@
             {
               "tau": 0.85,
               "accuracy": 0.7317073170731707,
-              "total_cost": 0.20378374999999999,
+              "total_cost": 0.24692299999999998,
               "mean_latency_ms": 2504.1077560975605,
               "shares": {
                 "local-qwen": 0.028455284552845527,
@@ -4626,7 +4650,7 @@
             {
               "tau": 0.86,
               "accuracy": 0.7357723577235772,
-              "total_cost": 0.2068855,
+              "total_cost": 0.2548735,
               "mean_latency_ms": 2519.69806504065,
               "shares": {
                 "local-qwen": 0.024390243902439025,
@@ -4637,7 +4661,7 @@
             {
               "tau": 0.87,
               "accuracy": 0.7439024390243902,
-              "total_cost": 0.21552274999999999,
+              "total_cost": 0.27531875,
               "mean_latency_ms": 2612.2470731707313,
               "shares": {
                 "local-qwen": 0.02032520325203252,
@@ -4648,7 +4672,7 @@
             {
               "tau": 0.88,
               "accuracy": 0.7439024390243902,
-              "total_cost": 0.21552274999999999,
+              "total_cost": 0.27531875,
               "mean_latency_ms": 2612.2470731707313,
               "shares": {
                 "local-qwen": 0.02032520325203252,
@@ -4659,7 +4683,7 @@
             {
               "tau": 0.89,
               "accuracy": 0.7479674796747967,
-              "total_cost": 0.22019075,
+              "total_cost": 0.28655225,
               "mean_latency_ms": 2643.5718983739835,
               "shares": {
                 "local-qwen": 0.012195121951219513,
@@ -4670,7 +4694,7 @@
             {
               "tau": 0.9,
               "accuracy": 0.7560975609756098,
-              "total_cost": 0.22547374999999997,
+              "total_cost": 0.297704,
               "mean_latency_ms": 2664.434882113821,
               "shares": {
                 "local-qwen": 0.008130081300813009,
@@ -4681,7 +4705,7 @@
             {
               "tau": 0.91,
               "accuracy": 0.7601626016260162,
-              "total_cost": 0.23031000000000001,
+              "total_cost": 0.30948600000000004,
               "mean_latency_ms": 2714.5828536585364,
               "shares": {
                 "local-qwen": 0.008130081300813009,
@@ -4692,7 +4716,7 @@
             {
               "tau": 0.92,
               "accuracy": 0.7601626016260162,
-              "total_cost": 0.2314255,
+              "total_cost": 0.31330975,
               "mean_latency_ms": 2729.1401138211377,
               "shares": {
                 "local-qwen": 0.008130081300813009,
@@ -4703,7 +4727,7 @@
             {
               "tau": 0.93,
               "accuracy": 0.7601626016260162,
-              "total_cost": 0.23499775,
+              "total_cost": 0.3210445,
               "mean_latency_ms": 2747.4210691056905,
               "shares": {
                 "local-qwen": 0.0,
@@ -4714,7 +4738,7 @@
             {
               "tau": 0.94,
               "accuracy": 0.7642276422764228,
-              "total_cost": 0.25737625,
+              "total_cost": 0.37176775,
               "mean_latency_ms": 2977.8972804878044,
               "shares": {
                 "local-qwen": 0.0,
@@ -4725,7 +4749,7 @@
             {
               "tau": 0.95,
               "accuracy": 0.7601626016260162,
-              "total_cost": 0.26421649999999997,
+              "total_cost": 0.39060649999999997,
               "mean_latency_ms": 3054.9423130081295,
               "shares": {
                 "local-qwen": 0.0,
@@ -4736,7 +4760,7 @@
             {
               "tau": 0.96,
               "accuracy": 0.7601626016260162,
-              "total_cost": 0.274764,
+              "total_cost": 0.41756099999999996,
               "mean_latency_ms": 3172.7143252032515,
               "shares": {
                 "local-qwen": 0.0,
@@ -4747,7 +4771,7 @@
             {
               "tau": 0.97,
               "accuracy": 0.7642276422764228,
-              "total_cost": 0.29675050000000003,
+              "total_cost": 0.477463,
               "mean_latency_ms": 3463.2782235772356,
               "shares": {
                 "local-qwen": 0.0,
@@ -4758,7 +4782,7 @@
             {
               "tau": 0.98,
               "accuracy": 0.7723577235772358,
-              "total_cost": 0.31647575000000006,
+              "total_cost": 0.5333975,
               "mean_latency_ms": 3723.7679552845525,
               "shares": {
                 "local-qwen": 0.0,
@@ -4769,7 +4793,7 @@
             {
               "tau": 0.99,
               "accuracy": 0.7764227642276422,
-              "total_cost": 0.360065,
+              "total_cost": 0.65492675,
               "mean_latency_ms": 4279.824463414634,
               "shares": {
                 "local-qwen": 0.0,
@@ -4780,7 +4804,7 @@
             {
               "tau": 1.0,
               "accuracy": 0.8292682926829268,
-              "total_cost": 0.45792525000000006,
+              "total_cost": 0.9158505000000001,
               "mean_latency_ms": 5443.811577235772,
               "shares": {
                 "local-qwen": 0.0,
@@ -4791,17 +4815,17 @@
           ],
           "selected": {
             "accuracy": 0.7764227642276422,
-            "total_cost": 0.360065,
+            "total_cost": 0.65492675,
             "mean_latency_ms": 4279.824463414634,
             "shares": {
               "local-qwen": 0.0,
               "gemini-flash-lite": 0.35365853658536583,
               "gemini-flash": 0.6463414634146342
             },
-            "cost_reduction_vs_last": 0.21370354659412216,
+            "cost_reduction_vs_last": 0.284897753508897,
             "gap_recovered": 0.8951612903225806,
-            "accuracy_vs_hull": -0.018620453082101807,
-            "oracle_savings_captured": 0.4167515733013084
+            "accuracy_vs_hull": -0.018300038538800467,
+            "oracle_savings_captured": 0.4756400230415588
           }
         }
       }
@@ -4814,7 +4838,7 @@
         "oof": {
           "tau": 0.92,
           "accuracy": 0.9327002477291495,
-          "total_cost": 3.706232,
+          "total_cost": 7.1033420000000005,
           "mean_latency_ms": 4208.181547068539,
           "shares": {
             "local-qwen": 0.06151940545004129,
@@ -5651,7 +5675,7 @@
             {
               "tau": 0.73,
               "accuracy": 0.8771121351766513,
-              "total_cost": 0.257153,
+              "total_cost": 0.2588195,
               "mean_latency_ms": 2562.2278648233487,
               "shares": {
                 "local-qwen": 0.4577572964669739,
@@ -5662,7 +5686,7 @@
             {
               "tau": 0.74,
               "accuracy": 0.8786482334869432,
-              "total_cost": 0.2604085,
+              "total_cost": 0.262075,
               "mean_latency_ms": 2539.0324884792626,
               "shares": {
                 "local-qwen": 0.4485407066052227,
@@ -5673,7 +5697,7 @@
             {
               "tau": 0.75,
               "accuracy": 0.880184331797235,
-              "total_cost": 0.26870825,
+              "total_cost": 0.27037475,
               "mean_latency_ms": 2475.0464147465436,
               "shares": {
                 "local-qwen": 0.42857142857142855,
@@ -5684,7 +5708,7 @@
             {
               "tau": 0.76,
               "accuracy": 0.8817204301075269,
-              "total_cost": 0.27305825,
+              "total_cost": 0.2762255,
               "mean_latency_ms": 2448.030850998464,
               "shares": {
                 "local-qwen": 0.41781874039938555,
@@ -5695,7 +5719,7 @@
             {
               "tau": 0.77,
               "accuracy": 0.8832565284178188,
-              "total_cost": 0.28937475,
+              "total_cost": 0.30204075,
               "mean_latency_ms": 2390.2147188940094,
               "shares": {
                 "local-qwen": 0.38863287250384027,
@@ -5706,7 +5730,7 @@
             {
               "tau": 0.78,
               "accuracy": 0.8847926267281107,
-              "total_cost": 0.2960975,
+              "total_cost": 0.3087635,
               "mean_latency_ms": 2345.588175115207,
               "shares": {
                 "local-qwen": 0.3655913978494624,
@@ -5717,7 +5741,7 @@
             {
               "tau": 0.79,
               "accuracy": 0.8894009216589862,
-              "total_cost": 0.30704175,
+              "total_cost": 0.32420699999999997,
               "mean_latency_ms": 2302.85779109063,
               "shares": {
                 "local-qwen": 0.3379416282642089,
@@ -5728,7 +5752,7 @@
             {
               "tau": 0.8,
               "accuracy": 0.8894009216589862,
-              "total_cost": 0.31698575,
+              "total_cost": 0.33853625000000004,
               "mean_latency_ms": 2258.3870906298002,
               "shares": {
                 "local-qwen": 0.3102918586789555,
@@ -5739,7 +5763,7 @@
             {
               "tau": 0.81,
               "accuracy": 0.8940092165898618,
-              "total_cost": 0.34267375,
+              "total_cost": 0.39027325,
               "mean_latency_ms": 2307.1129185867894,
               "shares": {
                 "local-qwen": 0.29339477726574503,
@@ -5750,7 +5774,7 @@
             {
               "tau": 0.82,
               "accuracy": 0.8940092165898618,
-              "total_cost": 0.37971425000000003,
+              "total_cost": 0.46147999999999995,
               "mean_latency_ms": 2330.9570645161293,
               "shares": {
                 "local-qwen": 0.261136712749616,
@@ -5761,7 +5785,7 @@
             {
               "tau": 0.83,
               "accuracy": 0.9001536098310292,
-              "total_cost": 0.39925675,
+              "total_cost": 0.50611975,
               "mean_latency_ms": 2349.0107250384026,
               "shares": {
                 "local-qwen": 0.23963133640552994,
@@ -5772,7 +5796,7 @@
             {
               "tau": 0.84,
               "accuracy": 0.9047619047619048,
-              "total_cost": 0.41906299999999996,
+              "total_cost": 0.5451125,
               "mean_latency_ms": 2332.0501321044544,
               "shares": {
                 "local-qwen": 0.20430107526881722,
@@ -5783,7 +5807,7 @@
             {
               "tau": 0.85,
               "accuracy": 0.9109062980030722,
-              "total_cost": 0.4504465,
+              "total_cost": 0.6043157499999999,
               "mean_latency_ms": 2307.90851766513,
               "shares": {
                 "local-qwen": 0.16129032258064516,
@@ -5794,7 +5818,7 @@
             {
               "tau": 0.86,
               "accuracy": 0.9139784946236559,
-              "total_cost": 0.484853,
+              "total_cost": 0.6730879999999999,
               "mean_latency_ms": 2290.7172642089095,
               "shares": {
                 "local-qwen": 0.1152073732718894,
@@ -5805,7 +5829,7 @@
             {
               "tau": 0.87,
               "accuracy": 0.9216589861751152,
-              "total_cost": 0.54112075,
+              "total_cost": 0.8019047499999999,
               "mean_latency_ms": 2438.0569569892473,
               "shares": {
                 "local-qwen": 0.08602150537634409,
@@ -5816,7 +5840,7 @@
             {
               "tau": 0.88,
               "accuracy": 0.9216589861751152,
-              "total_cost": 0.6060985000000001,
+              "total_cost": 0.9595104999999999,
               "mean_latency_ms": 2652.3146374807984,
               "shares": {
                 "local-qwen": 0.06758832565284179,
@@ -5827,7 +5851,7 @@
             {
               "tau": 0.89,
               "accuracy": 0.9339477726574501,
-              "total_cost": 0.720773,
+              "total_cost": 1.23188375,
               "mean_latency_ms": 3033.267505376344,
               "shares": {
                 "local-qwen": 0.03225806451612903,
@@ -5838,7 +5862,7 @@
             {
               "tau": 0.9,
               "accuracy": 0.9339477726574501,
-              "total_cost": 0.7956699999999999,
+              "total_cost": 1.41310825,
               "mean_latency_ms": 3301.973116743471,
               "shares": {
                 "local-qwen": 0.021505376344086023,
@@ -5849,7 +5873,7 @@
             {
               "tau": 0.91,
               "accuracy": 0.9400921658986175,
-              "total_cost": 0.89335625,
+              "total_cost": 1.65890975,
               "mean_latency_ms": 3696.0496958525346,
               "shares": {
                 "local-qwen": 0.010752688172043012,
@@ -5860,7 +5884,7 @@
             {
               "tau": 0.92,
               "accuracy": 0.9447004608294931,
-              "total_cost": 0.94649525,
+              "total_cost": 1.802051,
               "mean_latency_ms": 3951.308505376344,
               "shares": {
                 "local-qwen": 0.004608294930875576,
@@ -5871,7 +5895,7 @@
             {
               "tau": 0.93,
               "accuracy": 0.946236559139785,
-              "total_cost": 1.0080215000000001,
+              "total_cost": 1.95998225,
               "mean_latency_ms": 4244.976910906298,
               "shares": {
                 "local-qwen": 0.0030721966205837174,
@@ -5882,7 +5906,7 @@
             {
               "tau": 0.94,
               "accuracy": 0.946236559139785,
-              "total_cost": 1.071335,
+              "total_cost": 2.1225515,
               "mean_latency_ms": 4574.616058371736,
               "shares": {
                 "local-qwen": 0.0030721966205837174,
@@ -5893,7 +5917,7 @@
             {
               "tau": 0.95,
               "accuracy": 0.946236559139785,
-              "total_cost": 1.107055,
+              "total_cost": 2.209912,
               "mean_latency_ms": 4739.580425499232,
               "shares": {
                 "local-qwen": 0.0,
@@ -5904,7 +5928,7 @@
             {
               "tau": 0.96,
               "accuracy": 0.946236559139785,
-              "total_cost": 1.11413025,
+              "total_cost": 2.2282605,
               "mean_latency_ms": 4775.754674347158,
               "shares": {
                 "local-qwen": 0.0,
@@ -5915,7 +5939,7 @@
             {
               "tau": 0.97,
               "accuracy": 0.946236559139785,
-              "total_cost": 1.11413025,
+              "total_cost": 2.2282605,
               "mean_latency_ms": 4775.754674347158,
               "shares": {
                 "local-qwen": 0.0,
@@ -5926,7 +5950,7 @@
             {
               "tau": 0.98,
               "accuracy": 0.946236559139785,
-              "total_cost": 1.11413025,
+              "total_cost": 2.2282605,
               "mean_latency_ms": 4775.754674347158,
               "shares": {
                 "local-qwen": 0.0,
@@ -5937,7 +5961,7 @@
             {
               "tau": 0.99,
               "accuracy": 0.946236559139785,
-              "total_cost": 1.11413025,
+              "total_cost": 2.2282605,
               "mean_latency_ms": 4775.754674347158,
               "shares": {
                 "local-qwen": 0.0,
@@ -5948,7 +5972,7 @@
             {
               "tau": 1.0,
               "accuracy": 0.946236559139785,
-              "total_cost": 1.11413025,
+              "total_cost": 2.2282605,
               "mean_latency_ms": 4775.754674347158,
               "shares": {
                 "local-qwen": 0.0,
@@ -5959,17 +5983,17 @@
           ],
           "selected": {
             "accuracy": 0.9447004608294931,
-            "total_cost": 0.94649525,
+            "total_cost": 1.802051,
             "mean_latency_ms": 3951.308505376344,
             "shares": {
               "local-qwen": 0.004608294930875576,
               "gemini-flash-lite": 0.3486943164362519,
               "gemini-flash": 0.6466973886328725
             },
-            "cost_reduction_vs_last": 0.150462659101124,
+            "cost_reduction_vs_last": 0.19127453904065528,
             "gap_recovered": 0.994011976047904,
-            "accuracy_vs_hull": 0.007604347211711104,
-            "oracle_savings_captured": 0.21021281798474215
+            "accuracy_vs_hull": 0.0076820279825104976,
+            "oracle_savings_captured": 0.2489587279205196
           }
         },
         "ood": {
@@ -6857,7 +6881,7 @@
             {
               "tau": 0.79,
               "accuracy": 0.7317073170731707,
-              "total_cost": 0.17936875,
+              "total_cost": 0.181522,
               "mean_latency_ms": 2081.455073170732,
               "shares": {
                 "local-qwen": 0.0040650406504065045,
@@ -6868,7 +6892,7 @@
             {
               "tau": 0.8,
               "accuracy": 0.7317073170731707,
-              "total_cost": 0.1799255,
+              "total_cost": 0.18303949999999997,
               "mean_latency_ms": 2090.9348292682926,
               "shares": {
                 "local-qwen": 0.0040650406504065045,
@@ -6879,7 +6903,7 @@
             {
               "tau": 0.81,
               "accuracy": 0.7398373983739838,
-              "total_cost": 0.18778774999999998,
+              "total_cost": 0.20104624999999998,
               "mean_latency_ms": 2159.6773048780487,
               "shares": {
                 "local-qwen": 0.0,
@@ -6890,7 +6914,7 @@
             {
               "tau": 0.82,
               "accuracy": 0.7398373983739838,
-              "total_cost": 0.20357399999999998,
+              "total_cost": 0.23432625,
               "mean_latency_ms": 2324.135678861788,
               "shares": {
                 "local-qwen": 0.0,
@@ -6901,7 +6925,7 @@
             {
               "tau": 0.83,
               "accuracy": 0.7439024390243902,
-              "total_cost": 0.20766749999999998,
+              "total_cost": 0.24527549999999998,
               "mean_latency_ms": 2374.262951219512,
               "shares": {
                 "local-qwen": 0.0,
@@ -6912,7 +6936,7 @@
             {
               "tau": 0.84,
               "accuracy": 0.7479674796747967,
-              "total_cost": 0.21322950000000002,
+              "total_cost": 0.26059499999999997,
               "mean_latency_ms": 2440.563040650406,
               "shares": {
                 "local-qwen": 0.0,
@@ -6923,7 +6947,7 @@
             {
               "tau": 0.85,
               "accuracy": 0.7439024390243902,
-              "total_cost": 0.23301049999999998,
+              "total_cost": 0.3143465,
               "mean_latency_ms": 2704.55925203252,
               "shares": {
                 "local-qwen": 0.0,
@@ -6934,7 +6958,7 @@
             {
               "tau": 0.86,
               "accuracy": 0.7601626016260162,
-              "total_cost": 0.2642725,
+              "total_cost": 0.38951725,
               "mean_latency_ms": 3036.9941341463414,
               "shares": {
                 "local-qwen": 0.0,
@@ -6945,7 +6969,7 @@
             {
               "tau": 0.87,
               "accuracy": 0.7682926829268293,
-              "total_cost": 0.28981700000000005,
+              "total_cost": 0.46068875,
               "mean_latency_ms": 3358.4767439024395,
               "shares": {
                 "local-qwen": 0.0,
@@ -6956,7 +6980,7 @@
             {
               "tau": 0.88,
               "accuracy": 0.7886178861788617,
-              "total_cost": 0.33765275,
+              "total_cost": 0.5873495,
               "mean_latency_ms": 3932.718056910569,
               "shares": {
                 "local-qwen": 0.0,
@@ -6967,7 +6991,7 @@
             {
               "tau": 0.89,
               "accuracy": 0.7967479674796748,
-              "total_cost": 0.3801365,
+              "total_cost": 0.706061,
               "mean_latency_ms": 4453.105739837399,
               "shares": {
                 "local-qwen": 0.0,
@@ -6978,7 +7002,7 @@
             {
               "tau": 0.9,
               "accuracy": 0.8089430894308943,
-              "total_cost": 0.419411,
+              "total_cost": 0.8126465,
               "mean_latency_ms": 4949.151235772359,
               "shares": {
                 "local-qwen": 0.0,
@@ -6989,7 +7013,7 @@
             {
               "tau": 0.91,
               "accuracy": 0.8170731707317073,
-              "total_cost": 0.442544,
+              "total_cost": 0.8738975,
               "mean_latency_ms": 5244.014752032521,
               "shares": {
                 "local-qwen": 0.0,
@@ -7000,7 +7024,7 @@
             {
               "tau": 0.92,
               "accuracy": 0.8252032520325203,
-              "total_cost": 0.45018325000000003,
+              "total_cost": 0.8953600000000002,
               "mean_latency_ms": 5345.825117886179,
               "shares": {
                 "local-qwen": 0.0,
@@ -7011,7 +7035,7 @@
             {
               "tau": 0.93,
               "accuracy": 0.8292682926829268,
-              "total_cost": 0.457174,
+              "total_cost": 0.9137695000000001,
               "mean_latency_ms": 5433.4790487804885,
               "shares": {
                 "local-qwen": 0.0,
@@ -7022,7 +7046,7 @@
             {
               "tau": 0.94,
               "accuracy": 0.8292682926829268,
-              "total_cost": 0.45792525000000006,
+              "total_cost": 0.9158505000000001,
               "mean_latency_ms": 5443.811577235772,
               "shares": {
                 "local-qwen": 0.0,
@@ -7033,7 +7057,7 @@
             {
               "tau": 0.95,
               "accuracy": 0.8292682926829268,
-              "total_cost": 0.45792525000000006,
+              "total_cost": 0.9158505000000001,
               "mean_latency_ms": 5443.811577235772,
               "shares": {
                 "local-qwen": 0.0,
@@ -7044,7 +7068,7 @@
             {
               "tau": 0.96,
               "accuracy": 0.8292682926829268,
-              "total_cost": 0.45792525000000006,
+              "total_cost": 0.9158505000000001,
               "mean_latency_ms": 5443.811577235772,
               "shares": {
                 "local-qwen": 0.0,
@@ -7055,7 +7079,7 @@
             {
               "tau": 0.97,
               "accuracy": 0.8292682926829268,
-              "total_cost": 0.45792525000000006,
+              "total_cost": 0.9158505000000001,
               "mean_latency_ms": 5443.811577235772,
               "shares": {
                 "local-qwen": 0.0,
@@ -7066,7 +7090,7 @@
             {
               "tau": 0.98,
               "accuracy": 0.8292682926829268,
-              "total_cost": 0.45792525000000006,
+              "total_cost": 0.9158505000000001,
               "mean_latency_ms": 5443.811577235772,
               "shares": {
                 "local-qwen": 0.0,
@@ -7077,7 +7101,7 @@
             {
               "tau": 0.99,
               "accuracy": 0.8292682926829268,
-              "total_cost": 0.45792525000000006,
+              "total_cost": 0.9158505000000001,
               "mean_latency_ms": 5443.811577235772,
               "shares": {
                 "local-qwen": 0.0,
@@ -7088,7 +7112,7 @@
             {
               "tau": 1.0,
               "accuracy": 0.8292682926829268,
-              "total_cost": 0.45792525000000006,
+              "total_cost": 0.9158505000000001,
               "mean_latency_ms": 5443.811577235772,
               "shares": {
                 "local-qwen": 0.0,
@@ -7099,17 +7123,17 @@
           ],
           "selected": {
             "accuracy": 0.8252032520325203,
-            "total_cost": 0.45018325000000003,
+            "total_cost": 0.8953600000000002,
             "mean_latency_ms": 5345.825117886179,
             "shares": {
               "local-qwen": 0.0,
               "gemini-flash-lite": 0.028455284552845527,
               "gemini-flash": 0.9715447154471545
             },
-            "cost_reduction_vs_last": 0.016906689465147506,
+            "cost_reduction_vs_last": 0.02237319300475349,
             "gap_recovered": 0.9919354838709679,
-            "accuracy_vs_hull": -0.0013573985430218594,
-            "oracle_savings_captured": 0.03297039074086505
+            "accuracy_vs_hull": -0.0013521624201430216,
+            "oracle_savings_captured": 0.03735229886943232
           }
         }
       }
@@ -7122,7 +7146,7 @@
         "oof": {
           "tau": 1.0,
           "accuracy": 0.9421965317919075,
-          "total_cost": 4.417611,
+          "total_cost": 8.835222,
           "mean_latency_ms": 4960.416581337737,
           "shares": {
             "local-qwen": 0.0,
@@ -7211,7 +7235,7 @@
             {
               "tau": 0.05,
               "accuracy": 0.7142857142857143,
-              "total_cost": 0.029660249999999996,
+              "total_cost": 0.031146749999999997,
               "mean_latency_ms": 4488.53277265745,
               "shares": {
                 "local-qwen": 0.946236559139785,
@@ -7222,7 +7246,7 @@
             {
               "tau": 0.06,
               "accuracy": 0.7158218125960062,
-              "total_cost": 0.0332865,
+              "total_cost": 0.035604,
               "mean_latency_ms": 4475.629689708142,
               "shares": {
                 "local-qwen": 0.9385560675883257,
@@ -7233,7 +7257,7 @@
             {
               "tau": 0.07,
               "accuracy": 0.717357910906298,
-              "total_cost": 0.03724325,
+              "total_cost": 0.039560750000000006,
               "mean_latency_ms": 4445.018278033795,
               "shares": {
                 "local-qwen": 0.9278033794162827,
@@ -7244,7 +7268,7 @@
             {
               "tau": 0.08,
               "accuracy": 0.7188940092165899,
-              "total_cost": 0.04046725,
+              "total_cost": 0.04278475,
               "mean_latency_ms": 4408.325496159754,
               "shares": {
                 "local-qwen": 0.9231950844854071,
@@ -7255,7 +7279,7 @@
             {
               "tau": 0.09,
               "accuracy": 0.7265745007680492,
-              "total_cost": 0.046531,
+              "total_cost": 0.050272,
               "mean_latency_ms": 4357.379423963133,
               "shares": {
                 "local-qwen": 0.9139784946236559,
@@ -7266,7 +7290,7 @@
             {
               "tau": 0.1,
               "accuracy": 0.7327188940092166,
-              "total_cost": 0.056991749999999994,
+              "total_cost": 0.06573,
               "mean_latency_ms": 4292.836784946237,
               "shares": {
                 "local-qwen": 0.9001536098310292,
@@ -7277,7 +7301,7 @@
             {
               "tau": 0.11,
               "accuracy": 0.7342549923195084,
-              "total_cost": 0.05926424999999999,
+              "total_cost": 0.0680025,
               "mean_latency_ms": 4270.79019969278,
               "shares": {
                 "local-qwen": 0.8970814132104454,
@@ -7288,7 +7312,7 @@
             {
               "tau": 0.12,
               "accuracy": 0.7373271889400922,
-              "total_cost": 0.062633,
+              "total_cost": 0.07137125,
               "mean_latency_ms": 4243.341983102919,
               "shares": {
                 "local-qwen": 0.8924731182795699,
@@ -7299,7 +7323,7 @@
             {
               "tau": 0.13,
               "accuracy": 0.738863287250384,
-              "total_cost": 0.0696455,
+              "total_cost": 0.0814085,
               "mean_latency_ms": 4215.058135176651,
               "shares": {
                 "local-qwen": 0.8832565284178188,
@@ -7310,7 +7334,7 @@
             {
               "tau": 0.14,
               "accuracy": 0.7434715821812596,
-              "total_cost": 0.07331825,
+              "total_cost": 0.08508125,
               "mean_latency_ms": 4190.845612903226,
               "shares": {
                 "local-qwen": 0.8771121351766513,
@@ -7321,7 +7345,7 @@
             {
               "tau": 0.15,
               "accuracy": 0.7465437788018433,
-              "total_cost": 0.07639950000000001,
+              "total_cost": 0.0881625,
               "mean_latency_ms": 4163.102230414746,
               "shares": {
                 "local-qwen": 0.8709677419354839,
@@ -7332,7 +7356,7 @@
             {
               "tau": 0.16,
               "accuracy": 0.7496159754224271,
-              "total_cost": 0.081012,
+              "total_cost": 0.093846,
               "mean_latency_ms": 4127.039382488479,
               "shares": {
                 "local-qwen": 0.8648233486943164,
@@ -7343,7 +7367,7 @@
             {
               "tau": 0.17,
               "accuracy": 0.7496159754224271,
-              "total_cost": 0.0838915,
+              "total_cost": 0.09672549999999999,
               "mean_latency_ms": 4105.654058371736,
               "shares": {
                 "local-qwen": 0.858678955453149,
@@ -7354,7 +7378,7 @@
             {
               "tau": 0.18,
               "accuracy": 0.7557603686635944,
-              "total_cost": 0.08819274999999999,
+              "total_cost": 0.10102675,
               "mean_latency_ms": 4062.6930030721965,
               "shares": {
                 "local-qwen": 0.847926267281106,
@@ -7365,7 +7389,7 @@
             {
               "tau": 0.19,
               "accuracy": 0.7588325652841782,
-              "total_cost": 0.09418975,
+              "total_cost": 0.10968249999999999,
               "mean_latency_ms": 4043.624241167435,
               "shares": {
                 "local-qwen": 0.8387096774193549,
@@ -7376,7 +7400,7 @@
             {
               "tau": 0.2,
               "accuracy": 0.7603686635944701,
-              "total_cost": 0.09772800000000001,
+              "total_cost": 0.11392649999999999,
               "mean_latency_ms": 4024.950812596006,
               "shares": {
                 "local-qwen": 0.8310291858678955,
@@ -7387,7 +7411,7 @@
             {
               "tau": 0.21,
               "accuracy": 0.7634408602150538,
-              "total_cost": 0.11133575,
+              "total_cost": 0.13968049999999999,
               "mean_latency_ms": 4026.038325652842,
               "shares": {
                 "local-qwen": 0.8233486943164362,
@@ -7398,7 +7422,7 @@
             {
               "tau": 0.22,
               "accuracy": 0.7649769585253456,
-              "total_cost": 0.11492925,
+              "total_cost": 0.14513325,
               "mean_latency_ms": 4011.2732411674347,
               "shares": {
                 "local-qwen": 0.8187403993855606,
@@ -7409,7 +7433,7 @@
             {
               "tau": 0.23,
               "accuracy": 0.7665130568356375,
-              "total_cost": 0.11702675000000001,
+              "total_cost": 0.14723075,
               "mean_latency_ms": 3994.7451674347158,
               "shares": {
                 "local-qwen": 0.8141321044546851,
@@ -7420,7 +7444,7 @@
             {
               "tau": 0.24,
               "accuracy": 0.7680491551459293,
-              "total_cost": 0.1241515,
+              "total_cost": 0.16146475,
               "mean_latency_ms": 3995.7700906298,
               "shares": {
                 "local-qwen": 0.8110599078341014,
@@ -7431,7 +7455,7 @@
             {
               "tau": 0.25,
               "accuracy": 0.7726574500768049,
-              "total_cost": 0.127798,
+              "total_cost": 0.16511125,
               "mean_latency_ms": 3963.429479262673,
               "shares": {
                 "local-qwen": 0.804915514592934,
@@ -7442,7 +7466,7 @@
             {
               "tau": 0.26,
               "accuracy": 0.7726574500768049,
-              "total_cost": 0.127798,
+              "total_cost": 0.16511125,
               "mean_latency_ms": 3963.429479262673,
               "shares": {
                 "local-qwen": 0.804915514592934,
@@ -7453,7 +7477,7 @@
             {
               "tau": 0.27,
               "accuracy": 0.7757296466973886,
-              "total_cost": 0.1307275,
+              "total_cost": 0.16935925000000002,
               "mean_latency_ms": 3940.2755253456216,
               "shares": {
                 "local-qwen": 0.8003072196620584,
@@ -7464,7 +7488,7 @@
             {
               "tau": 0.28,
               "accuracy": 0.7772657450076805,
-              "total_cost": 0.13461225,
+              "total_cost": 0.173244,
               "mean_latency_ms": 3901.5183287250384,
               "shares": {
                 "local-qwen": 0.7926267281105991,
@@ -7475,7 +7499,7 @@
             {
               "tau": 0.29,
               "accuracy": 0.7772657450076805,
-              "total_cost": 0.135056,
+              "total_cost": 0.17368775,
               "mean_latency_ms": 3897.2350061443935,
               "shares": {
                 "local-qwen": 0.7910906298003072,
@@ -7486,7 +7510,7 @@
             {
               "tau": 0.3,
               "accuracy": 0.7772657450076805,
-              "total_cost": 0.13738975,
+              "total_cost": 0.1760215,
               "mean_latency_ms": 3872.777342549923,
               "shares": {
                 "local-qwen": 0.7849462365591398,
@@ -7497,7 +7521,7 @@
             {
               "tau": 0.31,
               "accuracy": 0.7788018433179723,
-              "total_cost": 0.140702,
+              "total_cost": 0.18017,
               "mean_latency_ms": 3849.9143886328725,
               "shares": {
                 "local-qwen": 0.7803379416282642,
@@ -7508,7 +7532,7 @@
             {
               "tau": 0.32,
               "accuracy": 0.7818740399385561,
-              "total_cost": 0.1472415,
+              "total_cost": 0.19123724999999997,
               "mean_latency_ms": 3837.787697388633,
               "shares": {
                 "local-qwen": 0.7757296466973886,
@@ -7519,7 +7543,7 @@
             {
               "tau": 0.33,
               "accuracy": 0.783410138248848,
-              "total_cost": 0.15054325,
+              "total_cost": 0.19740774999999997,
               "mean_latency_ms": 3834.8815253456223,
               "shares": {
                 "local-qwen": 0.7726574500768049,
@@ -7530,7 +7554,7 @@
             {
               "tau": 0.34,
               "accuracy": 0.783410138248848,
-              "total_cost": 0.15367825,
+              "total_cost": 0.205297,
               "mean_latency_ms": 3850.042456221199,
               "shares": {
                 "local-qwen": 0.7726574500768049,
@@ -7541,7 +7565,7 @@
             {
               "tau": 0.35,
               "accuracy": 0.7895545314900153,
-              "total_cost": 0.158471,
+              "total_cost": 0.21175625,
               "mean_latency_ms": 3825.9104900153616,
               "shares": {
                 "local-qwen": 0.7649769585253456,
@@ -7552,7 +7576,7 @@
             {
               "tau": 0.36,
               "accuracy": 0.7895545314900153,
-              "total_cost": 0.16137125,
+              "total_cost": 0.21610925,
               "mean_latency_ms": 3814.3499201228883,
               "shares": {
                 "local-qwen": 0.7603686635944701,
@@ -7563,7 +7587,7 @@
             {
               "tau": 0.37,
               "accuracy": 0.7895545314900153,
-              "total_cost": 0.16137125,
+              "total_cost": 0.21610925,
               "mean_latency_ms": 3814.3499201228883,
               "shares": {
                 "local-qwen": 0.7603686635944701,
@@ -7574,7 +7598,7 @@
             {
               "tau": 0.38,
               "accuracy": 0.7910906298003072,
-              "total_cost": 0.1630815,
+              "total_cost": 0.218706,
               "mean_latency_ms": 3810.682067588326,
               "shares": {
                 "local-qwen": 0.7572964669738863,
@@ -7585,7 +7609,7 @@
             {
               "tau": 0.39,
               "accuracy": 0.7926267281105991,
-              "total_cost": 0.16468025,
+              "total_cost": 0.22030475,
               "mean_latency_ms": 3797.4889308755764,
               "shares": {
                 "local-qwen": 0.7526881720430108,
@@ -7596,7 +7620,7 @@
             {
               "tau": 0.4,
               "accuracy": 0.7956989247311828,
-              "total_cost": 0.167755,
+              "total_cost": 0.2233795,
               "mean_latency_ms": 3775.934795698925,
               "shares": {
                 "local-qwen": 0.7450076804915514,
@@ -7607,7 +7631,7 @@
             {
               "tau": 0.41,
               "accuracy": 0.7987711213517665,
-              "total_cost": 0.171732,
+              "total_cost": 0.230478,
               "mean_latency_ms": 3767.0786528417816,
               "shares": {
                 "local-qwen": 0.7403993855606759,
@@ -7618,7 +7642,7 @@
             {
               "tau": 0.42,
               "accuracy": 0.8003072196620584,
-              "total_cost": 0.1798365,
+              "total_cost": 0.24404325,
               "mean_latency_ms": 3742.358059907834,
               "shares": {
                 "local-qwen": 0.7311827956989247,
@@ -7629,7 +7653,7 @@
             {
               "tau": 0.43,
               "accuracy": 0.8018433179723502,
-              "total_cost": 0.18194,
+              "total_cost": 0.24919175,
               "mean_latency_ms": 3742.2136313364053,
               "shares": {
                 "local-qwen": 0.7296466973886329,
@@ -7640,7 +7664,7 @@
             {
               "tau": 0.44,
               "accuracy": 0.804915514592934,
-              "total_cost": 0.189081,
+              "total_cost": 0.263808,
               "mean_latency_ms": 3749.521308755761,
               "shares": {
                 "local-qwen": 0.7265745007680492,
@@ -7651,7 +7675,7 @@
             {
               "tau": 0.45,
               "accuracy": 0.804915514592934,
-              "total_cost": 0.19052950000000002,
+              "total_cost": 0.2652565,
               "mean_latency_ms": 3738.13809984639,
               "shares": {
                 "local-qwen": 0.7235023041474654,
@@ -7662,7 +7686,7 @@
             {
               "tau": 0.46,
               "accuracy": 0.804915514592934,
-              "total_cost": 0.19110275,
+              "total_cost": 0.26582975,
               "mean_latency_ms": 3735.954499231951,
               "shares": {
                 "local-qwen": 0.7219662058371735,
@@ -7673,7 +7697,7 @@
             {
               "tau": 0.47,
               "accuracy": 0.804915514592934,
-              "total_cost": 0.192247,
+              "total_cost": 0.26697400000000004,
               "mean_latency_ms": 3732.1391259600614,
               "shares": {
                 "local-qwen": 0.7204301075268817,
@@ -7684,7 +7708,7 @@
             {
               "tau": 0.48,
               "accuracy": 0.8064516129032258,
-              "total_cost": 0.19332725,
+              "total_cost": 0.26805425,
               "mean_latency_ms": 3725.8319477726577,
               "shares": {
                 "local-qwen": 0.717357910906298,
@@ -7695,7 +7719,7 @@
             {
               "tau": 0.49,
               "accuracy": 0.8095238095238095,
-              "total_cost": 0.19577200000000003,
+              "total_cost": 0.270499,
               "mean_latency_ms": 3693.504803379417,
               "shares": {
                 "local-qwen": 0.7127496159754224,
@@ -7706,7 +7730,7 @@
             {
               "tau": 0.5,
               "accuracy": 0.8110599078341014,
-              "total_cost": 0.1969295,
+              "total_cost": 0.2716565,
               "mean_latency_ms": 3680.679870967742,
               "shares": {
                 "local-qwen": 0.7096774193548387,
@@ -7717,7 +7741,7 @@
             {
               "tau": 0.51,
               "accuracy": 0.8110599078341014,
-              "total_cost": 0.20035624999999999,
+              "total_cost": 0.27908825000000004,
               "mean_latency_ms": 3678.044861751152,
               "shares": {
                 "local-qwen": 0.7081413210445469,
@@ -7728,7 +7752,7 @@
             {
               "tau": 0.52,
               "accuracy": 0.8125960061443932,
-              "total_cost": 0.20265750000000002,
+              "total_cost": 0.2813895,
               "mean_latency_ms": 3656.70330875576,
               "shares": {
                 "local-qwen": 0.7019969278033794,
@@ -7739,7 +7763,7 @@
             {
               "tau": 0.53,
               "accuracy": 0.8125960061443932,
-              "total_cost": 0.20605325,
+              "total_cost": 0.28478525,
               "mean_latency_ms": 3640.164231950845,
               "shares": {
                 "local-qwen": 0.695852534562212,
@@ -7750,7 +7774,7 @@
             {
               "tau": 0.54,
               "accuracy": 0.8141321044546851,
-              "total_cost": 0.21217825,
+              "total_cost": 0.29717125,
               "mean_latency_ms": 3642.2789923195082,
               "shares": {
                 "local-qwen": 0.6912442396313364,
@@ -7761,7 +7785,7 @@
             {
               "tau": 0.55,
               "accuracy": 0.8187403993855606,
-              "total_cost": 0.22355475000000002,
+              "total_cost": 0.319551,
               "mean_latency_ms": 3653.688525345622,
               "shares": {
                 "local-qwen": 0.6866359447004609,
@@ -7772,7 +7796,7 @@
             {
               "tau": 0.56,
               "accuracy": 0.8218125960061444,
-              "total_cost": 0.2275655,
+              "total_cost": 0.3259115,
               "mean_latency_ms": 3623.451110599078,
               "shares": {
                 "local-qwen": 0.6820276497695853,
@@ -7783,7 +7807,7 @@
             {
               "tau": 0.57,
               "accuracy": 0.8218125960061444,
-              "total_cost": 0.230522,
+              "total_cost": 0.33130624999999997,
               "mean_latency_ms": 3629.256104454685,
               "shares": {
                 "local-qwen": 0.6789554531490015,
@@ -7794,7 +7818,7 @@
             {
               "tau": 0.58,
               "accuracy": 0.8248847926267281,
-              "total_cost": 0.23870675,
+              "total_cost": 0.3462905,
               "mean_latency_ms": 3620.7545745007683,
               "shares": {
                 "local-qwen": 0.6758832565284179,
@@ -7805,7 +7829,7 @@
             {
               "tau": 0.59,
               "accuracy": 0.8248847926267281,
-              "total_cost": 0.24163325,
+              "total_cost": 0.35109124999999997,
               "mean_latency_ms": 3612.8182165898615,
               "shares": {
                 "local-qwen": 0.6728110599078341,
@@ -7816,7 +7840,7 @@
             {
               "tau": 0.6,
               "accuracy": 0.82642089093702,
-              "total_cost": 0.24670050000000004,
+              "total_cost": 0.36151200000000006,
               "mean_latency_ms": 3613.86848233487,
               "shares": {
                 "local-qwen": 0.6682027649769585,
@@ -7827,7 +7851,7 @@
             {
               "tau": 0.61,
               "accuracy": 0.8294930875576036,
-              "total_cost": 0.25356924999999997,
+              "total_cost": 0.371983,
               "mean_latency_ms": 3584.714370199693,
               "shares": {
                 "local-qwen": 0.6559139784946236,
@@ -7838,7 +7862,7 @@
             {
               "tau": 0.62,
               "accuracy": 0.8325652841781874,
-              "total_cost": 0.26062175,
+              "total_cost": 0.383756,
               "mean_latency_ms": 3571.3387450076807,
               "shares": {
                 "local-qwen": 0.6497695852534562,
@@ -7849,7 +7873,7 @@
             {
               "tau": 0.63,
               "accuracy": 0.8341013824884793,
-              "total_cost": 0.26363325,
+              "total_cost": 0.38754150000000004,
               "mean_latency_ms": 3559.393915514593,
               "shares": {
                 "local-qwen": 0.6436251920122887,
@@ -7860,7 +7884,7 @@
             {
               "tau": 0.64,
               "accuracy": 0.8356374807987711,
-              "total_cost": 0.26760225,
+              "total_cost": 0.395262,
               "mean_latency_ms": 3555.7270675883256,
               "shares": {
                 "local-qwen": 0.6390168970814132,
@@ -7871,7 +7895,7 @@
             {
               "tau": 0.65,
               "accuracy": 0.8402457757296466,
-              "total_cost": 0.27934325,
+              "total_cost": 0.41603825000000005,
               "mean_latency_ms": 3562.3812319508447,
               "shares": {
                 "local-qwen": 0.631336405529954,
@@ -7882,7 +7906,7 @@
             {
               "tau": 0.66,
               "accuracy": 0.8417818740399385,
-              "total_cost": 0.28435575,
+              "total_cost": 0.42603525000000003,
               "mean_latency_ms": 3562.0274900153604,
               "shares": {
                 "local-qwen": 0.6282642089093702,
@@ -7893,7 +7917,7 @@
             {
               "tau": 0.67,
               "accuracy": 0.8448540706605223,
-              "total_cost": 0.29142274999999995,
+              "total_cost": 0.4390422500000001,
               "mean_latency_ms": 3547.436717357911,
               "shares": {
                 "local-qwen": 0.620583717357911,
@@ -7904,7 +7928,7 @@
             {
               "tau": 0.68,
               "accuracy": 0.8463901689708141,
-              "total_cost": 0.2964795,
+              "total_cost": 0.44883975,
               "mean_latency_ms": 3542.97576344086,
               "shares": {
                 "local-qwen": 0.6144393241167435,
@@ -7915,7 +7939,7 @@
             {
               "tau": 0.69,
               "accuracy": 0.8463901689708141,
-              "total_cost": 0.2984345,
+              "total_cost": 0.45079475,
               "mean_latency_ms": 3522.98108141321,
               "shares": {
                 "local-qwen": 0.6082949308755761,
@@ -7926,7 +7950,7 @@
             {
               "tau": 0.7,
               "accuracy": 0.8463901689708141,
-              "total_cost": 0.30199125,
+              "total_cost": 0.4591815,
               "mean_latency_ms": 3535.8027388632872,
               "shares": {
                 "local-qwen": 0.6082949308755761,
@@ -7937,7 +7961,7 @@
             {
               "tau": 0.71,
               "accuracy": 0.847926267281106,
-              "total_cost": 0.31034325,
+              "total_cost": 0.47513475000000005,
               "mean_latency_ms": 3530.4557127496164,
               "shares": {
                 "local-qwen": 0.6006144393241167,
@@ -7948,7 +7972,7 @@
             {
               "tau": 0.72,
               "accuracy": 0.8494623655913979,
-              "total_cost": 0.31518225,
+              "total_cost": 0.4828335,
               "mean_latency_ms": 3504.6996543778796,
               "shares": {
                 "local-qwen": 0.5913978494623656,
@@ -7959,7 +7983,7 @@
             {
               "tau": 0.73,
               "accuracy": 0.8494623655913979,
-              "total_cost": 0.31757475,
+              "total_cost": 0.48601725,
               "mean_latency_ms": 3486.3453901689713,
               "shares": {
                 "local-qwen": 0.5852534562211982,
@@ -7970,7 +7994,7 @@
             {
               "tau": 0.74,
               "accuracy": 0.8509984639016898,
-              "total_cost": 0.326048,
+              "total_cost": 0.5032857500000001,
               "mean_latency_ms": 3490.418129032258,
               "shares": {
                 "local-qwen": 0.5791090629800307,
@@ -7981,7 +8005,7 @@
             {
               "tau": 0.75,
               "accuracy": 0.8509984639016898,
-              "total_cost": 0.33155675,
+              "total_cost": 0.5165225,
               "mean_latency_ms": 3501.067182795699,
               "shares": {
                 "local-qwen": 0.576036866359447,
@@ -7992,7 +8016,7 @@
             {
               "tau": 0.76,
               "accuracy": 0.8509984639016898,
-              "total_cost": 0.33328875,
+              "total_cost": 0.5219505,
               "mean_latency_ms": 3508.7211520737324,
               "shares": {
                 "local-qwen": 0.576036866359447,
@@ -8003,7 +8027,7 @@
             {
               "tau": 0.77,
               "accuracy": 0.8509984639016898,
-              "total_cost": 0.33691000000000004,
+              "total_cost": 0.52557175,
               "mean_latency_ms": 3480.037870967742,
               "shares": {
                 "local-qwen": 0.5668202764976958,
@@ -8014,7 +8038,7 @@
             {
               "tau": 0.78,
               "accuracy": 0.8556067588325653,
-              "total_cost": 0.35694374999999995,
+              "total_cost": 0.5628135000000001,
               "mean_latency_ms": 3482.5523686635947,
               "shares": {
                 "local-qwen": 0.554531490015361,
@@ -8025,7 +8049,7 @@
             {
               "tau": 0.79,
               "accuracy": 0.8571428571428571,
-              "total_cost": 0.36020975,
+              "total_cost": 0.56837675,
               "mean_latency_ms": 3473.4156175115204,
               "shares": {
                 "local-qwen": 0.5468509984639017,
@@ -8036,7 +8060,7 @@
             {
               "tau": 0.8,
               "accuracy": 0.8602150537634409,
-              "total_cost": 0.36614349999999996,
+              "total_cost": 0.58503925,
               "mean_latency_ms": 3496.800451612903,
               "shares": {
                 "local-qwen": 0.5453149001536098,
@@ -8047,7 +8071,7 @@
             {
               "tau": 0.81,
               "accuracy": 0.8663594470046083,
-              "total_cost": 0.3761755,
+              "total_cost": 0.6009295,
               "mean_latency_ms": 3444.569560675883,
               "shares": {
                 "local-qwen": 0.533026113671275,
@@ -8058,7 +8082,7 @@
             {
               "tau": 0.82,
               "accuracy": 0.8678955453149002,
-              "total_cost": 0.38521075,
+              "total_cost": 0.61932175,
               "mean_latency_ms": 3444.526559139785,
               "shares": {
                 "local-qwen": 0.5253456221198156,
@@ -8069,7 +8093,7 @@
             {
               "tau": 0.83,
               "accuracy": 0.8709677419354839,
-              "total_cost": 0.39494574999999993,
+              "total_cost": 0.6401125,
               "mean_latency_ms": 3450.8009646697387,
               "shares": {
                 "local-qwen": 0.5192012288786483,
@@ -8080,7 +8104,7 @@
             {
               "tau": 0.84,
               "accuracy": 0.8725038402457758,
-              "total_cost": 0.41634699999999997,
+              "total_cost": 0.6830875,
               "mean_latency_ms": 3435.8876743471583,
               "shares": {
                 "local-qwen": 0.5023041474654378,
@@ -8091,7 +8115,7 @@
             {
               "tau": 0.85,
               "accuracy": 0.8771121351766513,
-              "total_cost": 0.42755475000000004,
+              "total_cost": 0.70518675,
               "mean_latency_ms": 3415.478044546851,
               "shares": {
                 "local-qwen": 0.49001536098310294,
@@ -8102,7 +8126,7 @@
             {
               "tau": 0.86,
               "accuracy": 0.880184331797235,
-              "total_cost": 0.43747325,
+              "total_cost": 0.72354125,
               "mean_latency_ms": 3415.152904761905,
               "shares": {
                 "local-qwen": 0.4792626728110599,
@@ -8113,7 +8137,7 @@
             {
               "tau": 0.87,
               "accuracy": 0.8817204301075269,
-              "total_cost": 0.45182500000000003,
+              "total_cost": 0.75618925,
               "mean_latency_ms": 3448.8244116743467,
               "shares": {
                 "local-qwen": 0.4731182795698925,
@@ -8124,7 +8148,7 @@
             {
               "tau": 0.88,
               "accuracy": 0.8847926267281107,
-              "total_cost": 0.4632765,
+              "total_cost": 0.7798627499999999,
               "mean_latency_ms": 3452.701101382488,
               "shares": {
                 "local-qwen": 0.4608294930875576,
@@ -8135,7 +8159,7 @@
             {
               "tau": 0.89,
               "accuracy": 0.8894009216589862,
-              "total_cost": 0.48516175000000006,
+              "total_cost": 0.82209925,
               "mean_latency_ms": 3467.881608294931,
               "shares": {
                 "local-qwen": 0.4377880184331797,
@@ -8146,7 +8170,7 @@
             {
               "tau": 0.9,
               "accuracy": 0.8924731182795699,
-              "total_cost": 0.49848349999999997,
+              "total_cost": 0.85016675,
               "mean_latency_ms": 3485.9005745007685,
               "shares": {
                 "local-qwen": 0.42857142857142855,
@@ -8157,7 +8181,7 @@
             {
               "tau": 0.91,
               "accuracy": 0.8924731182795699,
-              "total_cost": 0.5070479999999999,
+              "total_cost": 0.86715075,
               "mean_latency_ms": 3477.314632872504,
               "shares": {
                 "local-qwen": 0.4147465437788018,
@@ -8168,7 +8192,7 @@
             {
               "tau": 0.92,
               "accuracy": 0.8955453149001537,
-              "total_cost": 0.531528,
+              "total_cost": 0.9188894999999999,
               "mean_latency_ms": 3522.5458387096774,
               "shares": {
                 "local-qwen": 0.402457757296467,
@@ -8179,7 +8203,7 @@
             {
               "tau": 0.93,
               "accuracy": 0.901689708141321,
-              "total_cost": 0.5491505,
+              "total_cost": 0.9549905,
               "mean_latency_ms": 3520.6481397849466,
               "shares": {
                 "local-qwen": 0.38095238095238093,
@@ -8190,7 +8214,7 @@
             {
               "tau": 0.94,
               "accuracy": 0.901689708141321,
-              "total_cost": 0.5664845,
+              "total_cost": 0.986246,
               "mean_latency_ms": 3484.1595499231944,
               "shares": {
                 "local-qwen": 0.3548387096774194,
@@ -8201,7 +8225,7 @@
             {
               "tau": 0.95,
               "accuracy": 0.9078341013824884,
-              "total_cost": 0.60650725,
+              "total_cost": 1.0677535,
               "mean_latency_ms": 3541.397069124424,
               "shares": {
                 "local-qwen": 0.3241167434715822,
@@ -8212,7 +8236,7 @@
             {
               "tau": 0.96,
               "accuracy": 0.9139784946236559,
-              "total_cost": 0.6571787499999999,
+              "total_cost": 1.179793,
               "mean_latency_ms": 3628.529694316436,
               "shares": {
                 "local-qwen": 0.29339477726574503,
@@ -8223,7 +8247,7 @@
             {
               "tau": 0.97,
               "accuracy": 0.9201228878648233,
-              "total_cost": 0.6944275,
+              "total_cost": 1.2591407499999998,
               "mean_latency_ms": 3646.475913978495,
               "shares": {
                 "local-qwen": 0.25806451612903225,
@@ -8234,7 +8258,7 @@
             {
               "tau": 0.98,
               "accuracy": 0.9262672811059908,
-              "total_cost": 0.748529,
+              "total_cost": 1.38175775,
               "mean_latency_ms": 3770.250568356375,
               "shares": {
                 "local-qwen": 0.22580645161290322,
@@ -8245,7 +8269,7 @@
             {
               "tau": 0.99,
               "accuracy": 0.9293394777265745,
-              "total_cost": 0.8503514999999999,
+              "total_cost": 1.61467125,
               "mean_latency_ms": 4007.601789554531,
               "shares": {
                 "local-qwen": 0.15668202764976957,
@@ -8256,7 +8280,7 @@
             {
               "tau": 1.0,
               "accuracy": 0.946236559139785,
-              "total_cost": 1.11413025,
+              "total_cost": 2.2282605,
               "mean_latency_ms": 4775.754674347158,
               "shares": {
                 "local-qwen": 0.0,
@@ -8267,7 +8291,7 @@
           ],
           "selected": {
             "accuracy": 0.946236559139785,
-            "total_cost": 1.11413025,
+            "total_cost": 2.2282605,
             "mean_latency_ms": 4775.754674347158,
             "shares": {
               "local-qwen": 0.0,
@@ -8395,7 +8419,7 @@
             {
               "tau": 0.09,
               "accuracy": 0.4715447154471545,
-              "total_cost": 0.0555535,
+              "total_cost": 0.058131249999999995,
               "mean_latency_ms": 4401.046853658537,
               "shares": {
                 "local-qwen": 0.7073170731707317,
@@ -8406,7 +8430,7 @@
             {
               "tau": 0.1,
               "accuracy": 0.47560975609756095,
-              "total_cost": 0.06057,
+              "total_cost": 0.0656325,
               "mean_latency_ms": 4325.476130081302,
               "shares": {
                 "local-qwen": 0.6829268292682927,
@@ -8417,7 +8441,7 @@
             {
               "tau": 0.11,
               "accuracy": 0.47560975609756095,
-              "total_cost": 0.0640085,
+              "total_cost": 0.06907100000000001,
               "mean_latency_ms": 4276.382845528456,
               "shares": {
                 "local-qwen": 0.6666666666666666,
@@ -8428,7 +8452,7 @@
             {
               "tau": 0.12,
               "accuracy": 0.4796747967479675,
-              "total_cost": 0.06460275,
+              "total_cost": 0.07100175,
               "mean_latency_ms": 4283.977284552846,
               "shares": {
                 "local-qwen": 0.6666666666666666,
@@ -8439,7 +8463,7 @@
             {
               "tau": 0.13,
               "accuracy": 0.4878048780487805,
-              "total_cost": 0.06719575,
+              "total_cost": 0.0747775,
               "mean_latency_ms": 4262.794686991871,
               "shares": {
                 "local-qwen": 0.6544715447154471,
@@ -8450,7 +8474,7 @@
             {
               "tau": 0.14,
               "accuracy": 0.491869918699187,
-              "total_cost": 0.07059850000000001,
+              "total_cost": 0.080296,
               "mean_latency_ms": 4220.335024390245,
               "shares": {
                 "local-qwen": 0.6422764227642277,
@@ -8461,7 +8485,7 @@
             {
               "tau": 0.15,
               "accuracy": 0.5121951219512195,
-              "total_cost": 0.07821449999999999,
+              "total_cost": 0.090171,
               "mean_latency_ms": 4126.399837398374,
               "shares": {
                 "local-qwen": 0.6097560975609756,
@@ -8472,7 +8496,7 @@
             {
               "tau": 0.16,
               "accuracy": 0.5121951219512195,
-              "total_cost": 0.0813345,
+              "total_cost": 0.0949635,
               "mean_latency_ms": 4097.817126016261,
               "shares": {
                 "local-qwen": 0.5975609756097561,
@@ -8483,7 +8507,7 @@
             {
               "tau": 0.17,
               "accuracy": 0.5121951219512195,
-              "total_cost": 0.08280874999999999,
+              "total_cost": 0.09643774999999999,
               "mean_latency_ms": 4082.891727642277,
               "shares": {
                 "local-qwen": 0.5894308943089431,
@@ -8494,7 +8518,7 @@
             {
               "tau": 0.18,
               "accuracy": 0.5121951219512195,
-              "total_cost": 0.08436874999999999,
+              "total_cost": 0.100364,
               "mean_latency_ms": 4098.563231707318,
               "shares": {
                 "local-qwen": 0.5894308943089431,
@@ -8505,7 +8529,7 @@
             {
               "tau": 0.19,
               "accuracy": 0.5203252032520326,
-              "total_cost": 0.08755075,
+              "total_cost": 0.10520725,
               "mean_latency_ms": 4063.7063536585374,
               "shares": {
                 "local-qwen": 0.5772357723577236,
@@ -8516,7 +8540,7 @@
             {
               "tau": 0.2,
               "accuracy": 0.516260162601626,
-              "total_cost": 0.08950675,
+              "total_cost": 0.10844875,
               "mean_latency_ms": 4049.0987560975614,
               "shares": {
                 "local-qwen": 0.5691056910569106,
@@ -8527,7 +8551,7 @@
             {
               "tau": 0.21,
               "accuracy": 0.5284552845528455,
-              "total_cost": 0.09861824999999999,
+              "total_cost": 0.12444824999999998,
               "mean_latency_ms": 4017.6574105691057,
               "shares": {
                 "local-qwen": 0.5487804878048781,
@@ -8538,7 +8562,7 @@
             {
               "tau": 0.22,
               "accuracy": 0.532520325203252,
-              "total_cost": 0.10104374999999999,
+              "total_cost": 0.12687375,
               "mean_latency_ms": 3990.442081300813,
               "shares": {
                 "local-qwen": 0.5365853658536586,
@@ -8549,7 +8573,7 @@
             {
               "tau": 0.23,
               "accuracy": 0.540650406504065,
-              "total_cost": 0.10213275,
+              "total_cost": 0.12796275000000001,
               "mean_latency_ms": 3950.7866626016257,
               "shares": {
                 "local-qwen": 0.5284552845528455,
@@ -8560,7 +8584,7 @@
             {
               "tau": 0.24,
               "accuracy": 0.540650406504065,
-              "total_cost": 0.10213275,
+              "total_cost": 0.12796275000000001,
               "mean_latency_ms": 3950.7866626016257,
               "shares": {
                 "local-qwen": 0.5284552845528455,
@@ -8571,7 +8595,7 @@
             {
               "tau": 0.25,
               "accuracy": 0.540650406504065,
-              "total_cost": 0.10213275,
+              "total_cost": 0.12796275000000001,
               "mean_latency_ms": 3950.7866626016257,
               "shares": {
                 "local-qwen": 0.5284552845528455,
@@ -8582,7 +8606,7 @@
             {
               "tau": 0.26,
               "accuracy": 0.540650406504065,
-              "total_cost": 0.1035205,
+              "total_cost": 0.12935049999999998,
               "mean_latency_ms": 3922.0688658536583,
               "shares": {
                 "local-qwen": 0.5203252032520326,
@@ -8593,7 +8617,7 @@
             {
               "tau": 0.27,
               "accuracy": 0.540650406504065,
-              "total_cost": 0.10745175,
+              "total_cost": 0.1360305,
               "mean_latency_ms": 3900.5395650406504,
               "shares": {
                 "local-qwen": 0.508130081300813,
@@ -8604,7 +8628,7 @@
             {
               "tau": 0.28,
               "accuracy": 0.5447154471544715,
-              "total_cost": 0.1081895,
+              "total_cost": 0.13676825,
               "mean_latency_ms": 3889.8415000000005,
               "shares": {
                 "local-qwen": 0.5040650406504065,
@@ -8615,7 +8639,7 @@
             {
               "tau": 0.29,
               "accuracy": 0.5447154471544715,
-              "total_cost": 0.10884125,
+              "total_cost": 0.13742,
               "mean_latency_ms": 3870.6515487804877,
               "shares": {
                 "local-qwen": 0.5,
@@ -8626,7 +8650,7 @@
             {
               "tau": 0.3,
               "accuracy": 0.5487804878048781,
-              "total_cost": 0.110488,
+              "total_cost": 0.14069575,
               "mean_latency_ms": 3852.9609552845523,
               "shares": {
                 "local-qwen": 0.4959349593495935,
@@ -8637,7 +8661,7 @@
             {
               "tau": 0.31,
               "accuracy": 0.5487804878048781,
-              "total_cost": 0.11138499999999998,
+              "total_cost": 0.14337624999999998,
               "mean_latency_ms": 3863.0590894308943,
               "shares": {
                 "local-qwen": 0.4959349593495935,
@@ -8648,7 +8672,7 @@
             {
               "tau": 0.32,
               "accuracy": 0.556910569105691,
-              "total_cost": 0.11433724999999999,
+              "total_cost": 0.14751949999999997,
               "mean_latency_ms": 3823.7717723577243,
               "shares": {
                 "local-qwen": 0.483739837398374,
@@ -8659,7 +8683,7 @@
             {
               "tau": 0.33,
               "accuracy": 0.5609756097560976,
-              "total_cost": 0.114815,
+              "total_cost": 0.14799724999999997,
               "mean_latency_ms": 3810.8264268292683,
               "shares": {
                 "local-qwen": 0.4796747967479675,
@@ -8670,7 +8694,7 @@
             {
               "tau": 0.34,
               "accuracy": 0.556910569105691,
-              "total_cost": 0.11604624999999999,
+              "total_cost": 0.1492285,
               "mean_latency_ms": 3784.927711382114,
               "shares": {
                 "local-qwen": 0.4715447154471545,
@@ -8681,7 +8705,7 @@
             {
               "tau": 0.35,
               "accuracy": 0.5609756097560976,
-              "total_cost": 0.11698399999999999,
+              "total_cost": 0.15125224999999998,
               "mean_latency_ms": 3781.893959349594,
               "shares": {
                 "local-qwen": 0.46747967479674796,
@@ -8692,7 +8716,7 @@
             {
               "tau": 0.36,
               "accuracy": 0.5609756097560976,
-              "total_cost": 0.11698399999999999,
+              "total_cost": 0.15125224999999998,
               "mean_latency_ms": 3781.893959349594,
               "shares": {
                 "local-qwen": 0.46747967479674796,
@@ -8703,7 +8727,7 @@
             {
               "tau": 0.37,
               "accuracy": 0.5650406504065041,
-              "total_cost": 0.1181395,
+              "total_cost": 0.15431499999999998,
               "mean_latency_ms": 3779.838146341463,
               "shares": {
                 "local-qwen": 0.4634146341463415,
@@ -8714,7 +8738,7 @@
             {
               "tau": 0.38,
               "accuracy": 0.5650406504065041,
-              "total_cost": 0.12292449999999999,
+              "total_cost": 0.16308699999999998,
               "mean_latency_ms": 3763.6596544715444,
               "shares": {
                 "local-qwen": 0.45121951219512196,
@@ -8725,7 +8749,7 @@
             {
               "tau": 0.39,
               "accuracy": 0.5691056910569106,
-              "total_cost": 0.1252365,
+              "total_cost": 0.165399,
               "mean_latency_ms": 3721.6319918699187,
               "shares": {
                 "local-qwen": 0.43902439024390244,
@@ -8736,7 +8760,7 @@
             {
               "tau": 0.4,
               "accuracy": 0.573170731707317,
-              "total_cost": 0.127593,
+              "total_cost": 0.17011199999999999,
               "mean_latency_ms": 3738.782056910569,
               "shares": {
                 "local-qwen": 0.4349593495934959,
@@ -8747,7 +8771,7 @@
             {
               "tau": 0.41,
               "accuracy": 0.573170731707317,
-              "total_cost": 0.13096875,
+              "total_cost": 0.17611424999999997,
               "mean_latency_ms": 3734.545361788618,
               "shares": {
                 "local-qwen": 0.4268292682926829,
@@ -8758,7 +8782,7 @@
             {
               "tau": 0.42,
               "accuracy": 0.5772357723577236,
-              "total_cost": 0.13353500000000001,
+              "total_cost": 0.18042874999999997,
               "mean_latency_ms": 3709.364414634146,
               "shares": {
                 "local-qwen": 0.4186991869918699,
@@ -8769,7 +8793,7 @@
             {
               "tau": 0.43,
               "accuracy": 0.5772357723577236,
-              "total_cost": 0.13511075,
+              "total_cost": 0.18312425,
               "mean_latency_ms": 3691.7674634146347,
               "shares": {
                 "local-qwen": 0.4105691056910569,
@@ -8780,7 +8804,7 @@
             {
               "tau": 0.44,
               "accuracy": 0.5772357723577236,
-              "total_cost": 0.13737675,
+              "total_cost": 0.18685875000000002,
               "mean_latency_ms": 3666.5403333333334,
               "shares": {
                 "local-qwen": 0.4024390243902439,
@@ -8791,7 +8815,7 @@
             {
               "tau": 0.45,
               "accuracy": 0.5772357723577236,
-              "total_cost": 0.13871974999999998,
+              "total_cost": 0.1894595,
               "mean_latency_ms": 3662.4045406504065,
               "shares": {
                 "local-qwen": 0.3983739837398374,
@@ -8802,7 +8826,7 @@
             {
               "tau": 0.46,
               "accuracy": 0.5894308943089431,
-              "total_cost": 0.143109,
+              "total_cost": 0.19607775,
               "mean_latency_ms": 3619.6072195121947,
               "shares": {
                 "local-qwen": 0.3821138211382114,
@@ -8813,7 +8837,7 @@
             {
               "tau": 0.47,
               "accuracy": 0.5934959349593496,
-              "total_cost": 0.1447455,
+              "total_cost": 0.19771424999999998,
               "mean_latency_ms": 3593.024357723577,
               "shares": {
                 "local-qwen": 0.37398373983739835,
@@ -8824,7 +8848,7 @@
             {
               "tau": 0.48,
               "accuracy": 0.5975609756097561,
-              "total_cost": 0.14621450000000003,
+              "total_cost": 0.20061724999999997,
               "mean_latency_ms": 3594.485776422764,
               "shares": {
                 "local-qwen": 0.3699186991869919,
@@ -8835,7 +8859,7 @@
             {
               "tau": 0.49,
               "accuracy": 0.5975609756097561,
-              "total_cost": 0.14765825,
+              "total_cost": 0.20335775,
               "mean_latency_ms": 3595.5596016260165,
               "shares": {
                 "local-qwen": 0.36585365853658536,
@@ -8846,7 +8870,7 @@
             {
               "tau": 0.5,
               "accuracy": 0.6016260162601627,
-              "total_cost": 0.14972325,
+              "total_cost": 0.20715,
               "mean_latency_ms": 3592.3910772357726,
               "shares": {
                 "local-qwen": 0.3617886178861789,
@@ -8857,7 +8881,7 @@
             {
               "tau": 0.51,
               "accuracy": 0.6056910569105691,
-              "total_cost": 0.15259275,
+              "total_cost": 0.212889,
               "mean_latency_ms": 3576.4720203252036,
               "shares": {
                 "local-qwen": 0.35772357723577236,
@@ -8868,7 +8892,7 @@
             {
               "tau": 0.52,
               "accuracy": 0.6138211382113821,
-              "total_cost": 0.15404050000000002,
+              "total_cost": 0.21433675,
               "mean_latency_ms": 3554.633130081301,
               "shares": {
                 "local-qwen": 0.34959349593495936,
@@ -8879,7 +8903,7 @@
             {
               "tau": 0.53,
               "accuracy": 0.6178861788617886,
-              "total_cost": 0.1548895,
+              "total_cost": 0.21518575,
               "mean_latency_ms": 3529.842768292683,
               "shares": {
                 "local-qwen": 0.34552845528455284,
@@ -8890,7 +8914,7 @@
             {
               "tau": 0.54,
               "accuracy": 0.6178861788617886,
-              "total_cost": 0.1548895,
+              "total_cost": 0.21518575,
               "mean_latency_ms": 3529.842768292683,
               "shares": {
                 "local-qwen": 0.34552845528455284,
@@ -8901,7 +8925,7 @@
             {
               "tau": 0.55,
               "accuracy": 0.6219512195121951,
-              "total_cost": 0.157441,
+              "total_cost": 0.21883899999999998,
               "mean_latency_ms": 3496.2956991869924,
               "shares": {
                 "local-qwen": 0.3333333333333333,
@@ -8912,7 +8936,7 @@
             {
               "tau": 0.56,
               "accuracy": 0.6219512195121951,
-              "total_cost": 0.15967599999999998,
+              "total_cost": 0.22330899999999998,
               "mean_latency_ms": 3507.135792682927,
               "shares": {
                 "local-qwen": 0.32926829268292684,
@@ -8923,7 +8947,7 @@
             {
               "tau": 0.57,
               "accuracy": 0.6260162601626016,
-              "total_cost": 0.1656955,
+              "total_cost": 0.23488975,
               "mean_latency_ms": 3487.4895813008125,
               "shares": {
                 "local-qwen": 0.3170731707317073,
@@ -8934,7 +8958,7 @@
             {
               "tau": 0.58,
               "accuracy": 0.6260162601626016,
-              "total_cost": 0.1665305,
+              "total_cost": 0.23572474999999998,
               "mean_latency_ms": 3471.2559959349596,
               "shares": {
                 "local-qwen": 0.3130081300813008,
@@ -8945,7 +8969,7 @@
             {
               "tau": 0.59,
               "accuracy": 0.6300813008130082,
-              "total_cost": 0.17064475,
+              "total_cost": 0.24556524999999998,
               "mean_latency_ms": 3503.210837398374,
               "shares": {
                 "local-qwen": 0.3089430894308943,
@@ -8956,7 +8980,7 @@
             {
               "tau": 0.6,
               "accuracy": 0.6341463414634146,
-              "total_cost": 0.17717725,
+              "total_cost": 0.25629925,
               "mean_latency_ms": 3476.064227642277,
               "shares": {
                 "local-qwen": 0.2926829268292683,
@@ -8967,7 +8991,7 @@
             {
               "tau": 0.61,
               "accuracy": 0.6382113821138211,
-              "total_cost": 0.18129125000000001,
+              "total_cost": 0.26865275,
               "mean_latency_ms": 3525.0100772357728,
               "shares": {
                 "local-qwen": 0.2926829268292683,
@@ -8978,7 +9002,7 @@
             {
               "tau": 0.62,
               "accuracy": 0.6341463414634146,
-              "total_cost": 0.18565975,
+              "total_cost": 0.2773915,
               "mean_latency_ms": 3535.0757439024387,
               "shares": {
                 "local-qwen": 0.2845528455284553,
@@ -8989,7 +9013,7 @@
             {
               "tau": 0.63,
               "accuracy": 0.6463414634146342,
-              "total_cost": 0.19007200000000002,
+              "total_cost": 0.28769500000000003,
               "mean_latency_ms": 3537.753833333333,
               "shares": {
                 "local-qwen": 0.2764227642276423,
@@ -9000,7 +9024,7 @@
             {
               "tau": 0.64,
               "accuracy": 0.6463414634146342,
-              "total_cost": 0.19007200000000002,
+              "total_cost": 0.28769500000000003,
               "mean_latency_ms": 3537.753833333333,
               "shares": {
                 "local-qwen": 0.2764227642276423,
@@ -9011,7 +9035,7 @@
             {
               "tau": 0.65,
               "accuracy": 0.6463414634146342,
-              "total_cost": 0.19007200000000002,
+              "total_cost": 0.28769500000000003,
               "mean_latency_ms": 3537.753833333333,
               "shares": {
                 "local-qwen": 0.2764227642276423,
@@ -9022,7 +9046,7 @@
             {
               "tau": 0.66,
               "accuracy": 0.6463414634146342,
-              "total_cost": 0.19007200000000002,
+              "total_cost": 0.28769500000000003,
               "mean_latency_ms": 3537.753833333333,
               "shares": {
                 "local-qwen": 0.2764227642276423,
@@ -9033,7 +9057,7 @@
             {
               "tau": 0.67,
               "accuracy": 0.6504065040650406,
-              "total_cost": 0.19059075,
+              "total_cost": 0.28821375000000005,
               "mean_latency_ms": 3527.9095975609753,
               "shares": {
                 "local-qwen": 0.27235772357723576,
@@ -9044,7 +9068,7 @@
             {
               "tau": 0.68,
               "accuracy": 0.6504065040650406,
-              "total_cost": 0.19059075,
+              "total_cost": 0.28821375000000005,
               "mean_latency_ms": 3527.9095975609753,
               "shares": {
                 "local-qwen": 0.27235772357723576,
@@ -9055,7 +9079,7 @@
             {
               "tau": 0.69,
               "accuracy": 0.6544715447154471,
-              "total_cost": 0.1934525,
+              "total_cost": 0.29414375000000004,
               "mean_latency_ms": 3544.7742073170734,
               "shares": {
                 "local-qwen": 0.2682926829268293,
@@ -9066,7 +9090,7 @@
             {
               "tau": 0.7,
               "accuracy": 0.6544715447154471,
-              "total_cost": 0.202104,
+              "total_cost": 0.3153675,
               "mean_latency_ms": 3640.453239837398,
               "shares": {
                 "local-qwen": 0.2682926829268293,
@@ -9077,7 +9101,7 @@
             {
               "tau": 0.71,
               "accuracy": 0.6544715447154471,
-              "total_cost": 0.20411249999999997,
+              "total_cost": 0.3193845,
               "mean_latency_ms": 3644.6754349593493,
               "shares": {
                 "local-qwen": 0.26422764227642276,
@@ -9088,7 +9112,7 @@
             {
               "tau": 0.72,
               "accuracy": 0.6585365853658537,
-              "total_cost": 0.20587325,
+              "total_cost": 0.32251325000000003,
               "mean_latency_ms": 3621.765508130081,
               "shares": {
                 "local-qwen": 0.25609756097560976,
@@ -9099,7 +9123,7 @@
             {
               "tau": 0.73,
               "accuracy": 0.6707317073170732,
-              "total_cost": 0.21223075,
+              "total_cost": 0.3335395,
               "mean_latency_ms": 3632.148130081301,
               "shares": {
                 "local-qwen": 0.24390243902439024,
@@ -9110,7 +9134,7 @@
             {
               "tau": 0.74,
               "accuracy": 0.6747967479674797,
-              "total_cost": 0.21769875,
+              "total_cost": 0.3465465,
               "mean_latency_ms": 3676.709491869919,
               "shares": {
                 "local-qwen": 0.23983739837398374,
@@ -9121,7 +9145,7 @@
             {
               "tau": 0.75,
               "accuracy": 0.6747967479674797,
-              "total_cost": 0.22322874999999998,
+              "total_cost": 0.35731975,
               "mean_latency_ms": 3677.006321138211,
               "shares": {
                 "local-qwen": 0.22764227642276422,
@@ -9132,7 +9156,7 @@
             {
               "tau": 0.76,
               "accuracy": 0.6747967479674797,
-              "total_cost": 0.22544124999999998,
+              "total_cost": 0.36310149999999997,
               "mean_latency_ms": 3697.662264227642,
               "shares": {
                 "local-qwen": 0.22357723577235772,
@@ -9143,7 +9167,7 @@
             {
               "tau": 0.77,
               "accuracy": 0.6747967479674797,
-              "total_cost": 0.2258555,
+              "total_cost": 0.36351575,
               "mean_latency_ms": 3689.8236219512196,
               "shares": {
                 "local-qwen": 0.21951219512195122,
@@ -9154,7 +9178,7 @@
             {
               "tau": 0.78,
               "accuracy": 0.6747967479674797,
-              "total_cost": 0.227283,
+              "total_cost": 0.36826575,
               "mean_latency_ms": 3713.104081300813,
               "shares": {
                 "local-qwen": 0.21951219512195122,
@@ -9165,7 +9189,7 @@
             {
               "tau": 0.79,
               "accuracy": 0.6747967479674797,
-              "total_cost": 0.22789325,
+              "total_cost": 0.3701165,
               "mean_latency_ms": 3719.5020650406505,
               "shares": {
                 "local-qwen": 0.21951219512195122,
@@ -9176,7 +9200,7 @@
             {
               "tau": 0.8,
               "accuracy": 0.6788617886178862,
-              "total_cost": 0.23087625,
+              "total_cost": 0.37634625,
               "mean_latency_ms": 3718.2755,
               "shares": {
                 "local-qwen": 0.21138211382113822,
@@ -9187,7 +9211,7 @@
             {
               "tau": 0.81,
               "accuracy": 0.6788617886178862,
-              "total_cost": 0.23737724999999998,
+              "total_cost": 0.390789,
               "mean_latency_ms": 3785.7813008130083,
               "shares": {
                 "local-qwen": 0.2073170731707317,
@@ -9198,7 +9222,7 @@
             {
               "tau": 0.82,
               "accuracy": 0.6829268292682927,
-              "total_cost": 0.24247575,
+              "total_cost": 0.40128375000000005,
               "mean_latency_ms": 3803.2280406504065,
               "shares": {
                 "local-qwen": 0.1991869918699187,
@@ -9209,7 +9233,7 @@
             {
               "tau": 0.83,
               "accuracy": 0.6829268292682927,
-              "total_cost": 0.24332674999999998,
+              "total_cost": 0.40213475,
               "mean_latency_ms": 3786.190268292683,
               "shares": {
                 "local-qwen": 0.1951219512195122,
@@ -9220,7 +9244,7 @@
             {
               "tau": 0.84,
               "accuracy": 0.6951219512195121,
-              "total_cost": 0.249523,
+              "total_cost": 0.41442775,
               "mean_latency_ms": 3798.16562601626,
               "shares": {
                 "local-qwen": 0.17886178861788618,
@@ -9231,7 +9255,7 @@
             {
               "tau": 0.85,
               "accuracy": 0.6991869918699187,
-              "total_cost": 0.25289075,
+              "total_cost": 0.42370475,
               "mean_latency_ms": 3838.0469471544716,
               "shares": {
                 "local-qwen": 0.17886178861788618,
@@ -9242,7 +9266,7 @@
             {
               "tau": 0.86,
               "accuracy": 0.7073170731707317,
-              "total_cost": 0.26147449999999994,
+              "total_cost": 0.44170325,
               "mean_latency_ms": 3896.6490487804876,
               "shares": {
                 "local-qwen": 0.17073170731707318,
@@ -9253,7 +9277,7 @@
             {
               "tau": 0.87,
               "accuracy": 0.7113821138211383,
-              "total_cost": 0.266552,
+              "total_cost": 0.453374,
               "mean_latency_ms": 3917.8961341463414,
               "shares": {
                 "local-qwen": 0.16260162601626016,
@@ -9264,7 +9288,7 @@
             {
               "tau": 0.88,
               "accuracy": 0.7195121951219512,
-              "total_cost": 0.278121,
+              "total_cost": 0.48099225,
               "mean_latency_ms": 3993.0966463414634,
               "shares": {
                 "local-qwen": 0.15040650406504066,
@@ -9275,7 +9299,7 @@
             {
               "tau": 0.89,
               "accuracy": 0.7195121951219512,
-              "total_cost": 0.287623,
+              "total_cost": 0.5019212499999999,
               "mean_latency_ms": 4028.0482682926827,
               "shares": {
                 "local-qwen": 0.13414634146341464,
@@ -9286,7 +9310,7 @@
             {
               "tau": 0.9,
               "accuracy": 0.7317073170731707,
-              "total_cost": 0.29135275,
+              "total_cost": 0.5089435,
               "mean_latency_ms": 4003.519337398374,
               "shares": {
                 "local-qwen": 0.12195121951219512,
@@ -9297,7 +9321,7 @@
             {
               "tau": 0.91,
               "accuracy": 0.7357723577235772,
-              "total_cost": 0.29951725,
+              "total_cost": 0.52774075,
               "mean_latency_ms": 4028.4155691056912,
               "shares": {
                 "local-qwen": 0.10569105691056911,
@@ -9308,7 +9332,7 @@
             {
               "tau": 0.92,
               "accuracy": 0.7398373983739838,
-              "total_cost": 0.303862,
+              "total_cost": 0.5371405,
               "mean_latency_ms": 4043.33974796748,
               "shares": {
                 "local-qwen": 0.0975609756097561,
@@ -9319,7 +9343,7 @@
             {
               "tau": 0.93,
               "accuracy": 0.7439024390243902,
-              "total_cost": 0.31091325,
+              "total_cost": 0.554541,
               "mean_latency_ms": 4068.185097560976,
               "shares": {
                 "local-qwen": 0.08536585365853659,
@@ -9330,7 +9354,7 @@
             {
               "tau": 0.94,
               "accuracy": 0.7479674796747967,
-              "total_cost": 0.31875325,
+              "total_cost": 0.57555475,
               "mean_latency_ms": 4148.401126016261,
               "shares": {
                 "local-qwen": 0.08130081300813008,
@@ -9341,7 +9365,7 @@
             {
               "tau": 0.95,
               "accuracy": 0.7560975609756098,
-              "total_cost": 0.3257125,
+              "total_cost": 0.59584075,
               "mean_latency_ms": 4231.329463414634,
               "shares": {
                 "local-qwen": 0.07723577235772358,
@@ -9352,7 +9376,7 @@
             {
               "tau": 0.96,
               "accuracy": 0.7764227642276422,
-              "total_cost": 0.36264799999999997,
+              "total_cost": 0.6763954999999999,
               "mean_latency_ms": 4565.926943089432,
               "shares": {
                 "local-qwen": 0.06097560975609756,
@@ -9363,7 +9387,7 @@
             {
               "tau": 0.97,
               "accuracy": 0.7926829268292683,
-              "total_cost": 0.38606475,
+              "total_cost": 0.7318395,
               "mean_latency_ms": 4779.977191056912,
               "shares": {
                 "local-qwen": 0.044715447154471545,
@@ -9374,7 +9398,7 @@
             {
               "tau": 0.98,
               "accuracy": 0.8048780487804879,
-              "total_cost": 0.3979415,
+              "total_cost": 0.76417175,
               "mean_latency_ms": 4870.344691056912,
               "shares": {
                 "local-qwen": 0.028455284552845527,
@@ -9385,7 +9409,7 @@
             {
               "tau": 0.99,
               "accuracy": 0.8211382113821138,
-              "total_cost": 0.42750125,
+              "total_cost": 0.837947,
               "mean_latency_ms": 5189.659337398373,
               "shares": {
                 "local-qwen": 0.02032520325203252,
@@ -9396,7 +9420,7 @@
             {
               "tau": 1.0,
               "accuracy": 0.8292682926829268,
-              "total_cost": 0.45792525000000006,
+              "total_cost": 0.9158505000000001,
               "mean_latency_ms": 5443.811577235772,
               "shares": {
                 "local-qwen": 0.0,
@@ -9407,7 +9431,7 @@
           ],
           "selected": {
             "accuracy": 0.8292682926829268,
-            "total_cost": 0.45792525000000006,
+            "total_cost": 0.9158505000000001,
             "mean_latency_ms": 5443.811577235772,
             "shares": {
               "local-qwen": 0.0,
@@ -9430,7 +9454,7 @@
         "oof": {
           "tau": 0.93,
           "accuracy": 0.9322873658133773,
-          "total_cost": 3.5295015000000003,
+          "total_cost": 6.575229,
           "mean_latency_ms": 3848.0072109826588,
           "shares": {
             "local-qwen": 0.01610239471511148,
@@ -10260,7 +10284,7 @@
             {
               "tau": 0.73,
               "accuracy": 0.8740399385560675,
-              "total_cost": 0.25170375,
+              "total_cost": 0.25796475,
               "mean_latency_ms": 2638.820029185868,
               "shares": {
                 "local-qwen": 0.47772657450076805,
@@ -10271,7 +10295,7 @@
             {
               "tau": 0.74,
               "accuracy": 0.8771121351766513,
-              "total_cost": 0.25650775000000003,
+              "total_cost": 0.26276875,
               "mean_latency_ms": 2611.26303686636,
               "shares": {
                 "local-qwen": 0.46697388632872505,
@@ -10282,7 +10306,7 @@
             {
               "tau": 0.75,
               "accuracy": 0.8786482334869432,
-              "total_cost": 0.26253725,
+              "total_cost": 0.27353675,
               "mean_latency_ms": 2599.5040614439326,
               "shares": {
                 "local-qwen": 0.4577572964669739,
@@ -10293,7 +10317,7 @@
             {
               "tau": 0.76,
               "accuracy": 0.8817204301075269,
-              "total_cost": 0.27089575,
+              "total_cost": 0.28407175,
               "mean_latency_ms": 2550.805946236559,
               "shares": {
                 "local-qwen": 0.4393241167434716,
@@ -10304,7 +10328,7 @@
             {
               "tau": 0.77,
               "accuracy": 0.8817204301075269,
-              "total_cost": 0.27724575,
+              "total_cost": 0.29208825,
               "mean_latency_ms": 2510.607238095238,
               "shares": {
                 "local-qwen": 0.4270353302611367,
@@ -10315,7 +10339,7 @@
             {
               "tau": 0.78,
               "accuracy": 0.8817204301075269,
-              "total_cost": 0.28339575,
+              "total_cost": 0.29823825,
               "mean_latency_ms": 2458.934920122888,
               "shares": {
                 "local-qwen": 0.4116743471582181,
@@ -10326,7 +10350,7 @@
             {
               "tau": 0.79,
               "accuracy": 0.8863287250384024,
-              "total_cost": 0.306811,
+              "total_cost": 0.340831,
               "mean_latency_ms": 2456.7062211981565,
               "shares": {
                 "local-qwen": 0.38863287250384027,
@@ -10337,7 +10361,7 @@
             {
               "tau": 0.8,
               "accuracy": 0.8863287250384024,
-              "total_cost": 0.31431074999999997,
+              "total_cost": 0.34881675,
               "mean_latency_ms": 2403.456425499232,
               "shares": {
                 "local-qwen": 0.36251920122887865,
@@ -10348,7 +10372,7 @@
             {
               "tau": 0.81,
               "accuracy": 0.890937019969278,
-              "total_cost": 0.33738175000000004,
+              "total_cost": 0.39181675,
               "mean_latency_ms": 2399.510124423963,
               "shares": {
                 "local-qwen": 0.3379416282642089,
@@ -10359,7 +10383,7 @@
             {
               "tau": 0.82,
               "accuracy": 0.890937019969278,
-              "total_cost": 0.35439675,
+              "total_cost": 0.42282074999999997,
               "mean_latency_ms": 2388.2774485407067,
               "shares": {
                 "local-qwen": 0.31490015360983103,
@@ -10370,7 +10394,7 @@
             {
               "tau": 0.83,
               "accuracy": 0.8924731182795699,
-              "total_cost": 0.36301049999999996,
+              "total_cost": 0.43665525,
               "mean_latency_ms": 2358.4976374807984,
               "shares": {
                 "local-qwen": 0.29339477726574503,
@@ -10381,7 +10405,7 @@
             {
               "tau": 0.84,
               "accuracy": 0.8940092165898618,
-              "total_cost": 0.37622900000000004,
+              "total_cost": 0.46263574999999996,
               "mean_latency_ms": 2347.4755176651306,
               "shares": {
                 "local-qwen": 0.26881720430107525,
@@ -10392,7 +10416,7 @@
             {
               "tau": 0.85,
               "accuracy": 0.901689708141321,
-              "total_cost": 0.401845,
+              "total_cost": 0.5146284999999999,
               "mean_latency_ms": 2358.2025053763437,
               "shares": {
                 "local-qwen": 0.24270353302611367,
@@ -10403,7 +10427,7 @@
             {
               "tau": 0.86,
               "accuracy": 0.9047619047619048,
-              "total_cost": 0.4226685,
+              "total_cost": 0.5591677500000001,
               "mean_latency_ms": 2369.804780337942,
               "shares": {
                 "local-qwen": 0.2119815668202765,
@@ -10414,7 +10438,7 @@
             {
               "tau": 0.87,
               "accuracy": 0.9078341013824884,
-              "total_cost": 0.47354225,
+              "total_cost": 0.6710277499999999,
               "mean_latency_ms": 2470.3886574500766,
               "shares": {
                 "local-qwen": 0.1781874039938556,
@@ -10425,7 +10449,7 @@
             {
               "tau": 0.88,
               "accuracy": 0.9155145929339478,
-              "total_cost": 0.5303807500000001,
+              "total_cost": 0.790618,
               "mean_latency_ms": 2532.9220015360984,
               "shares": {
                 "local-qwen": 0.1336405529953917,
@@ -10436,7 +10460,7 @@
             {
               "tau": 0.89,
               "accuracy": 0.9185867895545314,
-              "total_cost": 0.58071925,
+              "total_cost": 0.90178375,
               "mean_latency_ms": 2604.4135745007684,
               "shares": {
                 "local-qwen": 0.0967741935483871,
@@ -10447,7 +10471,7 @@
             {
               "tau": 0.9,
               "accuracy": 0.9308755760368663,
-              "total_cost": 0.70882375,
+              "total_cost": 1.2056155,
               "mean_latency_ms": 3069.3635806451616,
               "shares": {
                 "local-qwen": 0.07680491551459294,
@@ -10458,7 +10482,7 @@
             {
               "tau": 0.91,
               "accuracy": 0.9308755760368663,
-              "total_cost": 0.77709475,
+              "total_cost": 1.3714952500000002,
               "mean_latency_ms": 3270.758316436252,
               "shares": {
                 "local-qwen": 0.039938556067588324,
@@ -10469,7 +10493,7 @@
             {
               "tau": 0.92,
               "accuracy": 0.9354838709677419,
-              "total_cost": 0.83540925,
+              "total_cost": 1.5163365,
               "mean_latency_ms": 3492.4204854070663,
               "shares": {
                 "local-qwen": 0.02304147465437788,
@@ -10480,7 +10504,7 @@
             {
               "tau": 0.93,
               "accuracy": 0.9370199692780338,
-              "total_cost": 0.89490625,
+              "total_cost": 1.6647729999999998,
               "mean_latency_ms": 3709.9256774193545,
               "shares": {
                 "local-qwen": 0.01228878648233487,
@@ -10491,7 +10515,7 @@
             {
               "tau": 0.94,
               "accuracy": 0.9416282642089093,
-              "total_cost": 0.935468,
+              "total_cost": 1.7741675000000001,
               "mean_latency_ms": 3897.4814807987714,
               "shares": {
                 "local-qwen": 0.004608294930875576,
@@ -10502,7 +10526,7 @@
             {
               "tau": 0.95,
               "accuracy": 0.9447004608294931,
-              "total_cost": 0.9711679999999999,
+              "total_cost": 1.8682272500000001,
               "mean_latency_ms": 4073.713998463901,
               "shares": {
                 "local-qwen": 0.0030721966205837174,
@@ -10513,7 +10537,7 @@
             {
               "tau": 0.96,
               "accuracy": 0.946236559139785,
-              "total_cost": 1.02698025,
+              "total_cost": 2.00783625,
               "mean_latency_ms": 4347.0340122887865,
               "shares": {
                 "local-qwen": 0.0,
@@ -10524,7 +10548,7 @@
             {
               "tau": 0.97,
               "accuracy": 0.946236559139785,
-              "total_cost": 1.0967105,
+              "total_cost": 2.1834724999999997,
               "mean_latency_ms": 4682.074258064516,
               "shares": {
                 "local-qwen": 0.0,
@@ -10535,7 +10559,7 @@
             {
               "tau": 0.98,
               "accuracy": 0.946236559139785,
-              "total_cost": 1.11275125,
+              "total_cost": 2.224699,
               "mean_latency_ms": 4768.1201490015355,
               "shares": {
                 "local-qwen": 0.0,
@@ -10546,7 +10570,7 @@
             {
               "tau": 0.99,
               "accuracy": 0.946236559139785,
-              "total_cost": 1.11413025,
+              "total_cost": 2.2282605,
               "mean_latency_ms": 4775.754674347158,
               "shares": {
                 "local-qwen": 0.0,
@@ -10557,7 +10581,7 @@
             {
               "tau": 1.0,
               "accuracy": 0.946236559139785,
-              "total_cost": 1.11413025,
+              "total_cost": 2.2282605,
               "mean_latency_ms": 4775.754674347158,
               "shares": {
                 "local-qwen": 0.0,
@@ -10568,17 +10592,17 @@
           ],
           "selected": {
             "accuracy": 0.9370199692780338,
-            "total_cost": 0.89490625,
+            "total_cost": 1.6647729999999998,
             "mean_latency_ms": 3709.9256774193545,
             "shares": {
               "local-qwen": 0.01228878648233487,
               "gemini-flash-lite": 0.4500768049155146,
               "gemini-flash": 0.5376344086021505
             },
-            "cost_reduction_vs_last": 0.19676693995159011,
+            "cost_reduction_vs_last": 0.2528822370633955,
             "gap_recovered": 0.9640718562874249,
-            "accuracy_vs_hull": 0.002736791169152819,
-            "oracle_savings_captured": 0.2749049709779408
+            "accuracy_vs_hull": 0.0029706066681606247,
+            "oracle_savings_captured": 0.32914595099150495
           }
         },
         "ood": {
@@ -11462,7 +11486,7 @@
             {
               "tau": 0.79,
               "accuracy": 0.7317073170731707,
-              "total_cost": 0.17867299999999997,
+              "total_cost": 0.17956774999999997,
               "mean_latency_ms": 2073.3486951219516,
               "shares": {
                 "local-qwen": 0.0040650406504065045,
@@ -11473,7 +11497,7 @@
             {
               "tau": 0.8,
               "accuracy": 0.7317073170731707,
-              "total_cost": 0.17867299999999997,
+              "total_cost": 0.17956774999999997,
               "mean_latency_ms": 2073.3486951219516,
               "shares": {
                 "local-qwen": 0.0040650406504065045,
@@ -11484,7 +11508,7 @@
             {
               "tau": 0.81,
               "accuracy": 0.7317073170731707,
-              "total_cost": 0.17922974999999997,
+              "total_cost": 0.18108524999999998,
               "mean_latency_ms": 2082.8284512195123,
               "shares": {
                 "local-qwen": 0.0040650406504065045,
@@ -11495,7 +11519,7 @@
             {
               "tau": 0.82,
               "accuracy": 0.7357723577235772,
-              "total_cost": 0.18188824999999997,
+              "total_cost": 0.18729125000000002,
               "mean_latency_ms": 2109.458967479675,
               "shares": {
                 "local-qwen": 0.0040650406504065045,
@@ -11506,7 +11530,7 @@
             {
               "tau": 0.83,
               "accuracy": 0.7398373983739838,
-              "total_cost": 0.1837625,
+              "total_cost": 0.19296649999999999,
               "mean_latency_ms": 2130.0466300813005,
               "shares": {
                 "local-qwen": 0.0040650406504065045,
@@ -11517,7 +11541,7 @@
             {
               "tau": 0.84,
               "accuracy": 0.7357723577235772,
-              "total_cost": 0.20920675,
+              "total_cost": 0.248686,
               "mean_latency_ms": 2379.7973536585364,
               "shares": {
                 "local-qwen": 0.0,
@@ -11528,7 +11552,7 @@
             {
               "tau": 0.85,
               "accuracy": 0.7398373983739838,
-              "total_cost": 0.21633924999999998,
+              "total_cost": 0.26749,
               "mean_latency_ms": 2472.119601626016,
               "shares": {
                 "local-qwen": 0.0,
@@ -11539,7 +11563,7 @@
             {
               "tau": 0.86,
               "accuracy": 0.7479674796747967,
-              "total_cost": 0.23562049999999998,
+              "total_cost": 0.319439,
               "mean_latency_ms": 2706.6527926829267,
               "shares": {
                 "local-qwen": 0.0,
@@ -11550,7 +11574,7 @@
             {
               "tau": 0.87,
               "accuracy": 0.7601626016260162,
-              "total_cost": 0.26177275,
+              "total_cost": 0.38344374999999997,
               "mean_latency_ms": 2997.262349593496,
               "shares": {
                 "local-qwen": 0.0,
@@ -11561,7 +11585,7 @@
             {
               "tau": 0.88,
               "accuracy": 0.7642276422764228,
-              "total_cost": 0.28967425,
+              "total_cost": 0.458896,
               "mean_latency_ms": 3346.5820609756092,
               "shares": {
                 "local-qwen": 0.0,
@@ -11572,7 +11596,7 @@
             {
               "tau": 0.89,
               "accuracy": 0.7723577235772358,
-              "total_cost": 0.326936,
+              "total_cost": 0.56218025,
               "mean_latency_ms": 3831.019772357724,
               "shares": {
                 "local-qwen": 0.0,
@@ -11583,7 +11607,7 @@
             {
               "tau": 0.9,
               "accuracy": 0.8008130081300813,
-              "total_cost": 0.362786,
+              "total_cost": 0.6594725,
               "mean_latency_ms": 4286.470447154472,
               "shares": {
                 "local-qwen": 0.0,
@@ -11594,7 +11618,7 @@
             {
               "tau": 0.91,
               "accuracy": 0.8089430894308943,
-              "total_cost": 0.40765975,
+              "total_cost": 0.7781335,
               "mean_latency_ms": 4795.787398373984,
               "shares": {
                 "local-qwen": 0.0,
@@ -11605,7 +11629,7 @@
             {
               "tau": 0.92,
               "accuracy": 0.8089430894308943,
-              "total_cost": 0.43660375,
+              "total_cost": 0.85768525,
               "mean_latency_ms": 5158.008642276423,
               "shares": {
                 "local-qwen": 0.0,
@@ -11616,7 +11640,7 @@
             {
               "tau": 0.93,
               "accuracy": 0.8170731707317073,
-              "total_cost": 0.44449675,
+              "total_cost": 0.87997375,
               "mean_latency_ms": 5274.823967479675,
               "shares": {
                 "local-qwen": 0.0,
@@ -11627,7 +11651,7 @@
             {
               "tau": 0.94,
               "accuracy": 0.8252032520325203,
-              "total_cost": 0.45363625,
+              "total_cost": 0.9043195,
               "mean_latency_ms": 5388.458857723578,
               "shares": {
                 "local-qwen": 0.0,
@@ -11638,7 +11662,7 @@
             {
               "tau": 0.95,
               "accuracy": 0.8292682926829268,
-              "total_cost": 0.4565095,
+              "total_cost": 0.9118652500000001,
               "mean_latency_ms": 5425.518804878049,
               "shares": {
                 "local-qwen": 0.0,
@@ -11649,7 +11673,7 @@
             {
               "tau": 0.96,
               "accuracy": 0.8292682926829268,
-              "total_cost": 0.45792525000000006,
+              "total_cost": 0.9158505000000001,
               "mean_latency_ms": 5443.811577235772,
               "shares": {
                 "local-qwen": 0.0,
@@ -11660,7 +11684,7 @@
             {
               "tau": 0.97,
               "accuracy": 0.8292682926829268,
-              "total_cost": 0.45792525000000006,
+              "total_cost": 0.9158505000000001,
               "mean_latency_ms": 5443.811577235772,
               "shares": {
                 "local-qwen": 0.0,
@@ -11671,7 +11695,7 @@
             {
               "tau": 0.98,
               "accuracy": 0.8292682926829268,
-              "total_cost": 0.45792525000000006,
+              "total_cost": 0.9158505000000001,
               "mean_latency_ms": 5443.811577235772,
               "shares": {
                 "local-qwen": 0.0,
@@ -11682,7 +11706,7 @@
             {
               "tau": 0.99,
               "accuracy": 0.8292682926829268,
-              "total_cost": 0.45792525000000006,
+              "total_cost": 0.9158505000000001,
               "mean_latency_ms": 5443.811577235772,
               "shares": {
                 "local-qwen": 0.0,
@@ -11693,7 +11717,7 @@
             {
               "tau": 1.0,
               "accuracy": 0.8292682926829268,
-              "total_cost": 0.45792525000000006,
+              "total_cost": 0.9158505000000001,
               "mean_latency_ms": 5443.811577235772,
               "shares": {
                 "local-qwen": 0.0,
@@ -11704,17 +11728,17 @@
           ],
           "selected": {
             "accuracy": 0.8170731707317073,
-            "total_cost": 0.44449675,
+            "total_cost": 0.87997375,
             "mean_latency_ms": 5274.823967479675,
             "shares": {
               "local-qwen": 0.0,
               "gemini-flash-lite": 0.052845528455284556,
               "gemini-flash": 0.9471544715447154
             },
-            "cost_reduction_vs_last": 0.029324655061060856,
+            "cost_reduction_vs_last": 0.0391731510765132,
             "gap_recovered": 0.9758064516129032,
-            "accuracy_vs_hull": -0.0074987163662267875,
-            "oracle_savings_captured": 0.0571871469986705
+            "accuracy_vs_hull": -0.007445152255623699,
+            "oracle_savings_captured": 0.06540001895824468
           }
         }
       }
