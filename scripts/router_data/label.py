@@ -6,6 +6,7 @@ import json
 import os
 import re
 import sys
+import tempfile
 import time
 from datetime import datetime, timezone
 from decimal import Decimal
@@ -32,6 +33,8 @@ from scripts.serving_bench.gsm8k_eval import (  # noqa: E402
     positive,
 )
 
+RESPONSES = ROOT / "data/router/responses"
+
 
 class ModelMismatchError(Exception):
     pass
@@ -42,6 +45,75 @@ def extract_mmlupro(text: str) -> str | None:
     if not matches:
         matches = re.findall(r"answer is \(?([A-J])\)?", text, re.I)
     return matches[-1].upper() if matches else None
+
+
+def grade(question: dict, content: str) -> tuple[str | None, bool]:
+    pred = (
+        extract_answer(content)
+        if question["dataset"] == "gsm8k"
+        else extract_mmlupro(content)
+    )
+    correct = (
+        correct_answer(question["gold"], pred)
+        if question["dataset"] == "gsm8k"
+        else pred is not None and pred == question["gold"]
+    )
+    return pred, correct
+
+
+def save_response(
+    model: str, question_id: str, request_id: str | None, content: str
+) -> None:
+    # Save before grading; these private raw responses are never committed.
+    RESPONSES.mkdir(parents=True, exist_ok=True)
+    with (RESPONSES / f"{model}.jsonl").open("a") as output:
+        output.write(
+            json.dumps(dict(id=question_id, request_id=request_id, content=content))
+            + "\n"
+        )
+        output.flush()
+
+
+def regrade(args: argparse.Namespace) -> None:  # Offline; no client or API key needed.
+    path = args.out_dir / f"{args.model}.jsonl"
+    response_path = RESPONSES / f"{args.model}.jsonl"
+    if not response_path.is_file():
+        raise FileNotFoundError(f"No saved responses: {response_path}")
+    questions = {q["id"]: q for q in read_manifest()}
+    history = [
+        json.loads(line) for line in path.read_text().splitlines() if line.strip()
+    ]
+    if any(row["model"] != args.model for row in history):
+        raise ValueError("Existing label file contains another model")
+    latest = {row["id"]: row for row in history}
+    attempts = {(row["id"], row["request_id"]): row for row in history}
+    responses = read_labels(response_path)
+    changed = 0
+    for question_id, response in responses.items():
+        # Match billing/latency to this response, not a later failed request.
+        key = (question_id, response["request_id"])
+        if key not in attempts:
+            raise ValueError(f"No label metadata for saved response {question_id}")
+        row = attempts[key].copy()
+        row["pred"], row["correct"] = grade(questions[question_id], response["content"])
+        row["error"] = None
+        changed += any(
+            row[field] != latest[question_id][field]
+            for field in ("pred", "correct", "error")
+        )
+        latest[question_id] = row
+    # Validate and grade everything before atomically replacing the label file.
+    with tempfile.NamedTemporaryFile(mode="w", dir=path.parent, delete=False) as output:
+        temporary = Path(output.name)
+        try:
+            for question_id in sorted(latest):
+                output.write(json.dumps(latest[question_id]) + "\n")
+            output.flush()
+            output.close()
+            temporary.replace(path)
+        finally:
+            temporary.unlink(missing_ok=True)
+    print(f"Regraded: {len(responses)}; labels changed: {changed}")
 
 
 def retry_after(value: str | None) -> float:
@@ -126,11 +198,9 @@ async def label_question(
         value = response.json()
         choice = value["choices"][0]
         content = choice["message"].get("content") or ""
-        pred = (
-            extract_answer(content)
-            if question["dataset"] == "gsm8k"
-            else extract_mmlupro(content)
-        )
+        if not isinstance(content, str):
+            raise TypeError("Invalid completion content")
+        save_response(model, question["id"], row["request_id"], content)
         usage = value.get("usage") or {}
         prompt_tokens, completion_tokens = (
             usage.get("prompt_tokens"),
@@ -141,15 +211,12 @@ async def label_question(
                 raise ValueError("Invalid token count")
         cost = calculate_cost(MODELS[model], prompt_tokens, completion_tokens)
         row.update(
-            pred=pred,
-            correct=correct_answer(question["gold"], pred)
-            if question["dataset"] == "gsm8k"
-            else pred is not None and pred == question["gold"],
             finish_reason=choice.get("finish_reason"),
             prompt_tokens=prompt_tokens,
             completion_tokens=completion_tokens,
             cost_usd=str(cost) if cost is not None else None,
         )
+        row["pred"], row["correct"] = grade(question, content)
     except httpx.HTTPStatusError as exc:
         row["error"] = f"HTTP{exc.response.status_code}"
         row["request_id"] = exc.response.headers.get("X-Request-ID")
@@ -219,7 +286,15 @@ def main() -> None:
     parser.add_argument(
         "--out-dir", type=Path, default=ROOT / "docs/benchmarks/router/labels"
     )
+    parser.add_argument(
+        "--regrade",
+        action="store_true",
+        help="Regrade saved responses without HTTP calls",
+    )
     args = parser.parse_args()
+    if args.regrade:
+        regrade(args)
+        return
     if not args.api_key:
         parser.error("--api-key or GATEWAY_API_KEY is required")
     asyncio.run(collect(args))

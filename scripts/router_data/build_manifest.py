@@ -27,6 +27,7 @@ def build(gsm8k: list[dict], mmlupro: list[dict]) -> list[dict]:
                 "category": "gsm8k",
                 "split": split_for(question_id, "gsm8k"),
                 "gold": extract_answer(item["answer"], gold=True),
+                "question": item["question"],
                 "prompt": item["question"]
                 + '\nPlease reason step by step, and put your final answer after "####".',
             }
@@ -52,6 +53,7 @@ def build(gsm8k: list[dict], mmlupro: list[dict]) -> list[dict]:
                     "category": category,
                     "split": split_for(question_id, category),
                     "gold": item["answer"],
+                    "question": item["question"],
                     "prompt": item["question"]
                     + "\n"
                     + options

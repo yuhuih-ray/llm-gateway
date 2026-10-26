@@ -11,6 +11,10 @@ for this dataset revision the quotas sum to exactly 2,000. Adding questions neve
 changes an existing ID's split, although rebuilding can change category samples.
 Keep this manifest unchanged while collecting/comparing passes.
 
+`question` contains only the source question text, without appended options or
+instructions. Compute router features from `question`, never from `prompt`.
+`prompt` remains the exact user message sent for labeling.
+
 ## Provenance and licenses
 
 Built on 2026-10-25 with `datasets==5.1.0`:
@@ -26,7 +30,7 @@ Built on 2026-10-25 with `datasets==5.1.0`:
   The [dataset card](https://huggingface.co/datasets/TIGER-Lab/MMLU-Pro/blob/b189ec765aa7ed75c8acfea42df31fdae71f97be/README.md)
   declares the dataset MIT licensed (distinct from the code repository's license).
 
-Manifest SHA-256: `05aa7c8f7648759db0f179c76c9bd8effedaed3cecba92b21435ad3c317e3901`.
+Manifest SHA-256: `b9c6f02bb0061a6a9abddb6604fda939ef2cbe74c61d9ec21c97601bb1e5e099`.
 No model labeling was run when creating this manifest.
 
 ## Commands
@@ -52,6 +56,22 @@ Requests never opt into fallback or response caching. A missing or different
 `X-Gateway-Model` is an error. HTTP 429 allows 20 retries (honoring `Retry-After`,
 default 1 second); connection errors and 5xx share a three-attempt budget with
 backoff. Other errors are recorded immediately.
+
+Each successful completion from the requested model is saved before grading to
+`data/router/responses/<model>.jsonl`, with `id`, `request_id`, and raw `content`.
+These files are gitignored. To apply updated extraction logic without HTTP calls
+or an API key:
+
+```sh
+uv run python scripts/router_data/label.py --model local-qwen --regrade
+```
+
+Regrading uses every ID's latest saved response (ignoring `--per-dataset`) and
+atomically rewrites the label file with one row per ID. It preserves token counts,
+cost, latency, finish reason, and request ID from the matching original attempt;
+it prints how many labels changed. Labels without saved responses remain
+unchanged. A saved response without matching label metadata aborts before rewriting,
+so costs and latency are never invented. `--out-dir` selects the label file as usual.
 
 Output is appended and flushed after every question. The last row for each ID
 wins; only rows with `error: null` are skipped on resume. Run only one collector

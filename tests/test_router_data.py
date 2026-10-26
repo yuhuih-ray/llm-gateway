@@ -27,6 +27,11 @@ report = script("report")
 common = script("common")
 
 
+@pytest.fixture(autouse=True)
+def isolated_responses(monkeypatch, tmp_path):
+    monkeypatch.setattr(label, "RESPONSES", tmp_path / "responses")
+
+
 @pytest.mark.parametrize(
     "text,expected",
     [
@@ -83,6 +88,7 @@ def test_manifest_stratification_prompts_and_order():
     }
     assert [q["id"] for q in result] == sorted(q["id"] for q in result)
     assert result[0]["gold"] == "4"
+    assert result[0]["question"] == "What is 2 + 2?"
     assert (
         result[0]["prompt"]
         == 'What is 2 + 2?\nPlease reason step by step, and put your final answer after "####".'
@@ -92,6 +98,10 @@ def test_manifest_stratification_prompts_and_order():
         sample["prompt"]
         == f'Question {sample["id"].split(":")[1]}\nA. one\nB. two\nThink step by step, then end with a final line "ANSWER: <letter>".'
     )
+    assert sample["question"] == f"Question {sample['id'].split(':')[1]}"
+    assert "A. one" not in sample["question"]
+    assert "Think step by step" not in sample["question"]
+    assert "Please reason" not in result[0]["question"]
     for category in ("math", "law", "history"):
         expected = sorted(
             [f"mmlupro:{q['question_id']}" for q in mmlu if q["category"] == category],
@@ -106,7 +116,10 @@ def test_committed_manifest_is_complete_and_consistent():
     assert Counter(row["dataset"] for row in rows) == {"gsm8k": 1319, "mmlupro": 2000}
     assert [q["id"] for q in rows] == sorted(q["id"] for q in rows)
     assert all(q["split"] == common.split_for(q["id"], q["category"]) for q in rows)
-    assert all(q["gold"] is not None and q["prompt"] for q in rows)
+    assert all(
+        q["gold"] is not None and q["prompt"].startswith(q["question"] + "\n")
+        for q in rows
+    )
 
 
 def test_resume_last_row_wins_and_errors_are_retried(tmp_path):
@@ -198,6 +211,7 @@ def test_model_identity_and_registry_pricing(monkeypatch, actual):
     assert result["request_id"] == "request-test"
     assert result["latency_ms"] >= 0
     if actual != model:
+        assert not (label.RESPONSES / f"{model}.jsonl").exists()
         assert result["error"] == "ModelMismatchError"
         assert not result["correct"]
         assert result["pred"] is result["cost_usd"] is None
@@ -364,3 +378,151 @@ def test_report_paired_filter_cost_and_latency():
     a["0"]["cost_usd"] = None
     assert report.statistics(questions, a, b)["cost_a"] is None
     assert report.statistics([], a, b)["n"] == 0
+
+
+def test_completion_saved_before_grading(monkeypatch):
+    content = "Raw reasoning\n**#### 18**"
+
+    def grade_after_save(question, text):
+        saved = common.read_labels(label.RESPONSES / "local-qwen.jsonl")
+        assert saved[question["id"]] == {
+            "id": question["id"],
+            "request_id": "saved-request",
+            "content": content,
+        }
+        assert text == content
+        raise RuntimeError("grading bug")
+
+    monkeypatch.setattr(label, "grade", grade_after_save)
+
+    async def run():
+        async with httpx.AsyncClient(
+            base_url="http://test/v1/",
+            transport=httpx.MockTransport(
+                lambda request: httpx.Response(
+                    200,
+                    headers={
+                        "X-Gateway-Model": "local-qwen",
+                        "X-Request-ID": "saved-request",
+                    },
+                    json=response_payload(content),
+                )
+            ),
+        ) as client:
+            return await label.label_question(client, "local-qwen", question())
+
+    row = asyncio.run(run())
+    assert row["error"] == "RuntimeError"
+    assert row["prompt_tokens"] == 100
+    assert row["completion_tokens"] == 20
+    assert row["request_id"] == "saved-request"
+
+
+def test_regrade_cli_uses_latest_response_offline_and_keeps_metadata(
+    monkeypatch, tmp_path, capsys
+):
+    from unittest.mock import Mock
+
+    questions = [question(), question("mmlupro")]
+    monkeypatch.setattr(label, "read_manifest", lambda: questions)
+    metadata = dict(
+        model="local-qwen",
+        finish_reason="stop",
+        prompt_tokens=123,
+        completion_tokens=45,
+        cost_usd="0.00012345",
+        latency_ms=678.9,
+        error=None,
+    )
+    rows = [
+        dict(
+            metadata,
+            id=q["id"],
+            request_id=f"request-{q['id']}",
+            pred=None,
+            correct=False,
+        )
+        for q in questions
+    ]
+    unparsed = dict(rows[0], id="gsm8k:99", error="HTTP500", request_id="no-response")
+    path = tmp_path / "local-qwen.jsonl"
+    path.write_text("".join(json.dumps(row) + "\n" for row in [*rows, unparsed]))
+    label.RESPONSES.mkdir(parents=True)
+    responses = [
+        dict(id=rows[0]["id"], request_id="older-request", content="#### 0"),
+        dict(
+            id=rows[0]["id"],
+            request_id=rows[0]["request_id"],
+            content="#### 18 dollars",
+        ),
+        dict(id=rows[1]["id"], request_id=rows[1]["request_id"], content="ANSWER: (B)"),
+    ]
+    (label.RESPONSES / "local-qwen.jsonl").write_text(
+        "".join(json.dumps(row) + "\n" for row in responses)
+    )
+    forbidden_client = Mock(
+        side_effect=AssertionError("Regrade must not create an HTTP client")
+    )
+    monkeypatch.setattr(label.httpx, "AsyncClient", forbidden_client)
+    monkeypatch.delenv("GATEWAY_API_KEY", raising=False)
+    monkeypatch.setattr(
+        label.sys,
+        "argv",
+        [
+            "label.py",
+            "--model",
+            "local-qwen",
+            "--out-dir",
+            str(tmp_path),
+            "--regrade",
+            "--per-dataset",
+            "1",
+        ],
+    )
+    label.main()
+    result = common.read_labels(path)
+    assert len(result) == 3
+    for original, expected in zip(rows, ["18", "B"]):
+        updated = result[original["id"]]
+        assert updated == {**original, "pred": expected, "correct": True}
+    assert result[unparsed["id"]] == unparsed
+    assert "Regraded: 2; labels changed: 2" in capsys.readouterr().out
+    label.main()
+    assert "labels changed: 0" in capsys.readouterr().out
+    forbidden_client.assert_not_called()
+
+
+def test_regrade_matches_response_request_metadata(monkeypatch, tmp_path):
+    monkeypatch.setattr(label, "read_manifest", lambda: [question()])
+    row = dict(
+        id="gsm8k:0",
+        model="local-qwen",
+        request_id="completed",
+        pred=None,
+        correct=False,
+        error=None,
+        prompt_tokens=100,
+        completion_tokens=20,
+        cost_usd="0.01",
+        latency_ms=10,
+        finish_reason="stop",
+    )
+    failed = {**row, "request_id": "later-failed", "error": "HTTP500", "cost_usd": None}
+    path = tmp_path / "local-qwen.jsonl"
+    path.write_text(json.dumps(row) + "\n" + json.dumps(failed) + "\n")
+    label.RESPONSES.mkdir(parents=True)
+    raw = label.RESPONSES / "local-qwen.jsonl"
+    raw.write_text(
+        json.dumps(dict(id="gsm8k:0", request_id="completed", content="#### 18")) + "\n"
+    )
+    args = Namespace(model="local-qwen", out_dir=tmp_path)
+    label.regrade(args)
+    assert common.read_labels(path)["gsm8k:0"] == {**row, "pred": "18", "correct": True}
+    original = path.read_text()
+    raw.write_text(
+        json.dumps(dict(id="gsm8k:0", request_id="missing-metadata", content="#### 18"))
+        + "\n"
+    )
+    with pytest.raises(ValueError, match="No label metadata"):
+        label.regrade(args)
+    assert path.read_text() == original
