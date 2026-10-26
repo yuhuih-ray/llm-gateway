@@ -68,3 +68,48 @@ feature extraction and classifier overhead, including embedding API cost.
 Run offline tests with `uv run --group router pytest tests/test_router_train.py`.
 Tests use synthetic data and mocked embeddings, never the real label corpus or
 embedding service.
+
+## Portable export and quality levels
+
+When ready to run a real export (this retrains on the train split):
+
+```sh
+uv run --group router python scripts/router_train/export.py \
+  --models local-qwen gemini-flash-lite --run tfidf-cascade \
+  --levels high=0.01 balanced=0.03 economy=0.08
+```
+
+The defaults shown allow drops of 1, 3, and 8 percentage points below last-model
+train accuracy. Export shares the exact fitting/CV routine with `train.py`; each
+level uses only its paired train OOF predictions. Test and OOD predictions are
+computed once after thresholds are fixed and reused across levels. The exporter
+writes the artifact and `<run>-parity.json` to `src/llm_gateway/router_artifacts/`,
+and `<run>-levels.json` to `docs/benchmarks/router/results/`, plus a Markdown table
+to stdout. The parity file contains the first 200 shared test questions in manifest
+ID order (all available questions for a smaller synthetic/test cohort).
+
+Artifacts contain per-classifier vocabularies, learned IDF/logistic weights,
+vectorizer settings, quality thresholds, and run/data metadata. Constant train
+targets are stored as exact constant probabilities. A null tau preserves the
+explicit all-last policy if no threshold meets the train constraint. JSON artifacts
+are included in built packages. No model is exported or activated automatically.
+
+Serving code uses only the standard library. Create one `Router` instance at
+startup and reuse it; `route` does no file I/O:
+
+```python
+from llm_gateway.router import Router
+
+router = Router("src/llm_gateway/router_artifacts/tfidf-cascade.json")
+decision = router.route("How many items remain?", level="balanced")
+# decision.model, decision.probabilities (by non-final model), decision.tau
+```
+
+The level report includes absolute chosen/last-model latencies in milliseconds
+and their ratio, accuracy retained as a ratio, traffic shares, cost reduction,
+hull advantage, and oracle savings captured. Ratios with zero denominators are
+null. This module does not change gateway request routing.
+
+The default suite checks a committed synthetic sklearn parity fixture to 1e-9,
+without importing sklearn or NumPy. Router-group tests exercise export and report
+logic using synthetic data only; no real export or embedding request runs.

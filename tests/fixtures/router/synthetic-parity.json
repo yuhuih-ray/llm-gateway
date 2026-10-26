@@ -1,0 +1,1609 @@
+{
+  "models": [
+    "cheap",
+    "middle",
+    "last"
+  ],
+  "questions": [
+    {
+      "id": "test:000",
+      "question": "Calculate blue blue blue widgets 12 + 4?",
+      "probabilities": [
+        0.8837793629943845,
+        0.9460997981759117
+      ]
+    },
+    {
+      "id": "test:001",
+      "question": "Explain why green widgets differ from blue.",
+      "probabilities": [
+        0.062032120514137194,
+        0.9416331488742082
+      ]
+    },
+    {
+      "id": "test:002",
+      "question": "Which red widgets? WHY?",
+      "probabilities": [
+        0.0540854715957512,
+        0.11231886317691028
+      ]
+    },
+    {
+      "id": "test:003",
+      "question": "",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:004",
+      "question": "x ! ?",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:005",
+      "question": "UNKNOWN zygomorphic",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:006",
+      "question": "CAF\u00c9 na\u00efve blue_blue 123",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:007",
+      "question": "calculate\nBLUE widgets\twidgets",
+      "probabilities": [
+        0.6539966129900177,
+        0.8856612211832313
+      ]
+    },
+    {
+      "id": "test:008",
+      "question": "blue blue green red",
+      "probabilities": [
+        0.5227411337713834,
+        0.8670339307966687
+      ]
+    },
+    {
+      "id": "test:009",
+      "question": "Calculate blue blue blue widgets 12 + 4?",
+      "probabilities": [
+        0.8837793629943845,
+        0.9460997981759117
+      ]
+    },
+    {
+      "id": "test:010",
+      "question": "Explain why green widgets differ from blue.",
+      "probabilities": [
+        0.062032120514137194,
+        0.9416331488742082
+      ]
+    },
+    {
+      "id": "test:011",
+      "question": "Which red widgets? WHY?",
+      "probabilities": [
+        0.0540854715957512,
+        0.11231886317691028
+      ]
+    },
+    {
+      "id": "test:012",
+      "question": "",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:013",
+      "question": "x ! ?",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:014",
+      "question": "UNKNOWN zygomorphic",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:015",
+      "question": "CAF\u00c9 na\u00efve blue_blue 123",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:016",
+      "question": "calculate\nBLUE widgets\twidgets",
+      "probabilities": [
+        0.6539966129900177,
+        0.8856612211832313
+      ]
+    },
+    {
+      "id": "test:017",
+      "question": "blue blue green red",
+      "probabilities": [
+        0.5227411337713834,
+        0.8670339307966687
+      ]
+    },
+    {
+      "id": "test:018",
+      "question": "Calculate blue blue blue widgets 12 + 4?",
+      "probabilities": [
+        0.8837793629943845,
+        0.9460997981759117
+      ]
+    },
+    {
+      "id": "test:019",
+      "question": "Explain why green widgets differ from blue.",
+      "probabilities": [
+        0.062032120514137194,
+        0.9416331488742082
+      ]
+    },
+    {
+      "id": "test:020",
+      "question": "Which red widgets? WHY?",
+      "probabilities": [
+        0.0540854715957512,
+        0.11231886317691028
+      ]
+    },
+    {
+      "id": "test:021",
+      "question": "",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:022",
+      "question": "x ! ?",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:023",
+      "question": "UNKNOWN zygomorphic",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:024",
+      "question": "CAF\u00c9 na\u00efve blue_blue 123",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:025",
+      "question": "calculate\nBLUE widgets\twidgets",
+      "probabilities": [
+        0.6539966129900177,
+        0.8856612211832313
+      ]
+    },
+    {
+      "id": "test:026",
+      "question": "blue blue green red",
+      "probabilities": [
+        0.5227411337713834,
+        0.8670339307966687
+      ]
+    },
+    {
+      "id": "test:027",
+      "question": "Calculate blue blue blue widgets 12 + 4?",
+      "probabilities": [
+        0.8837793629943845,
+        0.9460997981759117
+      ]
+    },
+    {
+      "id": "test:028",
+      "question": "Explain why green widgets differ from blue.",
+      "probabilities": [
+        0.062032120514137194,
+        0.9416331488742082
+      ]
+    },
+    {
+      "id": "test:029",
+      "question": "Which red widgets? WHY?",
+      "probabilities": [
+        0.0540854715957512,
+        0.11231886317691028
+      ]
+    },
+    {
+      "id": "test:030",
+      "question": "",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:031",
+      "question": "x ! ?",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:032",
+      "question": "UNKNOWN zygomorphic",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:033",
+      "question": "CAF\u00c9 na\u00efve blue_blue 123",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:034",
+      "question": "calculate\nBLUE widgets\twidgets",
+      "probabilities": [
+        0.6539966129900177,
+        0.8856612211832313
+      ]
+    },
+    {
+      "id": "test:035",
+      "question": "blue blue green red",
+      "probabilities": [
+        0.5227411337713834,
+        0.8670339307966687
+      ]
+    },
+    {
+      "id": "test:036",
+      "question": "Calculate blue blue blue widgets 12 + 4?",
+      "probabilities": [
+        0.8837793629943845,
+        0.9460997981759117
+      ]
+    },
+    {
+      "id": "test:037",
+      "question": "Explain why green widgets differ from blue.",
+      "probabilities": [
+        0.062032120514137194,
+        0.9416331488742082
+      ]
+    },
+    {
+      "id": "test:038",
+      "question": "Which red widgets? WHY?",
+      "probabilities": [
+        0.0540854715957512,
+        0.11231886317691028
+      ]
+    },
+    {
+      "id": "test:039",
+      "question": "",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:040",
+      "question": "x ! ?",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:041",
+      "question": "UNKNOWN zygomorphic",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:042",
+      "question": "CAF\u00c9 na\u00efve blue_blue 123",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:043",
+      "question": "calculate\nBLUE widgets\twidgets",
+      "probabilities": [
+        0.6539966129900177,
+        0.8856612211832313
+      ]
+    },
+    {
+      "id": "test:044",
+      "question": "blue blue green red",
+      "probabilities": [
+        0.5227411337713834,
+        0.8670339307966687
+      ]
+    },
+    {
+      "id": "test:045",
+      "question": "Calculate blue blue blue widgets 12 + 4?",
+      "probabilities": [
+        0.8837793629943845,
+        0.9460997981759117
+      ]
+    },
+    {
+      "id": "test:046",
+      "question": "Explain why green widgets differ from blue.",
+      "probabilities": [
+        0.062032120514137194,
+        0.9416331488742082
+      ]
+    },
+    {
+      "id": "test:047",
+      "question": "Which red widgets? WHY?",
+      "probabilities": [
+        0.0540854715957512,
+        0.11231886317691028
+      ]
+    },
+    {
+      "id": "test:048",
+      "question": "",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:049",
+      "question": "x ! ?",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:050",
+      "question": "UNKNOWN zygomorphic",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:051",
+      "question": "CAF\u00c9 na\u00efve blue_blue 123",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:052",
+      "question": "calculate\nBLUE widgets\twidgets",
+      "probabilities": [
+        0.6539966129900177,
+        0.8856612211832313
+      ]
+    },
+    {
+      "id": "test:053",
+      "question": "blue blue green red",
+      "probabilities": [
+        0.5227411337713834,
+        0.8670339307966687
+      ]
+    },
+    {
+      "id": "test:054",
+      "question": "Calculate blue blue blue widgets 12 + 4?",
+      "probabilities": [
+        0.8837793629943845,
+        0.9460997981759117
+      ]
+    },
+    {
+      "id": "test:055",
+      "question": "Explain why green widgets differ from blue.",
+      "probabilities": [
+        0.062032120514137194,
+        0.9416331488742082
+      ]
+    },
+    {
+      "id": "test:056",
+      "question": "Which red widgets? WHY?",
+      "probabilities": [
+        0.0540854715957512,
+        0.11231886317691028
+      ]
+    },
+    {
+      "id": "test:057",
+      "question": "",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:058",
+      "question": "x ! ?",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:059",
+      "question": "UNKNOWN zygomorphic",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:060",
+      "question": "CAF\u00c9 na\u00efve blue_blue 123",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:061",
+      "question": "calculate\nBLUE widgets\twidgets",
+      "probabilities": [
+        0.6539966129900177,
+        0.8856612211832313
+      ]
+    },
+    {
+      "id": "test:062",
+      "question": "blue blue green red",
+      "probabilities": [
+        0.5227411337713834,
+        0.8670339307966687
+      ]
+    },
+    {
+      "id": "test:063",
+      "question": "Calculate blue blue blue widgets 12 + 4?",
+      "probabilities": [
+        0.8837793629943845,
+        0.9460997981759117
+      ]
+    },
+    {
+      "id": "test:064",
+      "question": "Explain why green widgets differ from blue.",
+      "probabilities": [
+        0.062032120514137194,
+        0.9416331488742082
+      ]
+    },
+    {
+      "id": "test:065",
+      "question": "Which red widgets? WHY?",
+      "probabilities": [
+        0.0540854715957512,
+        0.11231886317691028
+      ]
+    },
+    {
+      "id": "test:066",
+      "question": "",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:067",
+      "question": "x ! ?",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:068",
+      "question": "UNKNOWN zygomorphic",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:069",
+      "question": "CAF\u00c9 na\u00efve blue_blue 123",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:070",
+      "question": "calculate\nBLUE widgets\twidgets",
+      "probabilities": [
+        0.6539966129900177,
+        0.8856612211832313
+      ]
+    },
+    {
+      "id": "test:071",
+      "question": "blue blue green red",
+      "probabilities": [
+        0.5227411337713834,
+        0.8670339307966687
+      ]
+    },
+    {
+      "id": "test:072",
+      "question": "Calculate blue blue blue widgets 12 + 4?",
+      "probabilities": [
+        0.8837793629943845,
+        0.9460997981759117
+      ]
+    },
+    {
+      "id": "test:073",
+      "question": "Explain why green widgets differ from blue.",
+      "probabilities": [
+        0.062032120514137194,
+        0.9416331488742082
+      ]
+    },
+    {
+      "id": "test:074",
+      "question": "Which red widgets? WHY?",
+      "probabilities": [
+        0.0540854715957512,
+        0.11231886317691028
+      ]
+    },
+    {
+      "id": "test:075",
+      "question": "",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:076",
+      "question": "x ! ?",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:077",
+      "question": "UNKNOWN zygomorphic",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:078",
+      "question": "CAF\u00c9 na\u00efve blue_blue 123",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:079",
+      "question": "calculate\nBLUE widgets\twidgets",
+      "probabilities": [
+        0.6539966129900177,
+        0.8856612211832313
+      ]
+    },
+    {
+      "id": "test:080",
+      "question": "blue blue green red",
+      "probabilities": [
+        0.5227411337713834,
+        0.8670339307966687
+      ]
+    },
+    {
+      "id": "test:081",
+      "question": "Calculate blue blue blue widgets 12 + 4?",
+      "probabilities": [
+        0.8837793629943845,
+        0.9460997981759117
+      ]
+    },
+    {
+      "id": "test:082",
+      "question": "Explain why green widgets differ from blue.",
+      "probabilities": [
+        0.062032120514137194,
+        0.9416331488742082
+      ]
+    },
+    {
+      "id": "test:083",
+      "question": "Which red widgets? WHY?",
+      "probabilities": [
+        0.0540854715957512,
+        0.11231886317691028
+      ]
+    },
+    {
+      "id": "test:084",
+      "question": "",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:085",
+      "question": "x ! ?",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:086",
+      "question": "UNKNOWN zygomorphic",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:087",
+      "question": "CAF\u00c9 na\u00efve blue_blue 123",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:088",
+      "question": "calculate\nBLUE widgets\twidgets",
+      "probabilities": [
+        0.6539966129900177,
+        0.8856612211832313
+      ]
+    },
+    {
+      "id": "test:089",
+      "question": "blue blue green red",
+      "probabilities": [
+        0.5227411337713834,
+        0.8670339307966687
+      ]
+    },
+    {
+      "id": "test:090",
+      "question": "Calculate blue blue blue widgets 12 + 4?",
+      "probabilities": [
+        0.8837793629943845,
+        0.9460997981759117
+      ]
+    },
+    {
+      "id": "test:091",
+      "question": "Explain why green widgets differ from blue.",
+      "probabilities": [
+        0.062032120514137194,
+        0.9416331488742082
+      ]
+    },
+    {
+      "id": "test:092",
+      "question": "Which red widgets? WHY?",
+      "probabilities": [
+        0.0540854715957512,
+        0.11231886317691028
+      ]
+    },
+    {
+      "id": "test:093",
+      "question": "",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:094",
+      "question": "x ! ?",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:095",
+      "question": "UNKNOWN zygomorphic",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:096",
+      "question": "CAF\u00c9 na\u00efve blue_blue 123",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:097",
+      "question": "calculate\nBLUE widgets\twidgets",
+      "probabilities": [
+        0.6539966129900177,
+        0.8856612211832313
+      ]
+    },
+    {
+      "id": "test:098",
+      "question": "blue blue green red",
+      "probabilities": [
+        0.5227411337713834,
+        0.8670339307966687
+      ]
+    },
+    {
+      "id": "test:099",
+      "question": "Calculate blue blue blue widgets 12 + 4?",
+      "probabilities": [
+        0.8837793629943845,
+        0.9460997981759117
+      ]
+    },
+    {
+      "id": "test:100",
+      "question": "Explain why green widgets differ from blue.",
+      "probabilities": [
+        0.062032120514137194,
+        0.9416331488742082
+      ]
+    },
+    {
+      "id": "test:101",
+      "question": "Which red widgets? WHY?",
+      "probabilities": [
+        0.0540854715957512,
+        0.11231886317691028
+      ]
+    },
+    {
+      "id": "test:102",
+      "question": "",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:103",
+      "question": "x ! ?",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:104",
+      "question": "UNKNOWN zygomorphic",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:105",
+      "question": "CAF\u00c9 na\u00efve blue_blue 123",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:106",
+      "question": "calculate\nBLUE widgets\twidgets",
+      "probabilities": [
+        0.6539966129900177,
+        0.8856612211832313
+      ]
+    },
+    {
+      "id": "test:107",
+      "question": "blue blue green red",
+      "probabilities": [
+        0.5227411337713834,
+        0.8670339307966687
+      ]
+    },
+    {
+      "id": "test:108",
+      "question": "Calculate blue blue blue widgets 12 + 4?",
+      "probabilities": [
+        0.8837793629943845,
+        0.9460997981759117
+      ]
+    },
+    {
+      "id": "test:109",
+      "question": "Explain why green widgets differ from blue.",
+      "probabilities": [
+        0.062032120514137194,
+        0.9416331488742082
+      ]
+    },
+    {
+      "id": "test:110",
+      "question": "Which red widgets? WHY?",
+      "probabilities": [
+        0.0540854715957512,
+        0.11231886317691028
+      ]
+    },
+    {
+      "id": "test:111",
+      "question": "",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:112",
+      "question": "x ! ?",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:113",
+      "question": "UNKNOWN zygomorphic",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:114",
+      "question": "CAF\u00c9 na\u00efve blue_blue 123",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:115",
+      "question": "calculate\nBLUE widgets\twidgets",
+      "probabilities": [
+        0.6539966129900177,
+        0.8856612211832313
+      ]
+    },
+    {
+      "id": "test:116",
+      "question": "blue blue green red",
+      "probabilities": [
+        0.5227411337713834,
+        0.8670339307966687
+      ]
+    },
+    {
+      "id": "test:117",
+      "question": "Calculate blue blue blue widgets 12 + 4?",
+      "probabilities": [
+        0.8837793629943845,
+        0.9460997981759117
+      ]
+    },
+    {
+      "id": "test:118",
+      "question": "Explain why green widgets differ from blue.",
+      "probabilities": [
+        0.062032120514137194,
+        0.9416331488742082
+      ]
+    },
+    {
+      "id": "test:119",
+      "question": "Which red widgets? WHY?",
+      "probabilities": [
+        0.0540854715957512,
+        0.11231886317691028
+      ]
+    },
+    {
+      "id": "test:120",
+      "question": "",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:121",
+      "question": "x ! ?",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:122",
+      "question": "UNKNOWN zygomorphic",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:123",
+      "question": "CAF\u00c9 na\u00efve blue_blue 123",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:124",
+      "question": "calculate\nBLUE widgets\twidgets",
+      "probabilities": [
+        0.6539966129900177,
+        0.8856612211832313
+      ]
+    },
+    {
+      "id": "test:125",
+      "question": "blue blue green red",
+      "probabilities": [
+        0.5227411337713834,
+        0.8670339307966687
+      ]
+    },
+    {
+      "id": "test:126",
+      "question": "Calculate blue blue blue widgets 12 + 4?",
+      "probabilities": [
+        0.8837793629943845,
+        0.9460997981759117
+      ]
+    },
+    {
+      "id": "test:127",
+      "question": "Explain why green widgets differ from blue.",
+      "probabilities": [
+        0.062032120514137194,
+        0.9416331488742082
+      ]
+    },
+    {
+      "id": "test:128",
+      "question": "Which red widgets? WHY?",
+      "probabilities": [
+        0.0540854715957512,
+        0.11231886317691028
+      ]
+    },
+    {
+      "id": "test:129",
+      "question": "",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:130",
+      "question": "x ! ?",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:131",
+      "question": "UNKNOWN zygomorphic",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:132",
+      "question": "CAF\u00c9 na\u00efve blue_blue 123",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:133",
+      "question": "calculate\nBLUE widgets\twidgets",
+      "probabilities": [
+        0.6539966129900177,
+        0.8856612211832313
+      ]
+    },
+    {
+      "id": "test:134",
+      "question": "blue blue green red",
+      "probabilities": [
+        0.5227411337713834,
+        0.8670339307966687
+      ]
+    },
+    {
+      "id": "test:135",
+      "question": "Calculate blue blue blue widgets 12 + 4?",
+      "probabilities": [
+        0.8837793629943845,
+        0.9460997981759117
+      ]
+    },
+    {
+      "id": "test:136",
+      "question": "Explain why green widgets differ from blue.",
+      "probabilities": [
+        0.062032120514137194,
+        0.9416331488742082
+      ]
+    },
+    {
+      "id": "test:137",
+      "question": "Which red widgets? WHY?",
+      "probabilities": [
+        0.0540854715957512,
+        0.11231886317691028
+      ]
+    },
+    {
+      "id": "test:138",
+      "question": "",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:139",
+      "question": "x ! ?",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:140",
+      "question": "UNKNOWN zygomorphic",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:141",
+      "question": "CAF\u00c9 na\u00efve blue_blue 123",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:142",
+      "question": "calculate\nBLUE widgets\twidgets",
+      "probabilities": [
+        0.6539966129900177,
+        0.8856612211832313
+      ]
+    },
+    {
+      "id": "test:143",
+      "question": "blue blue green red",
+      "probabilities": [
+        0.5227411337713834,
+        0.8670339307966687
+      ]
+    },
+    {
+      "id": "test:144",
+      "question": "Calculate blue blue blue widgets 12 + 4?",
+      "probabilities": [
+        0.8837793629943845,
+        0.9460997981759117
+      ]
+    },
+    {
+      "id": "test:145",
+      "question": "Explain why green widgets differ from blue.",
+      "probabilities": [
+        0.062032120514137194,
+        0.9416331488742082
+      ]
+    },
+    {
+      "id": "test:146",
+      "question": "Which red widgets? WHY?",
+      "probabilities": [
+        0.0540854715957512,
+        0.11231886317691028
+      ]
+    },
+    {
+      "id": "test:147",
+      "question": "",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:148",
+      "question": "x ! ?",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:149",
+      "question": "UNKNOWN zygomorphic",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:150",
+      "question": "CAF\u00c9 na\u00efve blue_blue 123",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:151",
+      "question": "calculate\nBLUE widgets\twidgets",
+      "probabilities": [
+        0.6539966129900177,
+        0.8856612211832313
+      ]
+    },
+    {
+      "id": "test:152",
+      "question": "blue blue green red",
+      "probabilities": [
+        0.5227411337713834,
+        0.8670339307966687
+      ]
+    },
+    {
+      "id": "test:153",
+      "question": "Calculate blue blue blue widgets 12 + 4?",
+      "probabilities": [
+        0.8837793629943845,
+        0.9460997981759117
+      ]
+    },
+    {
+      "id": "test:154",
+      "question": "Explain why green widgets differ from blue.",
+      "probabilities": [
+        0.062032120514137194,
+        0.9416331488742082
+      ]
+    },
+    {
+      "id": "test:155",
+      "question": "Which red widgets? WHY?",
+      "probabilities": [
+        0.0540854715957512,
+        0.11231886317691028
+      ]
+    },
+    {
+      "id": "test:156",
+      "question": "",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:157",
+      "question": "x ! ?",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:158",
+      "question": "UNKNOWN zygomorphic",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:159",
+      "question": "CAF\u00c9 na\u00efve blue_blue 123",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:160",
+      "question": "calculate\nBLUE widgets\twidgets",
+      "probabilities": [
+        0.6539966129900177,
+        0.8856612211832313
+      ]
+    },
+    {
+      "id": "test:161",
+      "question": "blue blue green red",
+      "probabilities": [
+        0.5227411337713834,
+        0.8670339307966687
+      ]
+    },
+    {
+      "id": "test:162",
+      "question": "Calculate blue blue blue widgets 12 + 4?",
+      "probabilities": [
+        0.8837793629943845,
+        0.9460997981759117
+      ]
+    },
+    {
+      "id": "test:163",
+      "question": "Explain why green widgets differ from blue.",
+      "probabilities": [
+        0.062032120514137194,
+        0.9416331488742082
+      ]
+    },
+    {
+      "id": "test:164",
+      "question": "Which red widgets? WHY?",
+      "probabilities": [
+        0.0540854715957512,
+        0.11231886317691028
+      ]
+    },
+    {
+      "id": "test:165",
+      "question": "",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:166",
+      "question": "x ! ?",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:167",
+      "question": "UNKNOWN zygomorphic",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:168",
+      "question": "CAF\u00c9 na\u00efve blue_blue 123",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:169",
+      "question": "calculate\nBLUE widgets\twidgets",
+      "probabilities": [
+        0.6539966129900177,
+        0.8856612211832313
+      ]
+    },
+    {
+      "id": "test:170",
+      "question": "blue blue green red",
+      "probabilities": [
+        0.5227411337713834,
+        0.8670339307966687
+      ]
+    },
+    {
+      "id": "test:171",
+      "question": "Calculate blue blue blue widgets 12 + 4?",
+      "probabilities": [
+        0.8837793629943845,
+        0.9460997981759117
+      ]
+    },
+    {
+      "id": "test:172",
+      "question": "Explain why green widgets differ from blue.",
+      "probabilities": [
+        0.062032120514137194,
+        0.9416331488742082
+      ]
+    },
+    {
+      "id": "test:173",
+      "question": "Which red widgets? WHY?",
+      "probabilities": [
+        0.0540854715957512,
+        0.11231886317691028
+      ]
+    },
+    {
+      "id": "test:174",
+      "question": "",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:175",
+      "question": "x ! ?",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:176",
+      "question": "UNKNOWN zygomorphic",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:177",
+      "question": "CAF\u00c9 na\u00efve blue_blue 123",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:178",
+      "question": "calculate\nBLUE widgets\twidgets",
+      "probabilities": [
+        0.6539966129900177,
+        0.8856612211832313
+      ]
+    },
+    {
+      "id": "test:179",
+      "question": "blue blue green red",
+      "probabilities": [
+        0.5227411337713834,
+        0.8670339307966687
+      ]
+    },
+    {
+      "id": "test:180",
+      "question": "Calculate blue blue blue widgets 12 + 4?",
+      "probabilities": [
+        0.8837793629943845,
+        0.9460997981759117
+      ]
+    },
+    {
+      "id": "test:181",
+      "question": "Explain why green widgets differ from blue.",
+      "probabilities": [
+        0.062032120514137194,
+        0.9416331488742082
+      ]
+    },
+    {
+      "id": "test:182",
+      "question": "Which red widgets? WHY?",
+      "probabilities": [
+        0.0540854715957512,
+        0.11231886317691028
+      ]
+    },
+    {
+      "id": "test:183",
+      "question": "",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:184",
+      "question": "x ! ?",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:185",
+      "question": "UNKNOWN zygomorphic",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:186",
+      "question": "CAF\u00c9 na\u00efve blue_blue 123",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:187",
+      "question": "calculate\nBLUE widgets\twidgets",
+      "probabilities": [
+        0.6539966129900177,
+        0.8856612211832313
+      ]
+    },
+    {
+      "id": "test:188",
+      "question": "blue blue green red",
+      "probabilities": [
+        0.5227411337713834,
+        0.8670339307966687
+      ]
+    },
+    {
+      "id": "test:189",
+      "question": "Calculate blue blue blue widgets 12 + 4?",
+      "probabilities": [
+        0.8837793629943845,
+        0.9460997981759117
+      ]
+    },
+    {
+      "id": "test:190",
+      "question": "Explain why green widgets differ from blue.",
+      "probabilities": [
+        0.062032120514137194,
+        0.9416331488742082
+      ]
+    },
+    {
+      "id": "test:191",
+      "question": "Which red widgets? WHY?",
+      "probabilities": [
+        0.0540854715957512,
+        0.11231886317691028
+      ]
+    },
+    {
+      "id": "test:192",
+      "question": "",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:193",
+      "question": "x ! ?",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:194",
+      "question": "UNKNOWN zygomorphic",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:195",
+      "question": "CAF\u00c9 na\u00efve blue_blue 123",
+      "probabilities": [
+        0.23682013830925644,
+        0.7517624895509994
+      ]
+    },
+    {
+      "id": "test:196",
+      "question": "calculate\nBLUE widgets\twidgets",
+      "probabilities": [
+        0.6539966129900177,
+        0.8856612211832313
+      ]
+    },
+    {
+      "id": "test:197",
+      "question": "blue blue green red",
+      "probabilities": [
+        0.5227411337713834,
+        0.8670339307966687
+      ]
+    },
+    {
+      "id": "test:198",
+      "question": "Calculate blue blue blue widgets 12 + 4?",
+      "probabilities": [
+        0.8837793629943845,
+        0.9460997981759117
+      ]
+    },
+    {
+      "id": "test:199",
+      "question": "Explain why green widgets differ from blue.",
+      "probabilities": [
+        0.062032120514137194,
+        0.9416331488742082
+      ]
+    }
+  ]
+}

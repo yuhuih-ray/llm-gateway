@@ -222,10 +222,13 @@ def select_tau(
     train_rows: list[dict],  # Explicitly reject test/OOD rows at this boundary.
     oof: np.ndarray,  # Paired held-out probabilities, one column per non-final model.
     models: list[str],  # Caller-supplied increasing price order.
+    allowed_drop: float = 0.01,  # Train accuracy tolerance for this quality level.
 ) -> dict:
     if not train_rows or any(row["split"] != "train" for row in train_rows):
         raise ValueError("Threshold selection accepts only train rows")
-    target = np.mean([row["correct"][-1] for row in train_rows]) - 0.01
+    if not 0 <= allowed_drop <= 1:
+        raise ValueError("Allowed accuracy drop must be between zero and one")
+    target = np.mean([row["correct"][-1] for row in train_rows]) - allowed_drop
     candidates = [
         row
         for row in sweep(train_rows, oof, models)
@@ -339,13 +342,14 @@ def multiclass_metrics(actual: np.ndarray, predictions: np.ndarray) -> dict:
     )
 
 
-def train_variant(
-    rows: list[dict],  # Shared successful labels with fixed manifest splits.
+def fit_cascade(
+    train_rows: list[dict],  # Shared by evaluation and export; train split only.
     models: list[str],  # Last model is the untrained fallback.
     variant: str,  # One feature/classifier combination, selected without evaluation data.
     cache_dir: Path,
-) -> dict:
-    train_rows = [row for row in rows if row["split"] == "train"]
+) -> tuple[list, list[dict], np.ndarray]:
+    if any(row["split"] != "train" for row in train_rows):
+        raise ValueError("Classifier fitting accepts only train rows")
     if len(train_rows) < 10:
         raise ValueError("At least ten shared train examples are required")
     x = feature_input(train_rows, variant, cache_dir)
@@ -372,6 +376,19 @@ def train_variant(
         classifier, params = fit_classifier(x, y[:, column], variant)
         fitted.append(classifier)
         parameters.append(params)
+    return fitted, parameters, oof
+
+
+def train_variant(
+    rows: list[dict],  # Shared successful labels with fixed manifest splits.
+    models: list[str],  # Last model is the untrained fallback.
+    variant: str,
+    cache_dir: Path,
+) -> dict:
+    train_rows = [row for row in rows if row["split"] == "train"]
+    fitted, parameters, oof = fit_cascade(train_rows, models, variant, cache_dir)
+    multiclass = variant == "tfidf_multiclass"
+    n_classes = len(models) if multiclass else None
     selection = select_tau(train_rows, oof, models)
     result = dict(
         selection=selection,
