@@ -1,6 +1,6 @@
 import asyncio
 import json
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from unittest.mock import AsyncMock
 from uuid import uuid4
@@ -76,6 +76,7 @@ async def test_batches_aggregate_tenants_months_and_cache_hits(isolated_usage_qu
     jobs = pool.enqueue_job.call_args_list
     assert [len(call.args[1]) for call in jobs] == [500, 5]
     assert all(call.args[0] == "write_usage_batch" for call in jobs)
+    assert all(call.kwargs["_expires"] == timedelta(days=30) for call in jobs)
     assert len({call.kwargs["_job_id"] for call in jobs}) == 2
     batches = [json.loads(c.args[-2]) for c in pool.eval.call_args_list]
     charges = [charge for batch in batches for charge in batch["tokens"]]

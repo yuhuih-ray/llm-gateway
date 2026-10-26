@@ -11,6 +11,8 @@ def isolated_usage_queue(monkeypatch):  # Unit/API tests must never use Compose 
     monkeypatch.setattr("llm_gateway.auth.failed_auth_limiter", RateLimiter())
     pool = AsyncMock()
     pool.get.return_value = None
+    pool.zcard.return_value = 0
+    pool.zrange.return_value = []
     pool.__aenter__.return_value = pool
     monkeypatch.setattr("llm_gateway.auth_cache.create_cli_client", lambda: pool)
     pipeline = MagicMock()

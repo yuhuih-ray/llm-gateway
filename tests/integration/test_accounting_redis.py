@@ -7,6 +7,7 @@ from uuid import uuid4
 import pytest
 from arq import create_pool
 from arq.connections import RedisSettings
+from arq.constants import job_key_prefix
 from starlette.datastructures import State
 from testcontainers.redis import RedisContainer
 
@@ -90,6 +91,8 @@ async def test_real_redis_retry_exact_charges(lost_reply, monkeypatch, caplog):
                 await pool.hget(f"ratelimit:tokens:{tenant}", "tokens")
             ) == pytest.approx(99910, abs=0.001)
             assert await pool.zcard("arq:queue") == 1
+            ttl = await pool.pttl(f"{job_key_prefix}{pending.batch_id}")
+            assert 29 * 86400 * 1000 < ttl <= 30 * 86400 * 1000
             assert await pool.keys("accounting:*") == []
             assert (
                 sum("monthly_budget_80_percent" in r.message for r in caplog.records)

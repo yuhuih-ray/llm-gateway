@@ -5,6 +5,7 @@ import json
 import logging
 from collections import defaultdict, deque
 from contextlib import suppress
+from datetime import timedelta
 from decimal import ROUND_CEILING, Decimal
 from itertools import islice
 from time import monotonic
@@ -187,6 +188,9 @@ class AccountingBuffer:
                     "write_usage_batch",
                     [record.model_dump(mode="json") for record in self.batch],
                     _job_id=self.batch_id,
+                    # ARQ defaults to one day: a stopped worker must not silently
+                    # lose usage jobs before an operator can recover the backlog.
+                    _expires=timedelta(days=30),
                 )
                 self.delivered = True
             await pool.delete(receipt)

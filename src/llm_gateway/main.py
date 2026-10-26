@@ -1,9 +1,11 @@
 import asyncio
 import logging
+import time
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from typing import Annotated
 
+from arq.constants import default_queue_name
 from fastapi import Depends, FastAPI, Request
 from fastapi.responses import JSONResponse, StreamingResponse
 from sqlalchemy import text
@@ -56,6 +58,7 @@ from llm_gateway.vllm import close_vllm_client
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:  # Application lifecycle.
     app.state.provider_semaphores = {}
     app.state.circuits = {}
+    app.state.queue_warning_at = float("-inf")
     app.state.usage_pool = await create_usage_pool()
     app.state.cache_client = create_cache_client()
     app.state.accounting = AccountingBuffer(app.state)
@@ -105,6 +108,10 @@ async def readiness(request: Request) -> JSONResponse:  # Lifespan-owned queue p
     # are external and per-model, and every health probe would spend quota.
     # Short deadlines prevent hung probes holding pool connections and piling up.
     postgres, usage_queue = "unavailable", "unavailable"
+    queue_metrics: dict[str, int | float | None] = {
+        "depth": None,
+        "oldest_job_age_seconds": None,
+    }
     try:
         async with asyncio.timeout(1.0):
             async with get_sessionmaker()() as session:
@@ -119,7 +126,25 @@ async def readiness(request: Request) -> JSONResponse:  # Lifespan-owned queue p
             if pool is None:
                 logger.warning("Readiness usage queue unavailable: pool missing")
             elif await pool.ping():
+                depth = await pool.zcard(default_queue_name)
+                oldest = await pool.zrange(default_queue_name, 0, 0, withscores=True)
+                # ARQ sorted-set scores are scheduled Unix milliseconds. Deferred
+                # retries become old when due; never report a negative age.
+                age = (
+                    max(0.0, time.time() - float(oldest[0][1]) / 1000)
+                    if oldest
+                    else 0.0
+                )
+                queue_metrics = {"depth": depth, "oldest_job_age_seconds": age}
                 usage_queue = "ok"
+                now = time.monotonic()
+                if age > 600 and now - request.app.state.queue_warning_at >= 60:
+                    request.app.state.queue_warning_at = now
+                    logger.warning(
+                        "Usage queue backlog depth=%s oldest_job_age_seconds=%.1f",
+                        depth,
+                        age,
+                    )
             else:
                 logger.warning("Readiness usage queue unavailable: ping returned false")
     except Exception:
@@ -129,6 +154,7 @@ async def readiness(request: Request) -> JSONResponse:  # Lifespan-owned queue p
         content={
             "status": "ready" if postgres == "ok" else "not_ready",
             "checks": {"postgres": postgres, "usage_queue": usage_queue},
+            "usage_queue": queue_metrics,
         },
     )
 

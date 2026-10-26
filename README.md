@@ -2,16 +2,48 @@
 
 A learning-oriented FastAPI project. Provides a health endpoint and a minimal non-streaming chat completion API.
 
-## Run locally
+## Start the gateway
 
-Install [uv](https://docs.astral.sh/uv/getting-started/installation/). Python 3.12 is pinned in `.python-version`. From the project directory:
+Install Docker with Docker Compose, copy `.env.example` to `.env` if you have not
+configured it yet, and set the database credentials and any provider keys there.
+From the project directory:
 
 ```sh
+docker compose up -d --wait
+```
+
+Compose builds one Python 3.12 image with runtime dependencies only, runs database
+migrations, and starts the gateway and ARQ usage worker as a non-root user.
+The gateway is published only on `127.0.0.1:8000`; visit
+`http://127.0.0.1:8000/health/live` to get `{"status":"ok"}`.
+Container database and Redis URLs use Compose service names. Other settings,
+including `VLLM_BASE_URL`, come from `.env`. A provider on the host must use a
+container-reachable address (for example `host.docker.internal` on Docker Desktop).
+
+After changing application code, rebuild with
+`docker compose up -d --build --wait`. Inspect services with `docker compose ps`
+and worker output with `docker compose logs worker`.
+
+### Host-run development alternative
+
+Install [uv](https://docs.astral.sh/uv/getting-started/installation/).
+Python 3.12 is pinned in `.python-version`. Keep the localhost database/Redis URLs
+in `.env`; Compose overrides them only inside containers. Stop any containerized
+gateway/worker before starting host processes, then use:
+
+```sh
+docker compose stop gateway worker
+docker compose up -d --wait postgres redis redis-cache
 uv sync
+uv run alembic upgrade head
 uv run uvicorn llm_gateway.main:app --reload --no-proxy-headers
 ```
 
-Visit `http://127.0.0.1:8000/health` to get `{"status":"ok"}`.
+In a second terminal, using the same `.env`:
+
+```sh
+uv run arq llm_gateway.worker.WorkerSettings
+```
 
 ## Run tests
 
@@ -64,17 +96,19 @@ The fake ID is fixed, not unique. The `fake` model makes no external calls and r
 
 ## Local infrastructure
 
-Requires Docker with Docker Compose. This starts only PostgreSQL and Redis;
-the gateway continues to run locally with uv and does not connect to them yet.
-The example credentials are placeholders for local development only.
+Compose includes PostgreSQL, the durable main Redis, a disposable cache Redis,
+the migration job, gateway, and usage worker. The example credentials are
+placeholders for local development only.
 
 ```sh
+# Only copy this if .env does not already exist:
 cp .env.example .env
-docker compose up -d
+docker compose up -d --wait
 docker compose ps
 ```
 
-Both services bind to localhost. PostgreSQL and Redis store data in named volumes.
+Published services bind to localhost. PostgreSQL and the main Redis store data
+in named volumes; cache Redis has no persistence.
 Stop the services while preserving data:
 
 ```sh
@@ -85,10 +119,12 @@ docker compose down
 
 ## Database migrations
 
-With `.env` configured as above, start PostgreSQL and apply the schema:
+With `.env` configured as above, `docker compose up -d --wait` runs
+`alembic upgrade head` in the one-shot `migrate` service before the gateway or
+worker starts. To apply migrations manually during host development:
 
 ```sh
-docker compose up -d --wait
+docker compose up -d --wait postgres
 uv run alembic upgrade head
 ```
 
@@ -98,8 +134,8 @@ To remove all application tables and their data:
 uv run alembic downgrade base
 ```
 
-Migrations read `DATABASE_URL` from the environment or `.env`. The database is
-not connected to endpoints yet; importing the app does not require configuration.
+Migrations read `DATABASE_URL` from the environment or `.env`. Importing the app
+does not require configuration.
 
 ### Checking for invalid indexes
 
@@ -118,12 +154,15 @@ DROP INDEX CONCURRENTLY public.ix_usage_logs_tenant_id_created_at;
 
 ## API keys
 
-Start local infrastructure and apply migrations before creating a tenant and key:
+With Compose running, create a tenant and key:
 
 ```sh
-uv run python -m llm_gateway.cli create-tenant local
-uv run python -m llm_gateway.cli create-key --tenant local --name development
+docker compose exec gateway python -m llm_gateway.cli create-tenant local
+docker compose exec gateway python -m llm_gateway.cli create-key --tenant local --name development
 ```
+
+For host-run development, replace `docker compose exec gateway python` with
+`uv run python` in these CLI commands.
 
 The CLI prints the full key once. Store it securely and set `GATEWAY_API_KEY`
 in your shell to use the authenticated curl example above. Only the key prefix
@@ -132,7 +171,7 @@ and SHA-256 hash are stored. `/health` remains public.
 Revoke a key using its `gw_<id>` prefix:
 
 ```sh
-uv run python -m llm_gateway.cli revoke-key 'gw_<id>'
+docker compose exec gateway python -m llm_gateway.cli revoke-key 'gw_<id>'
 ```
 
 ## Gemini models
@@ -245,18 +284,17 @@ upstream iterator. Usage records are queued for the ARQ worker.
 
 ## Usage recording worker
 
-Start the infrastructure and apply migrations, then run the gateway and worker
-in separate terminals using the same `.env` (`DATABASE_URL` and `REDIS_URL`):
+The worker starts with the rest of the stack:
 
 ```sh
 docker compose up -d --wait
-uv run alembic upgrade head
-uv run uvicorn llm_gateway.main:app --reload --no-proxy-headers
 ```
 
-```sh
-uv run arq llm_gateway.worker.WorkerSettings
-```
+It uses the same image and `.env` as the gateway, waits for migrations and Redis,
+and restarts unless stopped. For separate host processes, see the development
+alternative above. Usage batch jobs have an explicit 30-day expiration, rather
+than ARQ's one-day default, so a worker outage does not discard a day's backlog.
+Queue age in readiness helps detect a stalled worker before that retention limit.
 
 Each chat request returns `X-Request-ID`. Requests reaching a provider synchronously
 append a record with status `success`, `error`, or `cancelled` to a per-process
@@ -350,12 +388,11 @@ Apply migrations and create a user in an existing tenant. The CLI prompts for
 the password without echoing it; never pass a password as a command-line argument.
 
 ```sh
-uv run alembic upgrade head
-uv run python -m llm_gateway.cli create-user --tenant local --email admin@example.com --role admin
-uv run uvicorn llm_gateway.main:app --reload --no-proxy-headers
+docker compose up -d --wait
+docker compose exec gateway python -m llm_gateway.cli create-user --tenant local --email admin@example.com --role admin
 ```
 
-In another terminal, log in and save the token locally. These examples use `jq`;
+Then log in and save the token locally. These examples use `jq`;
 credentials are passed to curl through standard input rather than process arguments.
 
 ```bash
@@ -456,11 +493,17 @@ keys. Resolve those conditions first; downgrade never discards those records.
   1-second timeout. PostgreSQL failure returns 503; success returns 200. Use this
   endpoint for **traffic routing**, so an outage removes instances from traffic
   without restarting them all.
-- Readiness also pings the existing usage queue pool with a 0.5-second timeout.
-  A missing or failing queue reports `unavailable` but does not fail readiness:
-  requests can still succeed; accounting retries in its bounded buffer.
+- Readiness checks the existing usage queue pool and its ARQ sorted set within a
+  0.5-second timeout. A missing or failing queue reports `unavailable` but does not
+  fail readiness: requests can still succeed; accounting retries in its buffer.
+- The top-level `usage_queue` object reports `depth` (jobs, not usage rows) and
+  `oldest_job_age_seconds`. Empty queues report zero; unavailable metrics are null.
+  Age is seconds past the oldest ARQ queue score (scheduled Unix milliseconds),
+  clamped to zero for future deferred jobs. Deferred retries reset this due-time age.
+  Queue depth or age never fails readiness. An age over 10 minutes logs a WARNING
+  at most once per minute per process, so operators can detect a stalled worker.
 
-Readiness returns only `status` (`ready` or `not_ready`) and `checks` for
+Readiness also returns `status` (`ready` or `not_ready`) and `checks` for
 `postgres` and `usage_queue` (`ok` or `unavailable`). Details are logged server-side.
 All health endpoints are unauthenticated, never record usage, and never call
 Gemini or another model provider.
