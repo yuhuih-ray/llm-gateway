@@ -248,7 +248,7 @@ def test_artifacts_and_local_mlflow(tmp_path, monkeypatch):
     assert runs.iloc[0]["metrics.fixture.test.accuracy"] == 0.25
 
 
-def test_cli_with_synthetic_three_model_corpus(tmp_path, monkeypatch):
+def test_cli_with_synthetic_three_model_corpus(tmp_path, monkeypatch, capsys):
     """Exercise all variants and output wiring without real training data or HTTP."""
     manifest = tmp_path / "questions.jsonl"
     questions = [
@@ -298,7 +298,19 @@ def test_cli_with_synthetic_three_model_corpus(tmp_path, monkeypatch):
             "synthetic",
         ],
     )
+    clock = iter([0, 1.5, 2, 3.5, 4, 5.5, 6, 7.5])
+    monkeypatch.setattr(train, "perf_counter", lambda: next(clock))
     train.main()
+    progress = [
+        line
+        for line in capsys.readouterr().err.splitlines()
+        if line.startswith("variant ")
+    ]
+    assert progress == [
+        f"variant {variant} {state} ({seconds}s)"
+        for variant in train.VARIANTS
+        for state, seconds in (("started", "0.0"), ("finished", "1.5"))
+    ]
     output = json.loads((tmp_path / "output/synthetic.json").read_text())
     assert set(output["variants"]) == set(train.VARIANTS)
     for variant in output["variants"].values():
@@ -308,3 +320,26 @@ def test_cli_with_synthetic_three_model_corpus(tmp_path, monkeypatch):
             assert evaluation["n"] == 10
             assert len(evaluation["sweep"]) == 101
             assert sum(evaluation["selected"]["shares"].values()) == pytest.approx(1)
+
+
+def test_embedding_progress_counts_cached_questions_every_100(tmp_path, capsys):
+    client = Mock()
+    client.embed.return_value = [0.1, 0.2]
+    factory = Mock(return_value=client)
+    rows = [dict(id=str(i), question=f"Question {i}") for i in range(250)]
+    train.embedding_features(rows[:100], tmp_path, factory)
+    capsys.readouterr()
+    train.embedding_features(rows, tmp_path, factory)
+    output = capsys.readouterr()
+    assert output.out == ""
+    assert output.err.splitlines() == [
+        "embedded 100/250 (100 cached)",
+        "embedded 200/250 (100 cached)",
+    ]
+    assert client.embed.call_count == 250
+    train.embedding_features(rows, tmp_path, factory)
+    assert capsys.readouterr().err.splitlines() == [
+        "embedded 100/250 (100 cached)",
+        "embedded 200/250 (200 cached)",
+    ]
+    assert factory.call_count == 2

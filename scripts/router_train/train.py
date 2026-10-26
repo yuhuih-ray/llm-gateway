@@ -7,6 +7,7 @@ import os
 import sys
 from datetime import UTC, datetime
 from pathlib import Path
+from time import perf_counter
 
 if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
@@ -71,8 +72,9 @@ def embedding_features(
     cache_dir.mkdir(parents=True, exist_ok=True)
     client = None
     vectors = []
+    cached = 0
     try:
-        for row in rows:
+        for n, row in enumerate(rows, start=1):
             # Hash identity for portable filenames; content/model/task changes invalidate.
             path = cache_dir / f"{digest(row['id'])}.npy"
             meta = path.with_suffix(".json")
@@ -87,6 +89,7 @@ def embedding_features(
                 and json.loads(meta.read_text()) == signature
             ):
                 vector = np.load(path, allow_pickle=False)
+                cached += 1
             else:
                 if client is None:
                     client = client_factory()
@@ -99,6 +102,12 @@ def embedding_features(
                 temporary.replace(path)
                 meta.write_text(json.dumps(signature))
             vectors.append(vector)
+            if n % 100 == 0:
+                print(
+                    f"embedded {n}/{len(rows)} ({cached} cached)",
+                    file=sys.stderr,
+                    flush=True,
+                )
     finally:
         if client is not None:
             client.close()
@@ -442,8 +451,15 @@ def main() -> None:
             baselines(evaluation, args.models) if evaluation else None
         )
     for variant in VARIANTS:
+        started = perf_counter()
+        print(f"variant {variant} started (0.0s)", file=sys.stderr, flush=True)
         result["variants"][variant] = train_variant(
             rows, args.models, variant, args.embedding_cache
+        )
+        print(
+            f"variant {variant} finished ({perf_counter() - started:.1f}s)",
+            file=sys.stderr,
+            flush=True,
         )
     paths = save_results(result, args.out_dir, args.run)
     log_results(result, paths, args.run)
