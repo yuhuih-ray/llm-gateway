@@ -9,6 +9,7 @@ import re
 import sys
 import tempfile
 import time
+from collections import Counter
 from datetime import datetime, timezone
 from decimal import Decimal
 from email.utils import parsedate_to_datetime
@@ -181,10 +182,15 @@ async def request_completion(
             continue
         if budget_exceeded(response):
             response.raise_for_status()
-        if response.status_code == 429 and rate_retries < 20:
-            rate_retries += 1
-            await asyncio.sleep(retry_after(response.headers.get("Retry-After")))
-            continue
+        if response.status_code == 429 or (
+            response.status_code == 503 and "Retry-After" in response.headers
+        ):
+            if rate_retries < 20:
+                rate_retries += 1
+                await asyncio.sleep(retry_after(response.headers.get("Retry-After")))
+                continue
+            # Exhausted shared budget must not fall through to the 5xx retries.
+            response.raise_for_status()
         if 500 <= response.status_code < 600:
             failures += 1
             if failures < 3:
@@ -275,7 +281,9 @@ async def collect(args: argparse.Namespace) -> None:
     semaphore = asyncio.Semaphore(args.concurrency)
     stopped = asyncio.Event()
     started = time.perf_counter()
-    done = failed = correct = 0
+    done = failed = correct = consecutive_errors = 0
+    stop_reason = None
+    error_counts: Counter[str] = Counter()
 
     def progress(*, final: bool = False) -> None:
         elapsed = time.perf_counter() - started
@@ -300,13 +308,24 @@ async def collect(args: argparse.Namespace) -> None:
         with path.open("a") as output:
 
             async def one(question: dict) -> dict | None:
-                nonlocal done, failed, correct
+                nonlocal done, failed, correct, consecutive_errors, stop_reason
                 async with semaphore:
                     if stopped.is_set():
                         return None
                     row = await label_question(client, args.model, question)
-                    if row["error"] == "budget_exceeded":
-                        stopped.set()
+                    if row["error"] is None:
+                        consecutive_errors = 0
+                    else:
+                        consecutive_errors += 1
+                        error_counts[row["error"]] += 1
+                    if not stopped.is_set():
+                        if row["error"] == "budget_exceeded":
+                            stop_reason = "budget exceeded"
+                        elif consecutive_errors >= 10:
+                            stop_reason = "10 consecutive errors"
+                            print("Stopped: 10 consecutive errors", flush=True)
+                        if stop_reason is not None:
+                            stopped.set()
                 # No await between append and flush, so concurrent tasks cannot interleave lines.
                 output.write(json.dumps(row) + "\n")
                 output.flush()
@@ -322,7 +341,8 @@ async def collect(args: argparse.Namespace) -> None:
     progress(final=True)
     completed = [row for row in completed if row is not None]
     if stopped.is_set():
-        print(f"Not started: {len(pending) - len(completed)} (budget exceeded)")
+        print(f"Not started: {len(pending) - len(completed)} ({stop_reason})")
+        print(f"Error counts: {json.dumps(dict(error_counts), sort_keys=True)}")
     errors = sum(row["error"] is not None for row in completed)
     print(f"Done: {len(completed) - errors}; skipped: {skipped}; errors: {errors}")
     valid = [

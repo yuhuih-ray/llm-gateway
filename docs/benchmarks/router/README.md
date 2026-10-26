@@ -53,11 +53,16 @@ uv run python scripts/router_data/label.py --model gemini-flash-lite --per-datas
 Omit `--per-dataset` to continue with the full manifest. Default concurrency is 4;
 `--base-url`, `--api-key`, `--concurrency`, and `--out-dir` can be overridden.
 Requests never opt into fallback or response caching. A missing or different
-`X-Gateway-Model` is an error. HTTP 429 allows 20 retries (honoring `Retry-After`,
-default 1 second); connection errors and 5xx share a three-attempt budget with
-backoff. A 429 with `error.code = "insufficient_quota"` is recorded as
+`X-Gateway-Model` is an error. HTTP 429 and HTTP 503 carrying `Retry-After`
+share a 20-retry budget, honoring `Retry-After` (default 1 second for 429).
+Connection errors and other 5xx share a three-attempt budget with backoff. A 429 with `error.code = "insufficient_quota"` is recorded as
 `budget_exceeded` without retrying; queued questions are left unstarted, while
 in-flight questions may finish. Other errors are recorded immediately.
+
+Ten consecutive questions finishing with an error also stop new questions. A
+successful request resets this counter even when its answer is incorrect. The
+collector prints `Stopped: 10 consecutive errors`, lets in-flight questions
+finish, and reports error counts by type for this run.
 
 MMLU-Pro grading requires a standalone uppercase option letter A-J, optionally
 parenthesized or emphasized with Markdown. The answer marker is case-insensitive;

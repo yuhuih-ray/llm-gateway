@@ -239,7 +239,7 @@ def test_model_identity_and_registry_pricing(monkeypatch, actual):
     [
         (429, 21, "HTTP429"),
         (500, 3, "HTTP500"),
-        (503, 3, "HTTP503"),
+        (503, 21, "HTTP503"),
         (400, 1, "HTTP400"),
         ("connect", 3, "ConnectError"),
         ("connect_timeout", 3, "ConnectTimeout"),
@@ -277,7 +277,7 @@ def test_retry_budgets_and_sanitized_errors(monkeypatch, failure, calls, error):
     assert result["attempts"] == calls
     assert result["error"] == error
     assert not result["correct"]
-    if failure == 429:
+    if failure in (429, 503):
         assert [call.args[0] for call in sleep.await_args_list] == [0.125] * 20
     elif calls == 3:
         assert [call.args[0] for call in sleep.await_args_list] == [0.5, 1.0]
@@ -767,3 +767,151 @@ def test_collection_progress_intervals_and_final(monkeypatch, tmp_path, capsys, 
             "[51/51] errors=1 correct=100.00% rate=0.50 eta=00:00",
         ]
     assert "rate=" not in output.out
+
+
+@pytest.mark.parametrize("first", [429, 503])
+def test_429_and_503_share_retry_after_budget(monkeypatch, first):
+    sleep = AsyncMock()
+    monkeypatch.setattr(label.asyncio, "sleep", sleep)
+    calls = 0
+
+    def handle(request):
+        nonlocal calls
+        calls += 1
+        status = first if calls % 2 else 503 if first == 429 else 429
+        return httpx.Response(status, headers={"Retry-After": "2.5"})
+
+    async def run():
+        async with httpx.AsyncClient(
+            base_url="http://test/v1/", transport=httpx.MockTransport(handle)
+        ) as client:
+            return await label.label_question(client, "local-qwen", question())
+
+    row = asyncio.run(run())
+    assert calls == row["attempts"] == 21
+    assert row["error"] == f"HTTP{first}"
+    assert [call.args[0] for call in sleep.await_args_list] == [2.5] * 20
+
+
+def test_503_without_retry_after_keeps_three_attempts(monkeypatch):
+    sleep = AsyncMock()
+    monkeypatch.setattr(label.asyncio, "sleep", sleep)
+
+    async def run():
+        async with httpx.AsyncClient(
+            base_url="http://test/v1/",
+            transport=httpx.MockTransport(lambda request: httpx.Response(503)),
+        ) as client:
+            return await label.label_question(client, "local-qwen", question())
+
+    row = asyncio.run(run())
+    assert row["error"] == "HTTP503"
+    assert row["attempts"] == 3
+    assert [call.args[0] for call in sleep.await_args_list] == [0.5, 1.0]
+
+
+@pytest.mark.parametrize("reset", [False, True])
+def test_consecutive_errors_stop_and_success_resets(
+    monkeypatch, tmp_path, capsys, reset
+):
+    questions = [dict(question(), id=f"gsm8k:{i}", prompt=str(i)) for i in range(25)]
+    monkeypatch.setattr(label, "read_manifest", lambda: questions)
+    calls = []
+
+    def handle(request):
+        index = int(json.loads(request.content)["messages"][0]["content"])
+        calls.append(index)
+        if reset and index == 9:
+            # A successful question resets the streak even if its answer is wrong.
+            return httpx.Response(
+                200,
+                headers={"X-Gateway-Model": "local-qwen"},
+                json=response_payload("#### 0"),
+            )
+        return httpx.Response(400 if index % 2 == 0 else 401)
+
+    client = httpx.AsyncClient
+    monkeypatch.setattr(
+        label.httpx,
+        "AsyncClient",
+        lambda **kwargs: client(transport=httpx.MockTransport(handle), **kwargs),
+    )
+    args = Namespace(
+        model="local-qwen",
+        per_dataset=None,
+        concurrency=1,
+        api_key="test-key",
+        base_url="http://test/v1",
+        out_dir=tmp_path,
+    )
+    asyncio.run(label.collect(args))
+    count = 20 if reset else 10
+    assert calls == list(range(count))
+    assert len(common.read_labels(tmp_path / "local-qwen.jsonl")) == count
+    output = capsys.readouterr().out
+    assert output.count("Stopped: 10 consecutive errors") == 1
+    assert f"Not started: {25 - count} (10 consecutive errors)" in output
+    expected = {"HTTP400": 10, "HTTP401": 9} if reset else {"HTTP400": 5, "HTTP401": 5}
+    assert f"Error counts: {json.dumps(expected, sort_keys=True)}" in output
+
+
+def test_error_streak_stop_allows_inflight_question_to_finish(
+    monkeypatch, tmp_path, capsys
+):
+    questions = [dict(question(), id=f"gsm8k:{i}", prompt=str(i)) for i in range(15)]
+    monkeypatch.setattr(label, "read_manifest", lambda: questions)
+    client = httpx.AsyncClient
+    calls = []
+    path = tmp_path / "local-qwen.jsonl"
+
+    async def run():
+        slow_started, finish_slow = asyncio.Event(), asyncio.Event()
+
+        async def handle(request):
+            index = int(json.loads(request.content)["messages"][0]["content"])
+            calls.append(index)
+            if index == 0:
+                slow_started.set()
+                await finish_slow.wait()
+                return httpx.Response(
+                    200,
+                    headers={"X-Gateway-Model": "local-qwen"},
+                    json=response_payload(),
+                )
+            await slow_started.wait()
+            return httpx.Response(400)
+
+        monkeypatch.setattr(
+            label.httpx,
+            "AsyncClient",
+            lambda **kwargs: client(transport=httpx.MockTransport(handle), **kwargs),
+        )
+        args = Namespace(
+            model="local-qwen",
+            per_dataset=None,
+            concurrency=2,
+            api_key="test-key",
+            base_url="http://test/v1",
+            out_dir=tmp_path,
+        )
+        async with asyncio.timeout(2):
+            task = asyncio.create_task(label.collect(args))
+            try:
+                while len(common.read_labels(path)) < 10:
+                    await asyncio.sleep(0.001)
+                finish_slow.set()
+                await task
+            finally:
+                if not task.done():
+                    task.cancel()
+                    await asyncio.gather(task, return_exceptions=True)
+
+    asyncio.run(run())
+    assert calls == list(range(11))
+    result = common.read_labels(path)
+    assert len(result) == 11
+    assert result["gsm8k:0"]["error"] is None
+    output = capsys.readouterr().out
+    assert "Stopped: 10 consecutive errors" in output
+    assert 'Error counts: {"HTTP400": 10}' in output
+    assert "Not started: 4 (10 consecutive errors)" in output
