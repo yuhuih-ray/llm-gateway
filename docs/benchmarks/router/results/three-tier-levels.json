@@ -1,0 +1,194 @@
+{
+  "metadata": {
+    "run": "three-tier",
+    "data_sha256": "fedd8f435d321b442f9ebef98a695e09c94a94bfe6db1ada68270e5d23698f90",
+    "feature": "question text",
+    "created_at": "2026-10-26T21:08:18.125734+00:00"
+  },
+  "models": [
+    "local-qwen",
+    "gemini-flash-lite",
+    "gemini-flash"
+  ],
+  "allowed_drops": {
+    "high": 0.01,
+    "balanced": 0.03,
+    "economy": 0.08
+  },
+  "selections": {
+    "high": {
+      "tau": 0.92,
+      "all_last": false,
+      "target_accuracy": 0.9321965317919075,
+      "oof": {
+        "tau": 0.92,
+        "accuracy": 0.9327002477291495,
+        "total_cost": 3.706232,
+        "mean_latency_ms": 4208.181547068539,
+        "shares": {
+          "local-qwen": 0.06151940545004129,
+          "gemini-flash-lite": 0.30388109000825764,
+          "gemini-flash": 0.6345995045417011
+        }
+      }
+    },
+    "balanced": {
+      "tau": 0.89,
+      "all_last": false,
+      "target_accuracy": 0.9121965317919075,
+      "oof": {
+        "tau": 0.89,
+        "accuracy": 0.9124690338563171,
+        "total_cost": 2.6019484999999998,
+        "mean_latency_ms": 3092.3500412881913,
+        "shares": {
+          "local-qwen": 0.09826589595375723,
+          "gemini-flash-lite": 0.6172584640792733,
+          "gemini-flash": 0.28447563996696945
+        }
+      }
+    },
+    "economy": {
+      "tau": 0.74,
+      "all_last": false,
+      "target_accuracy": 0.8621965317919076,
+      "oof": {
+        "tau": 0.74,
+        "accuracy": 0.8645747316267548,
+        "total_cost": 0.9694072499999999,
+        "mean_latency_ms": 2641.3146800165155,
+        "shares": {
+          "local-qwen": 0.47398843930635837,
+          "gemini-flash-lite": 0.5260115606936416,
+          "gemini-flash": 0.0
+        }
+      }
+    }
+  },
+  "evaluation": {
+    "test": {
+      "high": {
+        "tau": 0.92,
+        "n": 651,
+        "accuracy": 0.9447004608294931,
+        "total_cost": 0.94649525,
+        "mean_latency_ms": 3951.308505376344,
+        "shares": {
+          "local-qwen": 0.004608294930875576,
+          "gemini-flash-lite": 0.3486943164362519,
+          "gemini-flash": 0.6466973886328725
+        },
+        "cost_reduction_vs_last": 0.150462659101124,
+        "gap_recovered": 0.994011976047904,
+        "accuracy_vs_hull": 0.007604347211711104,
+        "oracle_savings_captured": 0.21021281798474215,
+        "last_model_accuracy": 0.946236559139785,
+        "accuracy_retained": 0.9983766233766234,
+        "last_model_mean_latency_ms": 4775.754674347158,
+        "mean_latency_vs_last": 0.8273684003495186
+      },
+      "balanced": {
+        "tau": 0.89,
+        "n": 651,
+        "accuracy": 0.9339477726574501,
+        "total_cost": 0.720773,
+        "mean_latency_ms": 3033.267505376344,
+        "shares": {
+          "local-qwen": 0.03225806451612903,
+          "gemini-flash-lite": 0.6251920122887865,
+          "gemini-flash": 0.3425499231950845
+        },
+        "cost_reduction_vs_last": 0.35306217562982434,
+        "gap_recovered": 0.9520958083832335,
+        "accuracy_vs_hull": 0.009159362855869713,
+        "oracle_savings_captured": 0.49326653740107196,
+        "last_model_accuracy": 0.946236559139785,
+        "accuracy_retained": 0.987012987012987,
+        "last_model_mean_latency_ms": 4775.754674347158,
+        "mean_latency_vs_last": 0.6351388863564249
+      },
+      "economy": {
+        "tau": 0.74,
+        "n": 651,
+        "accuracy": 0.8786482334869432,
+        "total_cost": 0.2604085,
+        "mean_latency_ms": 2539.0324884792626,
+        "shares": {
+          "local-qwen": 0.4485407066052227,
+          "gemini-flash-lite": 0.5499231950844854,
+          "gemini-flash": 0.0015360983102918587
+        },
+        "cost_reduction_vs_last": 0.7662674539175289,
+        "gap_recovered": 0.7365269461077845,
+        "accuracy_vs_hull": 0.04115995507069259,
+        "oracle_savings_captured": 1.0705595779065558,
+        "last_model_accuracy": 0.946236559139785,
+        "accuracy_retained": 0.9285714285714286,
+        "last_model_mean_latency_ms": 4775.754674347158,
+        "mean_latency_vs_last": 0.5316505267989601
+      }
+    },
+    "ood": {
+      "high": {
+        "tau": 0.92,
+        "n": 246,
+        "accuracy": 0.8252032520325203,
+        "total_cost": 0.45018325000000003,
+        "mean_latency_ms": 5345.825117886179,
+        "shares": {
+          "local-qwen": 0.0,
+          "gemini-flash-lite": 0.028455284552845527,
+          "gemini-flash": 0.9715447154471545
+        },
+        "cost_reduction_vs_last": 0.016906689465147506,
+        "gap_recovered": 0.9919354838709679,
+        "accuracy_vs_hull": -0.0013573985430218594,
+        "oracle_savings_captured": 0.03297039074086505,
+        "last_model_accuracy": 0.8292682926829268,
+        "accuracy_retained": 0.9950980392156863,
+        "last_model_mean_latency_ms": 5443.811577235772,
+        "mean_latency_vs_last": 0.9820003947676403
+      },
+      "balanced": {
+        "tau": 0.89,
+        "n": 246,
+        "accuracy": 0.7967479674796748,
+        "total_cost": 0.3801365,
+        "mean_latency_ms": 4453.105739837399,
+        "shares": {
+          "local-qwen": 0.0,
+          "gemini-flash-lite": 0.3089430894308943,
+          "gemini-flash": 0.6910569105691057
+        },
+        "cost_reduction_vs_last": 0.1698721570824061,
+        "gap_recovered": 0.935483870967742,
+        "accuracy_vs_hull": -0.005314939646443473,
+        "oracle_savings_captured": 0.33127428090202277,
+        "last_model_accuracy": 0.8292682926829268,
+        "accuracy_retained": 0.9607843137254902,
+        "last_model_mean_latency_ms": 5443.811577235772,
+        "mean_latency_vs_last": 0.8180124673048605
+      },
+      "economy": {
+        "tau": 0.74,
+        "n": 246,
+        "accuracy": 0.7276422764227642,
+        "total_cost": 0.17565824999999996,
+        "mean_latency_ms": 2123.1190284552845,
+        "shares": {
+          "local-qwen": 0.024390243902439025,
+          "gemini-flash-lite": 0.975609756097561,
+          "gemini-flash": 0.0
+        },
+        "cost_reduction_vs_last": 0.61640409652012,
+        "gap_recovered": 0.7983870967741936,
+        "accuracy_vs_hull": 0.0034520969526088408,
+        "oracle_savings_captured": 1.2020735318072497,
+        "last_model_accuracy": 0.8292682926829268,
+        "accuracy_retained": 0.877450980392157,
+        "last_model_mean_latency_ms": 5443.811577235772,
+        "mean_latency_vs_last": 0.3900059725309872
+      }
+    }
+  }
+}
