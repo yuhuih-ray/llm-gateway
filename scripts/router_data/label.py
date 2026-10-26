@@ -41,10 +41,12 @@ class ModelMismatchError(Exception):
 
 
 def extract_mmlupro(text: str) -> str | None:
-    matches = re.findall(r"ANSWER:\s*\(?([A-J])\)?", text, re.I)
+    matches = re.findall(r"(?i:answer)\s*:\s*[*_]*\s*\(?([A-J])(?![A-Za-z])\)?", text)
     if not matches:
-        matches = re.findall(r"answer is \(?([A-J])\)?", text, re.I)
-    return matches[-1].upper() if matches else None
+        matches = re.findall(
+            r"(?i:answer is)\s*[*_]*\s*\(?([A-J])(?![A-Za-z])\)?", text
+        )
+    return matches[-1] if matches else None
 
 
 def grade(question: dict, content: str) -> tuple[str | None, bool]:
@@ -81,19 +83,22 @@ def regrade(args: argparse.Namespace) -> None:  # Offline; no client or API key 
         raise FileNotFoundError(f"No saved responses: {response_path}")
     questions = {q["id"]: q for q in read_manifest()}
     history = [
-        json.loads(line) for line in path.read_text().splitlines() if line.strip()
+        json.loads(line)
+        for line in (path.read_text().splitlines() if path.exists() else [])
+        if line.strip()
     ]
     if any(row["model"] != args.model for row in history):
         raise ValueError("Existing label file contains another model")
     latest = {row["id"]: row for row in history}
     attempts = {(row["id"], row["request_id"]): row for row in history}
     responses = read_labels(response_path)
-    changed = 0
+    changed = skipped = 0
     for question_id, response in responses.items():
         # Match billing/latency to this response, not a later failed request.
         key = (question_id, response["request_id"])
         if key not in attempts:
-            raise ValueError(f"No label metadata for saved response {question_id}")
+            skipped += 1
+            continue
         row = attempts[key].copy()
         row["pred"], row["correct"] = grade(questions[question_id], response["content"])
         row["error"] = None
@@ -103,6 +108,7 @@ def regrade(args: argparse.Namespace) -> None:  # Offline; no client or API key 
         )
         latest[question_id] = row
     # Validate and grade everything before atomically replacing the label file.
+    path.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.NamedTemporaryFile(mode="w", dir=path.parent, delete=False) as output:
         temporary = Path(output.name)
         try:
@@ -113,7 +119,12 @@ def regrade(args: argparse.Namespace) -> None:  # Offline; no client or API key 
             temporary.replace(path)
         finally:
             temporary.unlink(missing_ok=True)
-    print(f"Regraded: {len(responses)}; labels changed: {changed}")
+    if skipped:
+        print(
+            f"Warning: skipped {skipped} saved responses without matching label metadata",
+            file=sys.stderr,
+        )
+    print(f"Regraded: {len(responses) - skipped}; labels changed: {changed}")
 
 
 def retry_after(value: str | None) -> float:
@@ -136,19 +147,39 @@ def retry_after(value: str | None) -> float:
             return 1
 
 
+def budget_exceeded(response: httpx.Response) -> bool:
+    if response.status_code != 429:
+        return False
+    try:
+        value = response.json()
+    except ValueError:
+        return False
+    error = value.get("error") if isinstance(value, dict) else None
+    return isinstance(error, dict) and error.get("code") == "insufficient_quota"
+
+
 async def request_completion(
-    client: httpx.AsyncClient, payload: dict
+    client: httpx.AsyncClient,
+    payload: dict,
+    row: dict,  # Update final-attempt timing and total attempts even on exceptions.
 ) -> httpx.Response:
     rate_retries = failures = 0
     while True:
+        row["attempts"] += 1
+        started = time.perf_counter()
         try:
-            response = await client.post("chat/completions", json=payload)
+            try:
+                response = await client.post("chat/completions", json=payload)
+            finally:
+                row["latency_ms"] = round((time.perf_counter() - started) * 1000, 3)
         except (httpx.ConnectError, httpx.ConnectTimeout):
             failures += 1
             if failures >= 3:
                 raise
             await asyncio.sleep(0.5 * 2 ** (failures - 1))
             continue
+        if budget_exceeded(response):
+            response.raise_for_status()
         if response.status_code == 429 and rate_retries < 20:
             rate_retries += 1
             await asyncio.sleep(retry_after(response.headers.get("Retry-After")))
@@ -167,7 +198,6 @@ async def label_question(
     model: str,  # Registry model used for identity verification and pricing.
     question: dict,  # Exact prompt and gold from the committed manifest.
 ) -> dict:
-    started = time.perf_counter()
     row = dict(
         id=question["id"],
         model=model,
@@ -178,6 +208,7 @@ async def label_question(
         completion_tokens=None,
         cost_usd=None,
         latency_ms=0,
+        attempts=0,
         request_id=None,
         error=None,
     )
@@ -191,6 +222,7 @@ async def label_question(
                 "max_tokens": 1024,
                 "stream": False,
             },
+            row,
         )
         row["request_id"] = response.headers.get("X-Request-ID")
         if response.headers.get("X-Gateway-Model") != model:
@@ -218,13 +250,16 @@ async def label_question(
         )
         row["pred"], row["correct"] = grade(question, content)
     except httpx.HTTPStatusError as exc:
-        row["error"] = f"HTTP{exc.response.status_code}"
+        row["error"] = (
+            "budget_exceeded"
+            if budget_exceeded(exc.response)
+            else f"HTTP{exc.response.status_code}"
+        )
         row["request_id"] = exc.response.headers.get("X-Request-ID")
     except Exception as exc:
         # Persist sanitized error names, never credentials or response bodies.
         # Cancellation is a BaseException and propagates without a bogus label.
         row["error"] = type(exc).__name__
-    row["latency_ms"] = round((time.perf_counter() - started) * 1000, 3)
     return row
 
 
@@ -237,6 +272,7 @@ async def collect(args: argparse.Namespace) -> None:
     pending = pending_questions(questions, latest)
     skipped = len(questions) - len(pending)
     semaphore = asyncio.Semaphore(args.concurrency)
+    stopped = asyncio.Event()
     path.parent.mkdir(parents=True, exist_ok=True)
     async with httpx.AsyncClient(
         base_url=args.base_url.rstrip("/") + "/",
@@ -246,9 +282,13 @@ async def collect(args: argparse.Namespace) -> None:
     ) as client:
         with path.open("a") as output:
 
-            async def one(question: dict) -> dict:
+            async def one(question: dict) -> dict | None:
                 async with semaphore:
+                    if stopped.is_set():
+                        return None
                     row = await label_question(client, args.model, question)
+                    if row["error"] == "budget_exceeded":
+                        stopped.set()
                 # No await between append and flush, so concurrent tasks cannot interleave lines.
                 output.write(json.dumps(row) + "\n")
                 output.flush()
@@ -256,9 +296,16 @@ async def collect(args: argparse.Namespace) -> None:
                 return row
 
             completed = await asyncio.gather(*(one(question) for question in pending))
+    completed = [row for row in completed if row is not None]
+    if stopped.is_set():
+        print(f"Not started: {len(pending) - len(completed)} (budget exceeded)")
     errors = sum(row["error"] is not None for row in completed)
     print(f"Done: {len(completed) - errors}; skipped: {skipped}; errors: {errors}")
-    valid = [latest[q["id"]] for q in questions if latest[q["id"]]["error"] is None]
+    valid = [
+        latest[q["id"]]
+        for q in questions
+        if q["id"] in latest and latest[q["id"]]["error"] is None
+    ]
     for dataset in sorted({q["dataset"] for q in questions}):
         ids = {q["id"] for q in questions if q["dataset"] == dataset}
         rows = [row for row in valid if row["id"] in ids]

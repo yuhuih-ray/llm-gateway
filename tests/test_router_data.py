@@ -36,9 +36,19 @@ def isolated_responses(monkeypatch, tmp_path):
     "text,expected",
     [
         ("ANSWER: A", "A"),
-        ("Reasoning\nANSWER: (j)", "J"),
+        ("ANSWER: **C**", "C"),
+        ("ANSWER: (D).", "D"),
+        ("ANSWER: Because", None),
+        ("the answer is clearly wrong", None),
+        ("the answer is a gas", None),
+        ("the answer is (B)", "B"),
+        ("AnSwEr : __ J __", "J"),
+        ("ANSWER: AB", None),
+        ("ANSWER: (BC)", None),
+        ("answer is **E**", "E"),
+        ("Reasoning\nANSWER: (j)", None),
         ("ANSWER: B\nCorrection: ANSWER: (C)", "C"),
-        ("The answer is (d)", "D"),
+        ("The answer is (d)", None),
         ("answer is A, but the answer is F", "F"),
         ("ANSWER: B then answer is C", "B"),
         ("The choice is C", None),
@@ -264,6 +274,7 @@ def test_retry_budgets_and_sanitized_errors(monkeypatch, failure, calls, error):
 
     result = asyncio.run(run())
     assert attempts == calls
+    assert result["attempts"] == calls
     assert result["error"] == error
     assert not result["correct"]
     if failure == 429:
@@ -492,7 +503,7 @@ def test_regrade_cli_uses_latest_response_offline_and_keeps_metadata(
     forbidden_client.assert_not_called()
 
 
-def test_regrade_matches_response_request_metadata(monkeypatch, tmp_path):
+def test_regrade_matches_response_request_metadata(monkeypatch, tmp_path, capsys):
     monkeypatch.setattr(label, "read_manifest", lambda: [question()])
     row = dict(
         id="gsm8k:0",
@@ -523,6 +534,186 @@ def test_regrade_matches_response_request_metadata(monkeypatch, tmp_path):
         json.dumps(dict(id="gsm8k:0", request_id="missing-metadata", content="#### 18"))
         + "\n"
     )
-    with pytest.raises(ValueError, match="No label metadata"):
-        label.regrade(args)
+    label.regrade(args)
     assert path.read_text() == original
+    assert (
+        "skipped 1 saved responses without matching label metadata"
+        in capsys.readouterr().err
+    )
+
+
+def test_final_attempt_latency_excludes_backoff_and_grading(monkeypatch):
+    from types import SimpleNamespace
+
+    clock = [0.0]
+    monkeypatch.setattr(label, "time", SimpleNamespace(perf_counter=lambda: clock[0]))
+
+    async def sleep(delay):
+        clock[0] += delay
+
+    monkeypatch.setattr(label.asyncio, "sleep", sleep)
+    responses = iter(
+        [
+            httpx.Response(429, headers={"Retry-After": "20"}),
+            httpx.Response(503),
+            httpx.Response(
+                200, headers={"X-Gateway-Model": "local-qwen"}, json=response_payload()
+            ),
+        ]
+    )
+
+    def handle(request):
+        clock[0] += 0.025
+        return next(responses)
+
+    original_grade = label.grade
+
+    def slow_grade(question, content):
+        clock[0] += 5
+        return original_grade(question, content)
+
+    monkeypatch.setattr(label, "grade", slow_grade)
+
+    async def run():
+        async with httpx.AsyncClient(
+            base_url="http://test/v1/", transport=httpx.MockTransport(handle)
+        ) as client:
+            return await label.label_question(client, "local-qwen", question())
+
+    row = asyncio.run(run())
+    assert row["error"] is None
+    assert row["latency_ms"] == 25
+    assert row["attempts"] == 3
+    assert clock[0] > 25
+
+
+def test_final_failed_attempt_timing(monkeypatch):
+    from types import SimpleNamespace
+
+    clock = [0.0]
+    monkeypatch.setattr(label, "time", SimpleNamespace(perf_counter=lambda: clock[0]))
+
+    async def sleep(delay):
+        clock[0] += delay
+
+    monkeypatch.setattr(label.asyncio, "sleep", sleep)
+
+    def handle(request):
+        clock[0] += 0.01
+        raise httpx.ConnectError("refused")
+
+    async def run():
+        async with httpx.AsyncClient(
+            base_url="http://test/v1/", transport=httpx.MockTransport(handle)
+        ) as client:
+            return await label.label_question(client, "local-qwen", question())
+
+    row = asyncio.run(run())
+    assert row["latency_ms"] == 10
+    assert row["attempts"] == 3
+    assert row["error"] == "ConnectError"
+
+
+def test_budget_exhaustion_stops_waiting_questions_but_finishes_inflight(
+    monkeypatch, tmp_path, capsys
+):
+    rows = [dict(question(), id=f"gsm8k:{i}", prompt=str(i)) for i in range(5)]
+    monkeypatch.setattr(label, "read_manifest", lambda: rows)
+    started = []
+    client_type = httpx.AsyncClient
+    path = tmp_path / "local-qwen.jsonl"
+
+    async def run():
+        second_started, finish_second = asyncio.Event(), asyncio.Event()
+
+        async def handle(request):
+            index = int(json.loads(request.content)["messages"][0]["content"])
+            started.append(index)
+            if index == 0:
+                await second_started.wait()
+                return httpx.Response(
+                    429,
+                    headers={"Retry-After": "100", "X-Request-ID": "budget-request"},
+                    json={"error": {"code": "insufficient_quota"}},
+                )
+            if index == 1:
+                second_started.set()
+                await finish_second.wait()
+            return httpx.Response(
+                200, headers={"X-Gateway-Model": "local-qwen"}, json=response_payload()
+            )
+
+        monkeypatch.setattr(
+            label.httpx,
+            "AsyncClient",
+            lambda **kwargs: client_type(
+                transport=httpx.MockTransport(handle), **kwargs
+            ),
+        )
+        args = Namespace(
+            model="local-qwen",
+            per_dataset=None,
+            concurrency=2,
+            api_key="test-key",
+            base_url="http://test/v1",
+            out_dir=tmp_path,
+        )
+        async with asyncio.timeout(2):
+            task = asyncio.create_task(label.collect(args))
+            try:
+                while not path.exists() or not path.read_text():
+                    await asyncio.sleep(0.001)
+                finish_second.set()
+                await task
+            finally:
+                if not task.done():
+                    task.cancel()
+                    await asyncio.gather(task, return_exceptions=True)
+
+    asyncio.run(run())
+    assert started == [0, 1]
+    result = common.read_labels(path)
+    assert set(result) == {"gsm8k:0", "gsm8k:1"}
+    assert result["gsm8k:0"]["error"] == "budget_exceeded"
+    assert result["gsm8k:0"]["attempts"] == 1
+    assert result["gsm8k:0"]["request_id"] == "budget-request"
+    assert result["gsm8k:1"]["error"] is None
+    output = capsys.readouterr().out
+    assert "Not started: 3 (budget exceeded)" in output
+    assert "Done: 1; skipped: 0; errors: 1" in output
+
+
+def test_regrade_skips_orphans_and_still_grades_other_ids(
+    monkeypatch, tmp_path, capsys
+):
+    monkeypatch.setattr(label, "read_manifest", lambda: [question()])
+    row = dict(
+        id="gsm8k:0",
+        model="local-qwen",
+        request_id="kept",
+        pred=None,
+        correct=False,
+        error=None,
+        attempts=2,
+        latency_ms=5,
+        cost_usd="0",
+        prompt_tokens=10,
+        completion_tokens=3,
+    )
+    path = tmp_path / "local-qwen.jsonl"
+    path.write_text(json.dumps(row) + "\n")
+    label.RESPONSES.mkdir(parents=True)
+    responses = [
+        dict(id="gsm8k:99", request_id="orphan", content="#### 9"),
+        dict(id="gsm8k:0", request_id="kept", content="#### 18"),
+    ]
+    (label.RESPONSES / "local-qwen.jsonl").write_text(
+        "".join(json.dumps(row) + "\n" for row in responses)
+    )
+    label.regrade(Namespace(model="local-qwen", out_dir=tmp_path))
+    assert common.read_labels(path) == {
+        "gsm8k:0": {**row, "pred": "18", "correct": True}
+    }
+    output = capsys.readouterr()
+    assert "Regraded: 1; labels changed: 1" in output.out
+    assert "Warning: skipped 1" in output.err

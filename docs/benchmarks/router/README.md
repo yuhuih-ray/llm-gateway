@@ -55,7 +55,14 @@ Omit `--per-dataset` to continue with the full manifest. Default concurrency is 
 Requests never opt into fallback or response caching. A missing or different
 `X-Gateway-Model` is an error. HTTP 429 allows 20 retries (honoring `Retry-After`,
 default 1 second); connection errors and 5xx share a three-attempt budget with
-backoff. Other errors are recorded immediately.
+backoff. A 429 with `error.code = "insufficient_quota"` is recorded as
+`budget_exceeded` without retrying; queued questions are left unstarted, while
+in-flight questions may finish. Other errors are recorded immediately.
+
+MMLU-Pro grading requires a standalone uppercase option letter A-J, optionally
+parenthesized or emphasized with Markdown. The answer marker is case-insensitive;
+the letter is not. The last valid `ANSWER:` match wins, falling back to the last
+valid `answer is` match.
 
 Each successful completion from the requested model is saved before grading to
 `data/router/responses/<model>.jsonl`, with `id`, `request_id`, and raw `content`.
@@ -70,8 +77,8 @@ Regrading uses every ID's latest saved response (ignoring `--per-dataset`) and
 atomically rewrites the label file with one row per ID. It preserves token counts,
 cost, latency, finish reason, and request ID from the matching original attempt;
 it prints how many labels changed. Labels without saved responses remain
-unchanged. A saved response without matching label metadata aborts before rewriting,
-so costs and latency are never invented. `--out-dir` selects the label file as usual.
+unchanged. Saved responses without matching label metadata are skipped with a
+warning count, while other responses are regraded; costs and latency are never invented. `--out-dir` selects the label file as usual.
 
 Output is appended and flushed after every question. The last row for each ID
 wins; only rows with `error: null` are skipped on resume. Run only one collector
@@ -82,8 +89,9 @@ Summary `done` counts newly successful rows, `skipped` counts previous successes
 and `errors` counts failures in this pass. Accuracy and total cost use the latest
 successful selected rows, including resumed rows. Costs are decimal USD strings
 computed with the current gateway registry prices; missing usage yields a null
-cost, never a guessed zero. Latency measures each question's request/retry time,
-excluding the wait for a concurrency slot. Request IDs allow correlation with
+cost, never a guessed zero. `latency_ms` measures only the final HTTP attempt,
+excluding previous attempts, retry sleeps, grading, and the wait for a concurrency
+slot. `attempts` records the total number of HTTP attempts. Request IDs allow correlation with
 gateway usage logs. The cost sum excludes failed/unknown usage and is not a bill
 for all upstream attempts.
 
