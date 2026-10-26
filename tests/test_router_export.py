@@ -75,7 +75,11 @@ def test_export_synthetic_artifact_and_report(tmp_path, monkeypatch, capsys):
         "synthetic",
         tmp_path,
         tmp_path,
+        pricing="billed",
+        prices=train.price_table(),
     )
+    assert report["metadata"]["pricing"] == "billed"
+    assert report["metadata"]["price_table"] == train.price_table()
     assert fitting == [1]
     assert tolerances == [0.01, 0.03, 0.08]
     assert artifact["metadata"]["feature"] == "question text"
@@ -228,7 +232,8 @@ def test_invalid_levels(levels):
         export.parse_levels(levels)
 
 
-def test_cli_passes_models_levels_and_output_paths(monkeypatch, tmp_path):
+@pytest.mark.parametrize("pricing", ["list", "billed"])
+def test_cli_passes_models_levels_and_output_paths(monkeypatch, tmp_path, pricing):
     from unittest.mock import Mock
 
     loader = Mock(return_value=synthetic_rows())
@@ -241,6 +246,7 @@ def test_cli_passes_models_levels_and_output_paths(monkeypatch, tmp_path):
         "argv",
         [
             "export.py",
+            *(["--pricing", pricing] if pricing == "billed" else []),
             "--models",
             "cheap",
             "middle",
@@ -257,7 +263,13 @@ def test_cli_passes_models_levels_and_output_paths(monkeypatch, tmp_path):
         export.MANIFEST,
         tmp_path / "docs/benchmarks/router/labels",
         ["cheap", "middle", "last"],
+        pricing,
+        train.price_table(),
     )
+    assert writer.call_args.kwargs == {
+        "pricing": pricing,
+        "prices": train.price_table(),
+    }
     assert writer.call_args.args[1:] == (
         ["cheap", "middle", "last"],
         {"high": 0.0, "custom": 0.2},

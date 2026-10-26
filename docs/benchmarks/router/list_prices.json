@@ -1,0 +1,23 @@
+{
+  "gemini-flash": {
+    "input_usd_per_million_tokens": "1.50",
+    "output_usd_per_million_tokens": "7.50",
+    "source_url": "https://ai.google.dev/gemini-api/docs/pricing",
+    "as_of": "2026-10-26",
+    "effective_from": "2027-01-01",
+    "note": "Regular price, excluding temporary promotions."
+  },
+  "gemini-flash-lite": {
+    "input_usd_per_million_tokens": "0.25",
+    "output_usd_per_million_tokens": "1.50",
+    "source_url": "https://ai.google.dev/gemini-api/docs/pricing",
+    "as_of": "2026-10-26"
+  },
+  "local-qwen": {
+    "input_usd_per_million_tokens": "0",
+    "output_usd_per_million_tokens": "0",
+    "source_url": "https://github.com/yuhuih-ray/llm-gateway/blob/main/src/llm_gateway/registry.py",
+    "as_of": "2026-10-26",
+    "note": "Project marginal-cost assumption; excludes hardware and electricity."
+  }
+}

@@ -184,6 +184,9 @@ def export_router(
     run: str,
     artifact_dir: Path,
     result_dir: Path,
+    *,
+    pricing: str,  # Cost basis already applied by load_data.
+    prices: dict,  # Exact reference price table used for this run.
 ) -> tuple[dict, dict]:
     train_rows = [row for row in rows if row["split"] == "train"]
     fitted, parameters, oof = train.fit_cascade(
@@ -196,6 +199,8 @@ def export_router(
     levels = {name: choice["tau"] for name, choice in selections.items()}
     metadata = dict(
         run=run,
+        pricing=pricing,
+        price_table=prices,
         data_sha256=hashlib.sha256(
             json.dumps(rows, sort_keys=True).encode()
         ).hexdigest(),
@@ -244,6 +249,7 @@ def main() -> None:
         help="Unique name=allowed_accuracy_drop pairs",
     )
     parser.add_argument("--run", required=True)
+    parser.add_argument("--pricing", choices=("list", "billed"), default="list")
     args = parser.parse_args()
     if len(args.models) < 2 or len(set(args.models)) != len(args.models):
         parser.error("Provide at least two distinct models, ordered by price")
@@ -253,8 +259,13 @@ def main() -> None:
         levels = parse_levels(args.levels)
     except ValueError as exc:
         parser.error(str(exc))
+    prices = train.price_table()
     rows = train.load_data(
-        MANIFEST, ROOT / "docs/benchmarks/router/labels", args.models
+        MANIFEST,
+        ROOT / "docs/benchmarks/router/labels",
+        args.models,
+        args.pricing,
+        prices,
     )
     export_router(
         rows,
@@ -263,6 +274,8 @@ def main() -> None:
         args.run,
         ROOT / "src/llm_gateway/router_artifacts",
         ROOT / "docs/benchmarks/router/results",
+        pricing=args.pricing,
+        prices=prices,
     )
 
 

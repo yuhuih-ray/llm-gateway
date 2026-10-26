@@ -216,7 +216,7 @@ def test_shared_latest_successful_labels(tmp_path):
         if model == "a":
             labels.append(dict(labels[1], error="failed"))
         (tmp_path / f"{model}.jsonl").write_text("\n".join(map(json.dumps, labels)))
-    rows = train.load_data(manifest, tmp_path, ["a", "b"])
+    rows = train.load_data(manifest, tmp_path, ["a", "b"], pricing="billed")
     assert [row["id"] for row in rows] == ["0", "2"]
     assert not {"prompt", "category", "dataset"}.intersection(rows[0])
 
@@ -294,6 +294,8 @@ def test_cli_with_synthetic_three_model_corpus(tmp_path, monkeypatch, capsys):
         "argv",
         [
             "train.py",
+            "--pricing",
+            "billed",
             "--models",
             *models,
             "--manifest",
@@ -320,6 +322,8 @@ def test_cli_with_synthetic_three_model_corpus(tmp_path, monkeypatch, capsys):
         for state, seconds in (("started", "0.0"), ("finished", "1.5"))
     ]
     output = json.loads((tmp_path / "output/synthetic.json").read_text())
+    assert output["params"]["pricing"] == "billed"
+    assert output["params"]["price_table"] == train.price_table()
     assert set(output["variants"]) == set(train.VARIANTS)
     for name, variant in output["variants"].items():
         assert set(variant["classifiers"]) == (
@@ -449,3 +453,33 @@ def test_multiclass_metric_math():
     metrics = train.multiclass_metrics(y, p)
     assert metrics["roc_auc"] == 1
     assert metrics["brier"] == pytest.approx((0.38 + 0.26 + 0.14) / 3)
+
+
+@pytest.mark.parametrize("pricing,expected", [("list", 16.5), ("billed", 0.01)])
+def test_pricing_loads_costs_without_changing_labels(tmp_path, pricing, expected):
+    manifest = tmp_path / "questions.jsonl"
+    manifest.write_text(json.dumps(dict(id="q", question="why?", split="train")) + "\n")
+    label = dict(
+        id="q",
+        model="gemini-flash",
+        error=None,
+        correct=True,
+        cost_usd="0.01",
+        prompt_tokens=1_000_000,
+        completion_tokens=2_000_000,
+        latency_ms=10,
+    )
+    path = tmp_path / "gemini-flash.jsonl"
+    original = json.dumps(label) + "\n"
+    path.write_text(original)
+    rows = train.load_data(manifest, tmp_path, ["gemini-flash"], pricing)
+    assert rows[0]["costs"] == [expected]
+    assert path.read_text() == original
+    assert train.load_data(manifest, tmp_path, ["gemini-flash"])[0]["costs"] == [16.5]
+
+
+def test_list_prices_require_model_and_token_counts():
+    with pytest.raises(ValueError, match="No list price"):
+        train.evaluation_cost({}, "unknown", "list", train.price_table())
+    with pytest.raises(KeyError, match="prompt_tokens"):
+        train.evaluation_cost({}, "gemini-flash", "list", train.price_table())

@@ -6,6 +6,7 @@ import json
 import os
 import sys
 from datetime import UTC, datetime
+from decimal import Decimal
 from pathlib import Path
 from time import perf_counter
 
@@ -43,7 +44,40 @@ VARIANTS = (
 )
 
 
-def load_data(manifest: Path, labels_dir: Path, models: list[str]) -> list[dict]:
+PRICE_PATH = ROOT / "docs/benchmarks/router/list_prices.json"
+
+
+def price_table() -> dict:
+    return json.loads(PRICE_PATH.read_text())
+
+
+def evaluation_cost(answer: dict, model: str, pricing: str, prices: dict) -> float:
+    # Reprice only the in-memory evaluation; recorded costs remain as billed.
+    if pricing == "billed":
+        return float(answer["cost_usd"])
+    if pricing != "list":
+        raise ValueError(f"Unknown pricing mode: {pricing}")
+    if model not in prices:
+        raise ValueError(f"No list price for model: {model}")
+    rates = prices[model]
+    return float(
+        sum(
+            Decimal(str(answer[f"{kind}_tokens"]))
+            * Decimal(str(rates[f"{rate}_usd_per_million_tokens"]))
+            for kind, rate in (("prompt", "input"), ("completion", "output"))
+        )
+        / Decimal(1_000_000)
+    )
+
+
+def load_data(
+    manifest: Path,
+    labels_dir: Path,
+    models: list[str],
+    pricing: str = "list",  # Apply one cost basis before any selection/evaluation.
+    prices: dict | None = None,  # Snapshot also recorded in output metadata.
+) -> list[dict]:
+    prices = price_table() if prices is None else prices
     labels = [read_labels(labels_dir / f"{model}.jsonl") for model in models]
     rows = []
     for question in sorted(read_manifest(manifest), key=lambda q: q["id"]):
@@ -57,7 +91,10 @@ def load_data(manifest: Path, labels_dir: Path, models: list[str]) -> list[dict]
         row = {field: question[field] for field in ("id", "question", "split")}
         row.update(
             correct=[int(answer["correct"]) for answer in answers],
-            costs=[float(answer["cost_usd"]) for answer in answers],
+            costs=[
+                evaluation_cost(answer, model, pricing, prices)
+                for answer, model in zip(answers, models)
+            ],
             latencies=[float(answer["latency_ms"]) for answer in answers],
         )
         if row["split"] not in {"train", "test", "ood"}:
@@ -545,17 +582,21 @@ def main() -> None:
         "--embedding-cache", type=Path, default=ROOT / "data/router/embeddings"
     )
     parser.add_argument("--run", default=datetime.now(UTC).strftime("%Y%m%dT%H%M%S%fZ"))
+    parser.add_argument("--pricing", choices=("list", "billed"), default="list")
     args = parser.parse_args()
     if len(args.models) < 2 or len(set(args.models)) != len(args.models):
         parser.error("Provide at least two distinct models, ordered by price")
     if Path(args.run).name != args.run or args.run in {".", ".."}:
         parser.error("--run must be a filename")
-    rows = load_data(args.manifest, args.labels_dir, args.models)
+    prices = price_table()
+    rows = load_data(args.manifest, args.labels_dir, args.models, args.pricing, prices)
     # Model order is supplied explicitly: token-dependent prices need not impose
     # a universal total ordering. Do not infer order using test/OOD realized costs.
     result = dict(
         params=dict(
             models=args.models,
+            pricing=args.pricing,
+            price_table=prices,
             seed=SEED,
             cv_folds=5,
             c_values=C_VALUES,
