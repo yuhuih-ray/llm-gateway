@@ -717,3 +717,53 @@ def test_regrade_skips_orphans_and_still_grades_other_ids(
     output = capsys.readouterr()
     assert "Regraded: 1; labels changed: 1" in output.out
     assert "Warning: skipped 1" in output.err
+
+
+@pytest.mark.parametrize("count", [0, 25, 51])
+def test_collection_progress_intervals_and_final(monkeypatch, tmp_path, capsys, count):
+    from types import SimpleNamespace
+
+    rows = [dict(question(), id=f"gsm8k:{i}") for i in range(count + 1)]
+    monkeypatch.setattr(label, "read_manifest", lambda: rows)
+    # This already successful label must not enter the pending total or accuracy.
+    old = dict(
+        id=f"gsm8k:{count}", model="local-qwen", error=None, correct=False, cost_usd="0"
+    )
+    (tmp_path / "local-qwen.jsonl").write_text(json.dumps(old) + "\n")
+    clock = [0.0]
+    monkeypatch.setattr(label, "time", SimpleNamespace(perf_counter=lambda: clock[0]))
+
+    async def complete(client, model, question):
+        clock[0] += 2
+        index = int(question["id"].split(":")[1])
+        return dict(
+            id=question["id"],
+            model=model,
+            error="HTTP500" if index == 0 else None,
+            correct=index != 0,
+            cost_usd="0",
+        )
+
+    monkeypatch.setattr(label, "label_question", complete)
+    args = Namespace(
+        model="local-qwen",
+        per_dataset=None,
+        concurrency=1,
+        api_key="test-key",
+        base_url="http://test/v1",
+        out_dir=tmp_path,
+    )
+    asyncio.run(label.collect(args))
+    output = capsys.readouterr()
+    lines = output.err.splitlines()
+    if count == 0:
+        assert lines == ["[0/0] errors=0 correct=0.00% rate=0.00 eta=00:00"]
+    elif count == 25:
+        assert lines == ["[25/25] errors=1 correct=100.00% rate=0.50 eta=00:00"]
+    else:
+        assert lines == [
+            "[25/51] errors=1 correct=100.00% rate=0.50 eta=00:52",
+            "[50/51] errors=1 correct=100.00% rate=0.50 eta=00:02",
+            "[51/51] errors=1 correct=100.00% rate=0.50 eta=00:00",
+        ]
+    assert "rate=" not in output.out

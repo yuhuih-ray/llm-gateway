@@ -3,6 +3,7 @@
 import argparse
 import asyncio
 import json
+import math
 import os
 import re
 import sys
@@ -273,6 +274,22 @@ async def collect(args: argparse.Namespace) -> None:
     skipped = len(questions) - len(pending)
     semaphore = asyncio.Semaphore(args.concurrency)
     stopped = asyncio.Event()
+    started = time.perf_counter()
+    done = failed = correct = 0
+
+    def progress(*, final: bool = False) -> None:
+        elapsed = time.perf_counter() - started
+        rate = done / elapsed if elapsed > 0 else 0
+        remaining = math.ceil((len(pending) - done) / rate) if rate and not final else 0
+        # Match the summary: accuracy excludes failed requests.
+        accuracy = correct / (done - failed) if done > failed else 0
+        print(
+            f"[{done}/{len(pending)}] errors={failed} correct={accuracy:.2%} "
+            f"rate={rate:.2f} eta={remaining // 60:02d}:{remaining % 60:02d}",
+            file=sys.stderr,
+            flush=True,
+        )
+
     path.parent.mkdir(parents=True, exist_ok=True)
     async with httpx.AsyncClient(
         base_url=args.base_url.rstrip("/") + "/",
@@ -283,6 +300,7 @@ async def collect(args: argparse.Namespace) -> None:
         with path.open("a") as output:
 
             async def one(question: dict) -> dict | None:
+                nonlocal done, failed, correct
                 async with semaphore:
                     if stopped.is_set():
                         return None
@@ -293,9 +311,15 @@ async def collect(args: argparse.Namespace) -> None:
                 output.write(json.dumps(row) + "\n")
                 output.flush()
                 latest[row["id"]] = row
+                done += 1
+                failed += row["error"] is not None
+                correct += row["error"] is None and row["correct"]
+                if done % 25 == 0 and done < len(pending):
+                    progress()
                 return row
 
             completed = await asyncio.gather(*(one(question) for question in pending))
+    progress(final=True)
     completed = [row for row in completed if row is not None]
     if stopped.is_set():
         print(f"Not started: {len(pending) - len(completed)} (budget exceeded)")
