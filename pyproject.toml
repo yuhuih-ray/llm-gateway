@@ -55,3 +55,6 @@ dev = [
     "ruff>=0.16.9",
     "testcontainers[postgres,redis]>=4.10,<4.14",
 ]
+router = [
+    "datasets>=5.1.0",
+]
