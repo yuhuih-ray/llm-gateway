@@ -57,4 +57,13 @@ dev = [
 ]
 router = [
     "datasets>=5.1.0",
+    "matplotlib>=3.11.2",
+    "mlflow>=3",
+    "numpy>=2.5.4",
+    "scikit-learn>=1.9.1",
 ]
+
+[tool.uv]
+# MLflow's Arrow upper bound conflicts with the existing semantic benchmark.
+# These independent offline workflows use separate dependency-group installs.
+conflicts = [[{ group = "bench" }, { group = "router" }]]

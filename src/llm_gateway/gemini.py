@@ -136,11 +136,11 @@ class GeminiProvider:
     def _translate(
         self,
         request: ChatCompletionRequest,  # Shared translation for both response modes.
-    ) -> tuple[list[types.Content], types.GenerateContentConfig]:
+    ) -> tuple[list[types.ContentUnion], types.GenerateContentConfig]:
         systems = [
             message.content for message in request.messages if message.role == "system"
         ]
-        contents = [
+        contents: list[types.ContentUnion] = [
             types.Content(
                 role="model" if message.role == "assistant" else "user",
                 parts=[types.Part(text=message.content)],

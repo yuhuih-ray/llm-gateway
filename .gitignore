@@ -18,3 +18,5 @@ scripts/semantic_cache/.data/
 scripts/loadtest/.state/
 # Downloaded evaluation datasets.
 data/
+# Local router experiment tracking.
+mlruns/
