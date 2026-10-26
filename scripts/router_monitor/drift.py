@@ -4,6 +4,7 @@ import argparse
 import asyncio
 import json
 import math
+import random
 import sys
 from bisect import bisect_right
 from datetime import UTC, datetime
@@ -24,6 +25,8 @@ from scripts.router_data.common import MANIFEST, read_manifest
 PROBABILITY_BINS = [i / 10 for i in range(11)]
 OOV_BINS = [0, 0.02, 0.05, 0.1, 0.2, 0.3, 0.5, 1.0]
 EPSILON = 1e-4
+BOOTSTRAP_RESAMPLES = 500
+BOOTSTRAP_SEED = 42
 
 
 def timestamp(value: str) -> datetime:
@@ -52,6 +55,20 @@ def psi(reference: list[float], current: list[float], edges: list[float]) -> flo
             proportions(reference, edges), proportions(current, edges)
         )
     )
+
+
+def null_psi_p95(
+    reference: list[float],
+    size: int,  # Match the current feature's non-null observation count.
+    edges: list[float],
+) -> float:
+    rng = random.Random(BOOTSTRAP_SEED)
+    scores = sorted(
+        psi(reference, rng.choices(reference, k=size), edges)
+        for _ in range(BOOTSTRAP_RESAMPLES)
+    )
+    # Nearest-rank empirical percentile (475th of 500 sorted resamples).
+    return scores[math.ceil(0.95 * len(scores)) - 1]
 
 
 async def current_rows(
@@ -104,10 +121,19 @@ def compare(
             raise ValueError(
                 f"Insufficient observations for {feature}: reference={len(ref)}, current={len(cur)}"
             )
-        score = psi(ref, cur, OOV_BINS if feature == "oov_ratio" else PROBABILITY_BINS)
+        edges = OOV_BINS if feature == "oov_ratio" else PROBABILITY_BINS
+        score = psi(ref, cur, edges)
+        baseline = null_psi_p95(ref, len(cur), edges)
         result[feature] = dict(
             psi=score,
-            status="stable" if score < 0.1 else "watch" if score < 0.2 else "drift",
+            null_psi_p95=baseline,
+            status=(
+                "drift"
+                if score >= 0.2 and score > baseline
+                else "watch"
+                if score >= 0.1 and score > baseline
+                else "stable"
+            ),
             reference_mean=mean(ref),
             current_mean=mean(cur),
             reference_n=len(ref),
@@ -118,12 +144,12 @@ def compare(
 
 def markdown(features: dict) -> str:
     lines = [
-        "| Feature | Reference n | Current n | Reference mean | Current mean | PSI | Status |",
-        "| --- | ---: | ---: | ---: | ---: | ---: | --- |",
+        "| Feature | Reference n | Current n | Reference mean | Current mean | PSI | Null PSI p95 | Status |",
+        "| --- | ---: | ---: | ---: | ---: | ---: | ---: | --- |",
     ]
     for name, row in features.items():
         lines.append(
-            f"| {name} | {row['reference_n']} | {row['current_n']} | {row['reference_mean']:.4f} | {row['current_mean']:.4f} | {row['psi']:.4f} | {row['status']} |"
+            f"| {name} | {row['reference_n']} | {row['current_n']} | {row['reference_mean']:.4f} | {row['current_mean']:.4f} | {row['psi']:.4f} | {row['null_psi_p95']:.4f} | {row['status']} |"
         )
     return "\n".join(lines)
 
@@ -146,6 +172,11 @@ async def run(args) -> int:
         until=args.until.isoformat(),
         requests=len(current),
         epsilon=EPSILON,
+        bootstrap=dict(
+            resamples=BOOTSTRAP_RESAMPLES,
+            seed=BOOTSTRAP_SEED,
+            percentile="nearest-rank",
+        ),
         bins=dict(probabilities=PROBABILITY_BINS, oov_ratio=OOV_BINS),
         features=features,
     )
@@ -162,7 +193,7 @@ def main() -> int:
     parser.add_argument("--manifest", type=Path, default=MANIFEST)
     parser.add_argument("--since", type=timestamp, required=True)
     parser.add_argument("--until", type=timestamp, default=datetime.now(UTC))
-    parser.add_argument("--min-requests", type=int, default=50)
+    parser.add_argument("--min-requests", type=int, default=300)
     parser.add_argument("--out", type=Path)
     args = parser.parse_args()
     if args.min_requests < 1 or args.since >= args.until:

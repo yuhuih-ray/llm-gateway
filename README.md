@@ -803,12 +803,16 @@ uv run python scripts/router_monitor/drift.py --since 2026-10-26T00:00:00Z --unt
 
 The script uses `DATABASE_URL`, `ROUTER_ARTIFACT` (or `--artifact`), and only `auto`
 usage rows matching the artifact run, in the inclusive-start/exclusive-end time
-window. It needs at least 50 requests (`--min-requests` changes this). Null or
+window. It needs at least 300 requests (`--min-requests` changes this). Null or
 missing feature values are excluded and sample counts are reported; an entirely
 missing feature is an error. PSI uses fixed probability/OOV bins and replaces
-empty-bin proportions with 0.0001: below 0.1 is stable, 0.1–0.2 is watch, and
-0.2 or above is drift. Exit code 1 signals drift; insufficient data is an error
-(exit 2), not a stable result. Allow the usage worker to drain before measuring.
+empty-bin proportions with 0.0001. Small windows inflate PSI through sampling
+noise, especially when bins become empty, so the default minimum is 300.
+For each feature, 500 bootstrap samples (seed 42) from the reference, each the
+size of the current non-null sample, estimate `null_psi_p95` (nearest-rank 95th
+percentile). A PSI of at least 0.2 is drift, or at least 0.1 is watch, only when
+it also exceeds this null baseline; otherwise the status is stable. Exit code 1
+signals drift; insufficient data is an error (exit 2), not a stable result. Allow the usage worker to drain before measuring.
 Distribution drift is an alert to investigate, not evidence of accuracy loss.
 
 Optional demo traffic (calls real models and may incur cost):

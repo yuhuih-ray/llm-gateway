@@ -134,11 +134,18 @@ def test_sample_is_reproducible_and_respects_split():
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "score,status,exit_code",
-    [(0.099, "stable", 0), (0.1, "watch", 0), (0.2, "drift", 1)],
+    "score,baseline,status,exit_code",
+    [
+        (0.099, 0, "stable", 0),
+        (0.1, 0, "watch", 0),
+        (0.2, 0, "drift", 1),
+        (0.1, 0.1, "stable", 0),
+        (0.2, 0.2, "stable", 0),
+        (0.3, 0.4, "stable", 0),
+    ],
 )
 async def test_report_json_status_and_exit_code(
-    monkeypatch, tmp_path, capsys, score, status, exit_code
+    monkeypatch, tmp_path, capsys, score, baseline, status, exit_code
 ):
     from types import SimpleNamespace
     from unittest.mock import AsyncMock
@@ -152,6 +159,7 @@ async def test_report_json_status_and_exit_code(
     engine = Mock(dispose=AsyncMock())
     monkeypatch.setattr(drift, "get_engine", lambda: engine)
     monkeypatch.setattr(drift, "psi", lambda *_: score)
+    monkeypatch.setattr(drift, "null_psi_p95", lambda *_: baseline)
     args = SimpleNamespace(
         artifact=tmp_path / "artifact",
         manifest=tmp_path / "manifest",
@@ -164,5 +172,43 @@ async def test_report_json_status_and_exit_code(
     report = json.loads(args.out.read_text())
     assert report["artifact_run"] == "run"
     assert report["features"]["local"]["status"] == status
-    assert "| Feature |" in capsys.readouterr().out
+    assert report["features"]["local"]["null_psi_p95"] == baseline
+    assert "Null PSI p95" in capsys.readouterr().out
     engine.dispose.assert_awaited_once()
+
+
+def test_bootstrap_seed_sample_size_and_percentile(monkeypatch):
+    samples = []
+
+    def score(reference, current, edges):
+        samples.append(current)
+        return len(samples)
+
+    monkeypatch.setattr(drift, "psi", score)
+    assert drift.null_psi_p95([0.1, 0.2, 0.3], 7, [0, 1]) == 475
+    assert len(samples) == 500
+    assert all(
+        len(sample) == 7 and set(sample) <= {0.1, 0.2, 0.3} for sample in samples
+    )
+    first = samples.copy()
+    samples.clear()
+    drift.null_psi_p95([0.1, 0.2, 0.3], 7, [0, 1])
+    assert samples == first
+
+
+def test_bootstrap_small_window_has_higher_null_psi():
+    reference = [i / 10 + 0.05 for i in range(10)] * 10
+    small = drift.null_psi_p95(reference, 10, drift.PROBABILITY_BINS)
+    large = drift.null_psi_p95(reference, 300, drift.PROBABILITY_BINS)
+    assert small > large
+    assert drift.null_psi_p95([0.5] * 10, 300, drift.PROBABILITY_BINS) == 0
+
+
+def test_default_minimum_is_300(monkeypatch):
+    from unittest.mock import AsyncMock
+
+    runner = AsyncMock(return_value=0)
+    monkeypatch.setattr(drift, "run", runner)
+    monkeypatch.setattr(sys, "argv", ["drift.py", "--since", "2026-01-01T00:00:00Z"])
+    assert drift.main() == 0
+    assert runner.call_args.args[0].min_requests == 300
