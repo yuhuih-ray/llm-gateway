@@ -34,7 +34,13 @@ from scripts.semantic_cache.embedding import MODEL, TASK_TYPE, EmbeddingClient
 SEED = 42
 TAUS = [i / 100 for i in range(101)]
 C_VALUES = [0.01, 0.1, 1.0, 10.0, 100.0]
-VARIANTS = ("handcrafted_lr", "handcrafted_hgb", "tfidf_lr", "embedding_lr")
+VARIANTS = (
+    "handcrafted_lr",
+    "handcrafted_hgb",
+    "tfidf_lr",
+    "embedding_lr",
+    "tfidf_multiclass",
+)
 
 
 def load_data(manifest: Path, labels_dir: Path, models: list[str]) -> list[dict]:
@@ -124,6 +130,8 @@ def feature_input(rows: list[dict], variant: str, cache_dir: Path):
 
 def fit_classifier(x, y, variant: str):  # Only the current training fold is accepted.
     if len(np.unique(y)) == 1:
+        if variant == "tfidf_multiclass":
+            return None, {"constant_class": int(y[0])}
         return None, {"constant_probability": float(y[0])}
     if variant == "handcrafted_hgb":
         model = HistGradientBoostingClassifier(random_state=SEED, early_stopping=False)
@@ -132,11 +140,17 @@ def fit_classifier(x, y, variant: str):  # Only the current training fold is acc
     # Keeping the vectorizer/scaler inside GridSearchCV fits it independently per fold.
     steps = (
         [("features", TfidfVectorizer(ngram_range=(1, 2)))]
-        if variant == "tfidf_lr"
+        if variant.startswith("tfidf")
         else [("scale", StandardScaler())]
     )
-    steps.append(("classifier", LogisticRegression(max_iter=2000, random_state=SEED)))
-    counts = np.bincount(y.astype(int), minlength=2)
+    # lbfgs uses multinomial loss for targets with more than two classes.
+    steps.append(
+        (
+            "classifier",
+            LogisticRegression(solver="lbfgs", max_iter=2000, random_state=SEED),
+        )
+    )
+    _, counts = np.unique(y, return_counts=True)
     if min(counts) < 5:
         raise ValueError(
             "Each nonconstant training fold needs at least five examples per class for 5-fold CV"
@@ -145,14 +159,30 @@ def fit_classifier(x, y, variant: str):  # Only the current training fold is acc
         Pipeline(steps),
         {"classifier__C": C_VALUES},
         cv=StratifiedKFold(5, shuffle=True, random_state=SEED),
-        scoring="neg_brier_score",
+        scoring=multiclass_cv_score
+        if variant == "tfidf_multiclass"
+        else "neg_brier_score",
         error_score="raise",
     )
     search.fit(x, y)
     return search.best_estimator_, {"C": search.best_params_["classifier__C"]}
 
 
-def probabilities(model, params: dict, x):
+def multiclass_cv_score(estimator, x, y) -> float:
+    # Align with the estimator's observed classes, including non-contiguous indices.
+    actual = np.asarray(y)[:, None] == estimator.classes_
+    return -float(np.mean(np.sum((estimator.predict_proba(x) - actual) ** 2, axis=1)))
+
+
+def probabilities(model, params: dict, x, n_classes: int | None = None):
+    if n_classes is not None:
+        result = np.zeros((len(x), n_classes))
+        if model is None:
+            result[:, params["constant_class"]] = 1
+        else:
+            # Absent classes retain zero probability and their original model index.
+            result[:, np.asarray(model.classes_, dtype=int)] = model.predict_proba(x)
+        return result
     if model is None:
         return np.full(len(x), params["constant_probability"])
     return model.predict_proba(x)[:, list(model.classes_).index(1)]
@@ -218,31 +248,95 @@ def gap_recovered(accuracy: float, cheapest: float, last: float) -> float | None
     return (accuracy - cheapest) / (last - cheapest) if last != cheapest else None
 
 
+def cheapest_correct(rows: list[dict]) -> np.ndarray:
+    correct = np.asarray([row["correct"] for row in rows], dtype=bool)
+    return np.where(correct.any(axis=1), correct.argmax(axis=1), correct.shape[1] - 1)
+
+
+def upper_hull(points: list[dict]) -> list[dict]:
+    # At equal cost only the most accurate point can belong to the upper envelope.
+    unique = {}
+    for point in points:
+        cost = point["total_cost"]
+        if cost not in unique or point["accuracy"] > unique[cost]["accuracy"]:
+            unique[cost] = point
+    hull = []
+    for point in sorted(unique.values(), key=lambda p: p["total_cost"]):
+        while len(hull) >= 2:
+            a, b = hull[-2:]
+            cross = (b["total_cost"] - a["total_cost"]) * (
+                point["accuracy"] - b["accuracy"]
+            ) - (b["accuracy"] - a["accuracy"]) * (
+                point["total_cost"] - b["total_cost"]
+            )
+            if cross < 0:
+                break
+            hull.pop()
+        hull.append(point)
+    return hull
+
+
+def hull_accuracy(hull: list[dict], cost: float) -> float | None:
+    # No mixture of single-model policies exists outside this cost interval.
+    if not hull or cost < hull[0]["total_cost"] or cost > hull[-1]["total_cost"]:
+        return None
+    return float(
+        np.interp(cost, [p["total_cost"] for p in hull], [p["accuracy"] for p in hull])
+    )
+
+
+def selected_metrics(selected: dict, reference: dict, models: list[str]) -> dict:
+    cheapest, last = (reference["single"][m] for m in (models[0], models[-1]))
+    hull_acc = hull_accuracy(reference["hull"], selected["total_cost"])
+    oracle_savings = last["total_cost"] - reference["oracle"]["total_cost"]
+    return dict(
+        selected,
+        cost_reduction_vs_last=1 - selected["total_cost"] / last["total_cost"]
+        if last["total_cost"]
+        else None,
+        gap_recovered=gap_recovered(
+            selected["accuracy"], cheapest["accuracy"], last["accuracy"]
+        ),
+        accuracy_vs_hull=selected["accuracy"] - hull_acc
+        if hull_acc is not None
+        else None,
+        oracle_savings_captured=(last["total_cost"] - selected["total_cost"])
+        / oracle_savings
+        if last["total_cost"] and oracle_savings
+        else None,
+    )
+
+
 def baselines(rows: list[dict], models: list[str]) -> dict:
     single = {
         model: summarize(rows, np.full(len(rows), i), models)
         for i, model in enumerate(models)
     }
     # Correctness matrix is used only by this evaluation upper bound, never features.
-    correct = np.asarray([row["correct"] for row in rows], dtype=bool)
-    oracle = np.where(correct.any(axis=1), correct.argmax(axis=1), len(models) - 1)
-    first, last = single[models[0]], single[models[-1]]
-    mixes = []
-    for share in TAUS:
-        mixes.append(
-            dict(
-                cheapest_share=share,
-                **{
-                    key: share * first[key] + (1 - share) * last[key]
-                    for key in ("accuracy", "total_cost", "mean_latency_ms")
-                },
-                shares={
-                    m: share if i == 0 else 1 - share if i == len(models) - 1 else 0
-                    for i, m in enumerate(models)
-                },
-            )
-        )
-    return dict(single=single, random_mix=mixes, oracle=summarize(rows, oracle, models))
+    return dict(
+        single=single,
+        hull=upper_hull(list(single.values())),
+        oracle=summarize(rows, cheapest_correct(rows), models),
+    )
+
+
+def cumulative_probabilities(predictions: np.ndarray) -> np.ndarray:
+    # The existing cascade accepts the first cumulative mass >= tau; the last
+    # model remains the fallback, including floating-point roundoff at tau=1.
+    return np.cumsum(predictions, axis=1)[:, :-1]
+
+
+def multiclass_metrics(actual: np.ndarray, predictions: np.ndarray) -> dict:
+    one_hot = np.eye(predictions.shape[1])[actual]
+    aucs = [
+        roc_auc_score(one_hot[:, i], predictions[:, i])
+        for i in range(predictions.shape[1])
+        if len(np.unique(one_hot[:, i])) > 1
+    ]
+    return dict(
+        roc_auc=float(np.mean(aucs)) if len(aucs) == predictions.shape[1] else None,
+        brier=float(np.mean(np.sum((one_hot - predictions) ** 2, axis=1))),
+    )
 
 
 def train_variant(
@@ -255,23 +349,35 @@ def train_variant(
     if len(train_rows) < 10:
         raise ValueError("At least ten shared train examples are required")
     x = feature_input(train_rows, variant, cache_dir)
-    y = np.asarray([row["correct"][:-1] for row in train_rows])
-    oof = np.empty(y.shape, dtype=float)
+    multiclass = variant == "tfidf_multiclass"
+    n_classes = len(models) if multiclass else None
+    y = (
+        cheapest_correct(train_rows)[:, None]
+        if multiclass
+        else np.asarray([row["correct"][:-1] for row in train_rows])
+    )
+    oof = np.empty((len(train_rows), len(models) - 1), dtype=float)
     fitted, parameters = [], []
     # A common outer partition across models gives genuine paired cascade OOF
     # predictions. Inner five-fold CV chooses C without seeing the outer holdout.
     folds = list(KFold(5, shuffle=True, random_state=SEED).split(x))
-    for column in range(len(models) - 1):
+    for column in range(y.shape[1]):
         for fit, held in folds:
             classifier, params = fit_classifier(x[fit], y[fit, column], variant)
-            oof[held, column] = probabilities(classifier, params, x[held])
+            predicted = probabilities(classifier, params, x[held], n_classes)
+            if multiclass:
+                oof[held] = cumulative_probabilities(predicted)
+            else:
+                oof[held, column] = predicted
         classifier, params = fit_classifier(x, y[:, column], variant)
         fitted.append(classifier)
         parameters.append(params)
     selection = select_tau(train_rows, oof, models)
     result = dict(
         selection=selection,
-        classifiers=dict(zip(models[:-1], parameters)),
+        classifiers=dict(
+            zip(["multiclass"] if multiclass else models[:-1], parameters)
+        ),
         evaluation={},
     )
     for split in ("test", "ood"):
@@ -280,18 +386,29 @@ def train_variant(
             result["evaluation"][split] = None
             continue
         inputs = feature_input(evaluation, variant, cache_dir)
-        predictions = np.column_stack(
-            [probabilities(m, p, inputs) for m, p in zip(fitted, parameters)]
-        )
-        metrics = {}
-        for index, model in enumerate(models[:-1]):
-            actual = [row["correct"][index] for row in evaluation]
-            metrics[model] = dict(
-                roc_auc=float(roc_auc_score(actual, predictions[:, index]))
-                if len(set(actual)) > 1
-                else None,
-                brier=float(brier_score_loss(actual, predictions[:, index])),
+        if multiclass:
+            class_probabilities = probabilities(
+                fitted[0], parameters[0], inputs, n_classes
             )
+            predictions = cumulative_probabilities(class_probabilities)
+            metrics = {
+                "multiclass": multiclass_metrics(
+                    cheapest_correct(evaluation), class_probabilities
+                )
+            }
+        else:
+            predictions = np.column_stack(
+                [probabilities(m, p, inputs) for m, p in zip(fitted, parameters)]
+            )
+            metrics = {}
+            for index, model in enumerate(models[:-1]):
+                actual = [row["correct"][index] for row in evaluation]
+                metrics[model] = dict(
+                    roc_auc=float(roc_auc_score(actual, predictions[:, index]))
+                    if len(set(actual)) > 1
+                    else None,
+                    brier=float(brier_score_loss(actual, predictions[:, index])),
+                )
         choices = (
             np.full(len(evaluation), len(models) - 1)
             if selection["all_last"]
@@ -299,15 +416,7 @@ def train_variant(
         )
         selected = summarize(evaluation, choices, models)
         reference = baselines(evaluation, models)
-        cheapest, last = (reference["single"][m] for m in (models[0], models[-1]))
-        selected["cost_reduction_vs_last"] = (
-            1 - selected["total_cost"] / last["total_cost"]
-            if last["total_cost"]
-            else None
-        )
-        selected["gap_recovered"] = gap_recovered(
-            selected["accuracy"], cheapest["accuracy"], last["accuracy"]
-        )
+        selected = selected_metrics(selected, reference, models)
         result["evaluation"][split] = dict(
             n=len(evaluation),
             classifiers=metrics,
@@ -352,12 +461,12 @@ def save_results(result: dict, out_dir: Path, run: str) -> tuple[Path, Path]:
             )
         for model, point in reference["single"].items():
             axis.scatter(point["total_cost"], point["accuracy"], label=model)
-        mix = reference["random_mix"]
+        hull = reference["hull"]
         axis.plot(
-            [p["total_cost"] for p in mix],
-            [p["accuracy"] for p in mix],
+            [p["total_cost"] for p in hull],
+            [p["accuracy"] for p in hull],
             "--",
-            label="random mix (expected)",
+            label="single-model upper hull",
         )
         oracle = reference["oracle"]
         axis.scatter(

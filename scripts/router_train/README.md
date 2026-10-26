@@ -24,6 +24,14 @@ An outer five-fold split produces paired out-of-fold predictions for threshold
 selection, with an inner five-fold C search. Constant targets use a constant
 probability; insufficient nonconstant class counts fail explicitly.
 
+`tfidf_multiclass` fits one multinomial logistic regression to the index of the
+first correct model in price order, or the last model if none is correct. It uses
+the same nested CV and C grid, scoring multiclass Brier loss. Routing selects the
+first model whose cumulative class probability reaches tau. Missing training
+classes retain zero probability at their original model indices. Its classifier
+metrics are macro one-vs-rest ROC-AUC (null if any class is absent in evaluation)
+and mean summed squared error over all classes for Brier score.
+
 Each variant chooses its own threshold using train only. Among thresholds meeting
 last-model train accuracy minus one percentage point, maximize the share routed
 before the last model; break ties by lower OOF cost, then higher threshold. If no
@@ -45,9 +53,16 @@ The script opts in to MLflow's filesystem store for this offline workflow.
 JSON includes the full 0–1 sweep in 0.01 steps,
 per-model ROC-AUC/Brier scores, selected-point metrics, and baselines. ROC-AUC is
 null for a single-class evaluation split; relative cost reduction and recovered
-gap are null when their denominators are zero. Random mix is the analytical
-expected interpolation of cheapest and last; the oracle picks the first correct
-model in the supplied price order, otherwise the last. Serving cost/latency omit
+gap are null when their denominators are zero. The baseline is the upper convex
+hull of all single-model cost/accuracy points, linearly interpolated between
+adjacent vertices. Equal-cost points retain the highest accuracy. With two distinct
+costs this is the original two-model random mixture. `accuracy_vs_hull` subtracts
+the interpolated hull accuracy at the selected router cost; it is null outside
+the hull's cost range. `oracle_savings_captured` divides router cost reduction by
+oracle cost reduction, both relative to the last model; it is null when either
+the last-model cost or oracle savings is zero. This ratio is not clipped to [0, 1].
+The oracle picks the first correct model in the supplied price order, otherwise
+the last. Serving cost/latency omit
 feature extraction and classifier overhead, including embedding API cost.
 
 Run offline tests with `uv run --group router pytest tests/test_router_train.py`.

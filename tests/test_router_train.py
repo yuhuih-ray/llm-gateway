@@ -69,11 +69,13 @@ def test_baselines_and_gap_math():
     assert oracle["accuracy"] == 0.75
     assert oracle["total_cost"] == 7
     assert oracle["mean_latency_ms"] == 27.5
-    mix = result["random_mix"][50]
-    assert mix["accuracy"] == 0.375
-    assert mix["total_cost"] == 6
-    assert mix["mean_latency_ms"] == 25
-    assert mix["shares"] == {"cheap": 0.5, "middle": 0, "last": 0.5}
+    assert train.hull_accuracy(result["hull"], 6) == 0.375
+    selected = train.selected_metrics(
+        dict(accuracy=0.5, total_cost=6), result, ["cheap", "middle", "last"]
+    )
+    assert selected["accuracy_vs_hull"] == 0.125
+    assert selected["cost_reduction_vs_last"] == 0.5
+    assert selected["oracle_savings_captured"] == 1.2
     assert train.gap_recovered(0.375, 0.25, 0.5) == 0.5
     assert train.gap_recovered(1, 0.5, 0.5) is None
 
@@ -95,7 +97,10 @@ def test_tau_selection_train_only_maximizes_cheap_share():
     ]
 
 
-def test_nested_folds_and_selection_never_receive_evaluation(monkeypatch, tmp_path):
+@pytest.mark.parametrize("variant", ["tfidf_lr", "tfidf_multiclass"])
+def test_nested_folds_and_selection_never_receive_evaluation(
+    monkeypatch, tmp_path, variant
+):
     rows = [
         dict(
             id=str(i),
@@ -138,11 +143,12 @@ def test_nested_folds_and_selection_never_receive_evaluation(monkeypatch, tmp_pa
 
     monkeypatch.setattr(train, "fit_classifier", fit)
     monkeypatch.setattr(train, "select_tau", select)
-    result = train.train_variant(rows, ["a", "b"], "tfidf_lr", tmp_path)
+    result = train.train_variant(rows, ["a", "b"], variant, tmp_path)
     assert fits == [40] * 5 + [50]
     assert set(result["evaluation"]) == {"test", "ood"}
     assert len(result["evaluation"]["test"]["sweep"]) == 101
-    assert result["evaluation"]["test"]["classifiers"]["a"]["roc_auc"] is None
+    classifier = "multiclass" if variant == "tfidf_multiclass" else "a"
+    assert result["evaluation"]["test"]["classifiers"][classifier]["roc_auc"] is None
 
 
 @pytest.mark.parametrize("variant", train.VARIANTS)
@@ -151,20 +157,22 @@ def test_classifier_on_synthetic_features(variant, monkeypatch):
     y = np.array([0, 1] * 20)
     x = (
         np.array(["plain wording" if i == 0 else "complex wording" for i in y])
-        if variant == "tfidf_lr"
+        if variant.startswith("tfidf")
         else np.column_stack([y, y * 2])
     )
     model, params = train.fit_classifier(x, y, variant)
-    p = train.probabilities(model, params, x)
-    assert p.shape == (40,)
+    n_classes = 2 if variant == "tfidf_multiclass" else None
+    p = train.probabilities(model, params, x, n_classes)
+    assert p.shape == ((40, 2) if n_classes else (40,))
     assert np.isfinite(p).all()
-    if variant == "tfidf_lr":
+    if variant.startswith("tfidf"):
         assert "unseen" not in model.named_steps["features"].vocabulary_
         assert "plain wording" in model.named_steps["features"].vocabulary_
         train.probabilities(model, params, np.array(["unseen evaluation"]))
         assert "unseen" not in model.named_steps["features"].vocabulary_
     constant, params = train.fit_classifier(x, np.ones(40), variant)
-    assert train.probabilities(constant, params, x).tolist() == [1.0] * 40
+    expected = [[0.0, 1.0]] * 40 if n_classes else [1.0] * 40
+    assert train.probabilities(constant, params, x, n_classes).tolist() == expected
 
 
 def test_embedding_cache_question_only_invalidation_and_close(tmp_path):
@@ -298,7 +306,7 @@ def test_cli_with_synthetic_three_model_corpus(tmp_path, monkeypatch, capsys):
             "synthetic",
         ],
     )
-    clock = iter([0, 1.5, 2, 3.5, 4, 5.5, 6, 7.5])
+    clock = iter(t for i in range(len(train.VARIANTS)) for t in (2 * i, 2 * i + 1.5))
     monkeypatch.setattr(train, "perf_counter", lambda: next(clock))
     train.main()
     progress = [
@@ -313,11 +321,15 @@ def test_cli_with_synthetic_three_model_corpus(tmp_path, monkeypatch, capsys):
     ]
     output = json.loads((tmp_path / "output/synthetic.json").read_text())
     assert set(output["variants"]) == set(train.VARIANTS)
-    for variant in output["variants"].values():
-        assert set(variant["classifiers"]) == {"cheap", "middle"}
+    for name, variant in output["variants"].items():
+        assert set(variant["classifiers"]) == (
+            {"multiclass"} if name == "tfidf_multiclass" else {"cheap", "middle"}
+        )
         for split in ("test", "ood"):
             evaluation = variant["evaluation"][split]
             assert evaluation["n"] == 10
+            assert "accuracy_vs_hull" in evaluation["selected"]
+            assert "oracle_savings_captured" in evaluation["selected"]
             assert len(evaluation["sweep"]) == 101
             assert sum(evaluation["selected"]["shares"].values()) == pytest.approx(1)
 
@@ -343,3 +355,97 @@ def test_embedding_progress_counts_cached_questions_every_100(tmp_path, capsys):
         "embedded 200/250 (200 cached)",
     ]
     assert factory.call_count == 2
+
+
+def test_upper_hull_uses_middle_model_and_interpolates():
+    points = [
+        dict(total_cost=x, accuracy=y)
+        for x, y in [(0, 0.2), (2, 0.8), (3, 0.7), (4, 0.9), (2, 0.4)]
+    ]
+    hull = train.upper_hull(list(reversed(points)))
+    assert hull == [points[0], points[1], points[3]]
+    assert train.hull_accuracy(hull, 1) == pytest.approx(0.5)
+    assert train.hull_accuracy(hull, 3) == pytest.approx(0.85)
+    assert train.hull_accuracy(hull, 2) == 0.8
+    assert train.hull_accuracy(hull, -1) is None
+    assert train.hull_accuracy(hull, 5) is None
+    two = train.upper_hull([points[0], points[3]])
+    for share in train.TAUS:
+        assert train.hull_accuracy(two, 4 * share) == pytest.approx(
+            0.2 * (1 - share) + 0.9 * share
+        )
+    assert train.upper_hull(
+        [dict(total_cost=1, accuracy=0.2), dict(total_cost=1, accuracy=0.5)]
+    ) == [dict(total_cost=1, accuracy=0.5)]
+    # Collinear and dominated interior points do not affect the envelope.
+    assert (
+        len(train.upper_hull([dict(total_cost=i, accuracy=i / 10) for i in range(3)]))
+        == 2
+    )
+    assert train.hull_accuracy([dict(total_cost=1, accuracy=0.5)], 1) == 0.5
+
+
+def test_selected_metrics_zero_denominators_and_outside_hull():
+    models = ["a", "b", "c"]
+    rows = [dict(row, costs=[0, 0, 0]) for row in toy_rows()]
+    result = train.selected_metrics(
+        dict(accuracy=0.5, total_cost=0), train.baselines(rows, models), models
+    )
+    assert result["cost_reduction_vs_last"] is None
+    assert result["oracle_savings_captured"] is None
+    assert result["accuracy_vs_hull"] == 0
+    rows = [dict(row, correct=[0, 0, 1]) for row in toy_rows()]
+    result = train.selected_metrics(
+        dict(accuracy=0.5, total_cost=20), train.baselines(rows, models), models
+    )
+    assert result["oracle_savings_captured"] is None
+    assert result["accuracy_vs_hull"] is None
+
+
+def test_multiclass_targets_and_cumulative_routing():
+    assert train.cheapest_correct(toy_rows()).tolist() == [0, 1, 2, 2]
+    rows = [dict(row, correct=[1, 1, 1]) for row in toy_rows()]
+    assert train.cheapest_correct(rows).tolist() == [0] * 4
+    p = np.array([[0.2, 0.5, 0.3], [0.8, 0.1, 0.1], [0.1, 0.2, 0.7]])
+    cumulative = train.cumulative_probabilities(p)
+    assert train.cascade(cumulative, 0.6).tolist() == [1, 0, 2]
+    assert train.cascade(cumulative, 0).tolist() == [0, 0, 0]
+    assert train.cascade(cumulative, 1).tolist() == [2, 2, 2]
+    assert train.cascade(cumulative, 0.2).tolist() == [0, 0, 1]
+
+
+def test_multiclass_three_classes_and_absent_class_alignment(monkeypatch):
+    monkeypatch.setattr(train, "C_VALUES", [0.1, 1])
+    y = np.tile([0, 1, 2], 20)
+    x = np.array([f"classword{target} example" for target in y])
+    model, params = train.fit_classifier(x, y, "tfidf_multiclass")
+    p = train.probabilities(model, params, x, 3)
+    assert p.shape == (60, 3)
+    assert np.allclose(p.sum(axis=1), 1)
+    assert np.array_equal(p.argmax(axis=1), y)
+    assert train.multiclass_metrics(y, p)["roc_auc"] == 1
+    assert train.multiclass_cv_score(model, x, y) == pytest.approx(
+        -train.multiclass_metrics(y, p)["brier"]
+    )
+    # A fold can omit an entire model class; do not shift later model indices.
+    present = y != 1
+    model, params = train.fit_classifier(x[present], y[present], "tfidf_multiclass")
+    p = train.probabilities(model, params, x, 3)
+    assert np.all(p[:, 1] == 0)
+    assert np.allclose(p.sum(axis=1), 1)
+    assert np.array_equal(p[present].argmax(axis=1), y[present])
+    constant, params = train.fit_classifier(x, np.full(60, 2), "tfidf_multiclass")
+    p = train.probabilities(constant, params, x, 3)
+    assert p.tolist() == [[0, 0, 1]] * 60
+    assert train.multiclass_metrics(np.full(60, 2), p) == {
+        "roc_auc": None,
+        "brier": 0.0,
+    }
+
+
+def test_multiclass_metric_math():
+    y = np.array([0, 1, 2])
+    p = np.array([[0.5, 0.3, 0.2], [0.1, 0.6, 0.3], [0.1, 0.2, 0.7]])
+    metrics = train.multiclass_metrics(y, p)
+    assert metrics["roc_auc"] == 1
+    assert metrics["brier"] == pytest.approx((0.38 + 0.26 + 0.14) / 3)
