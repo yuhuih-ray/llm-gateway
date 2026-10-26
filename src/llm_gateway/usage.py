@@ -52,7 +52,7 @@ class UsageRecord(BaseModel):
     model_requested: str
     model_selected: str
     upstream_model: str | None
-    router_info: dict[str, str] | None = None
+    router_info: dict[str, Any] | None = None
     prompt_tokens: int | None = None
     completion_tokens: int | None = None
     reasoning_tokens: int | None = None

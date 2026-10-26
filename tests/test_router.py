@@ -96,3 +96,30 @@ def test_sigmoid_does_not_overflow(tmp_path, intercept, expected):
     path = tmp_path / "extreme.json"
     path.write_text(json.dumps(artifact))
     assert set(Router(path).route("widgets").probabilities.values()) == {expected}
+
+
+def test_three_tier_artifact_parity_without_training_dependencies():
+    directory = Path(__file__).resolve().parents[1] / "src/llm_gateway/router_artifacts"
+    router = Router(directory / "three-tier.json")
+    fixture = json.loads((directory / "three-tier-parity.json").read_text())
+    assert len(fixture["questions"]) == 200
+    assert list(router.models) == fixture["models"]
+    for question in fixture["questions"]:
+        assert list(
+            router.route(question["question"]).probabilities.values()
+        ) == pytest.approx(question["probabilities"], abs=1e-9, rel=0)
+
+
+def test_router_hard_filters_skip_probability_winner(tmp_path):
+    artifact = json.loads((FIXTURES / "synthetic.json").read_text())
+    artifact["levels"]["balanced"] = 0.5
+    for classifier in artifact["classifiers"].values():
+        classifier["constant_probability"] = 1.0
+    path = tmp_path / "filtered.json"
+    path.write_text(json.dumps(artifact))
+    router = Router(path)
+    assert router.route("hi").model == "cheap"
+    assert router.route("hi", allowed_models=["middle", "last"]).model == "middle"
+    assert router.route("hi", allowed_models=["last"]).model == "last"
+    with pytest.raises(ValueError, match="No eligible"):
+        router.route("hi", allowed_models=[])

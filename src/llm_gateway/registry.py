@@ -103,7 +103,10 @@ MODELS = {
 def get_provider(
     request: ChatCompletionRequest,  # Resolve the client's gateway model name.
     auth: Annotated[AuthContext, Depends(authenticate)],  # Authenticate before lookup.
-) -> Provider:
+) -> Provider | None:
+    if request.model == "auto":
+        # The endpoint resolves the artifact and hard filters before provider creation.
+        return None
     return create_provider(request.model)
 
 

@@ -18,6 +18,7 @@ from llm_gateway.auth import (
     authenticate,
     authentication_error_handler,
 )
+from llm_gateway.auto_routing import auto_targets
 from llm_gateway.budgets import budget_exceeded
 from llm_gateway.cache import (
     CachedAnswer,
@@ -29,6 +30,7 @@ from llm_gateway.cache import (
 )
 from llm_gateway.circuit import CircuitBreaker
 from llm_gateway.concurrency import acquire_provider
+from llm_gateway.config import get_settings
 from llm_gateway.db import get_sessionmaker
 from llm_gateway.deadline import check_deadline, commit, remaining
 from llm_gateway.errors import GatewayError, gateway_error_handler
@@ -167,14 +169,24 @@ async def chat_completion(
     ],  # Authenticated tenant and key.
     request: ChatCompletionRequest,  # Validated chat input.
     provider: Annotated[
-        Provider, Depends(get_provider)
+        Provider | None, Depends(get_provider)
     ],  # Injected completion provider.
 ) -> ChatCompletionResponse | StreamingResponse | JSONResponse:
     original = request
+    automatic = original.model == "auto"
+    router_info = None
     # An explicitly named model must not silently change: callers may need local
-    # data handling or fixed behavior. Phase 4 model="auto" will opt in by default.
+    # data handling or fixed behavior. Choosing "auto" explicitly enables fallback.
     targets = [request.model]
-    if http_request.headers.get("x-gateway-fallback", "").lower() == "on":
+    if automatic:
+        quality_headers = http_request.headers.getlist("x-gateway-quality")
+        quality = (
+            ",".join(quality_headers)
+            if quality_headers
+            else get_settings().router_default_quality
+        )
+        targets, router_info = auto_targets(original, quality)
+    elif http_request.headers.get("x-gateway-fallback", "").lower() == "on":
         targets.extend(
             name for name in MODELS[request.model].fallbacks if name != request.model
         )
@@ -229,33 +241,36 @@ async def chat_completion(
             if answer is None:
                 permit = breaker.acquire()
                 http_request.state.provider_slot = await acquire_provider(
-                    http_request.app.state, entry.provider
+                    http_request.app.state, entry.provider, wait=not automatic
                 )
             if tracker is None:
                 tracker = UsageTracker(
                     http_request.scope["state"],
                     auth,
-                    original.model,
+                    model,
                     http_request.app.state,
                 )
                 http_request.state.usage_tracker = tracker
+                tracker.record.model_requested = original.model
             tracker.record.model_selected = model
             tracker.record.upstream_model = (
                 answer.upstream_model if answer else entry.upstream_model
             )
             tracker.record.cache_hit = answer is not None
+            tracker.record.router_info = dict(router_info) if router_info else None
             if index:
                 tracker.record.router_info = {
-                    "fallback_from": original.model,
+                    **(tracker.record.router_info or {}),
+                    "fallback_from": targets[0],
                     "fallback_reason": fallback_reason or "upstream_error",
                 }
-            selected_provider = (
-                answer
-                if answer is not None
-                else provider
-                if index == 0
-                else create_provider(model)
-            )
+            if answer is not None:
+                selected_provider: Provider = answer
+            elif index == 0 and not automatic:
+                assert provider is not None
+                selected_provider = provider
+            else:
+                selected_provider = create_provider(model)
 
             async def store(response: ChatCompletionResponse) -> None:
                 # Each target has its own cache key: never reuse a cloud answer as local.
@@ -288,7 +303,7 @@ async def chat_completion(
                 permit = None
             http_request.state.selected_model = model
             if index:
-                http_request.state.fallback_from = original.model
+                http_request.state.fallback_from = targets[0]
             if isinstance(result, ChatCompletionResponse):
                 result = result.model_copy(update={"model": model})
                 tracker.success(result.usage)

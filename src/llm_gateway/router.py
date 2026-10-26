@@ -4,6 +4,7 @@ import json
 import math
 import re
 from collections import Counter
+from collections.abc import Collection
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -36,6 +37,9 @@ class _Classifier:
             raise ValueError("Non-finite classifier weights")
         if self.constant is not None and not 0 <= self.constant <= 1:
             raise ValueError("Invalid constant probability")
+        for setting in ("lowercase", "use_idf", "smooth_idf", "sublinear_tf"):
+            if type(self.settings[setting]) is not bool:
+                raise ValueError(f"Invalid vectorizer setting: {setting}")
         if self.settings["norm"] not in ("l1", "l2", None):
             raise ValueError("Unsupported TF-IDF norm")
         self.pattern = re.compile(self.settings["token_pattern"])
@@ -98,6 +102,7 @@ class Router:
                 raise ValueError("Unsupported artifact version")
             self.models: tuple[str, ...] = tuple(values["models"])
             self.levels: dict[str, float | None] = dict(values["levels"])
+            self.run_name: str | None = values.get("metadata", {}).get("run")
             if len(self.models) < 2 or len(set(self.models)) != len(self.models):
                 raise ValueError("At least two distinct models are required")
             if not self.levels or any(
@@ -115,6 +120,8 @@ class Router:
         self,
         question: str,  # Same raw question field used by training.
         level: str = "balanced",  # Named quality level chosen using train OOF predictions.
+        allowed_models: Collection[str]
+        | None = None,  # Hard eligibility checks from serving.
     ) -> RoutingDecision:
         if level not in self.levels:
             raise ValueError(f"Unknown router level: {level}")
@@ -123,10 +130,22 @@ class Router:
             name: classifier.probability(question)
             for name, classifier in self.classifiers.items()
         }
-        chosen = self.models[-1]
+        eligible = [
+            model
+            for model in self.models
+            if allowed_models is None or model in allowed_models
+        ]
+        if not eligible:
+            raise ValueError("No eligible router models")
+        chosen = eligible[-1]
         # null is the explicit all-last fallback when no train threshold is feasible.
         if tau is not None:
             chosen = next(
-                (name for name, p in probabilities.items() if p >= tau), chosen
+                (
+                    name
+                    for name, p in probabilities.items()
+                    if name in eligible and p >= tau
+                ),
+                chosen,
             )
         return RoutingDecision(chosen, probabilities, tau)

@@ -201,12 +201,12 @@ Connection errors, connect timeouts, and HTTP 429/5xx get at most
 two retries with jittered exponential backoff. Read timeouts and gateway deadlines
 return 504 without retrying potentially billed generation. After SSE headers are
 sent, timeouts instead terminate the stream with an error event; no retry occurs.
-Fallback is disabled unless the caller sends `X-Gateway-Fallback: on`.
+For explicit model names, fallback is disabled unless the caller sends `X-Gateway-Fallback: on`.
 The registry currently permits `local-qwen` to fall back to `gemini-flash-lite`;
 other models have no fallback targets. An explicitly named model must not silently
 change: callers may require local data handling or fixed behavior. Opting in allows
 the prompt to go to the configured cloud target and incur its normal charges.
-Phase 4 `model="auto"` will enable fallback by default.
+`model="auto"` enables fallback by default, as described below.
 
 Before the first event/full completion, connection failures, timeouts, upstream
 429/5xx, concurrency overload, or an open circuit can select a fallback. Validation
@@ -233,6 +233,54 @@ arrival through the first streaming event or full completion, including auth,
 retries, backoff, slot waits, and all fallback attempts. Each wait is limited by
 the remaining budget; expiration returns 504 `Request deadline exceeded`.
 After the streaming commit point, the registry idle timeout applies instead.
+
+### Automatic model routing
+
+Send `"model": "auto"` with `X-Gateway-Quality: economy`, `balanced`, or `high`.
+The default is `ROUTER_DEFAULT_QUALITY=balanced`; other quality values return 400
+for auto requests. The router loads `src/llm_gateway/router_artifacts/three-tier.json`
+once, lazily, and reuses it. Set `ROUTER_ARTIFACT` to override its path. A missing
+or invalid artifact returns 503 `router_unavailable` for auto requests; explicit
+model names continue to work. Restart the process to replace a loaded artifact.
+
+Routing features use **only the last user message's text**, concatenating text
+parts in order. System instructions, previous messages, and a trailing assistant
+message are not router inputs. Providers still receive the complete conversation.
+Messages accept strings or arrays of `{"type": "text", "text": "..."}` parts;
+other content types are unsupported. Auto requires at least one user message.
+
+Before routing, models whose input limits cannot accommodate the full conversation
+are removed. The routed model is tried first, followed by every more expensive
+eligible model in artifact order: `local-qwen`, `gemini-flash-lite`, `gemini-flash`.
+Fallback is automatic under the existing pre-commit failure rules, without an
+`X-Gateway-Fallback` opt-in. A full local concurrency slot immediately escalates
+with reason `upstream_overloaded`; auto does not wait for that slot. Each target
+still passes its provider rate limit, budget, and concurrency checks. Choose an
+explicit model when prompts must stay local or behavior must remain fixed.
+
+The response `model` and `X-Gateway-Model` name the actual answering model. Usage
+keeps `model_requested="auto"`, the actual `model_selected`, and `router_info` with
+`artifact_run`, `quality`, `tau`, per-model `probabilities`, and `routed_model`.
+Fallback adds `fallback_from` (the initial routed model) and `fallback_reason`.
+
+Measured results on 651 held-out benchmark questions are shown below. The
+all-`gemini-flash` baseline had 94.62% accuracy and 4.78 s mean latency. Costs and
+latencies come from recorded labels and exclude router overhead and live load.
+
+| Quality | Tau | Accuracy | Accuracy retained | Cost reduction vs Flash | Mean latency |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| high | 0.92 | 94.47% | 99.84% | 15.05% | 3.95 s |
+| balanced | 0.89 | 93.39% | 98.70% | 35.31% | 3.03 s |
+| economy | 0.74 | 87.86% | 92.86% | 76.63% | 2.54 s |
+
+Source: [three-tier per-level evaluation](docs/benchmarks/router/results/three-tier-levels.json).
+The router was trained on benchmark questions, not real traffic, and does not
+generalize its quality targets to unseen domains. On the 246-question OOD split
+(law/history), high/balanced/economy accuracy was **82.52% / 79.67% / 72.76%**, versus
+82.93% for all-Flash. Economy lost 10.16 percentage points despite its 8-point
+train allowance; balanced lost 3.25 points despite a 3-point allowance. See the
+[`ood` results](docs/benchmarks/router/results/three-tier-levels.json). These levels
+are measured tradeoffs, not accuracy guarantees for arbitrary conversations.
 
 Default tests and CI exclude live API calls. To run the live test, export
 `GEMINI_API_KEY` in your shell and run:

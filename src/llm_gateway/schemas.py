@@ -1,11 +1,25 @@
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 class Message(BaseModel):
     role: Literal["system", "user", "assistant"]
     content: str
+
+    @field_validator("content", mode="before")
+    @classmethod
+    def concatenate_text_parts(cls, value: object) -> object:
+        if isinstance(value, list):
+            if not all(
+                isinstance(part, dict)
+                and part.get("type") == "text"
+                and isinstance(part.get("text"), str)
+                for part in value
+            ):
+                raise ValueError("Only text content parts are supported")
+            return "".join(part["text"] for part in value)
+        return value
 
 
 class StreamOptions(BaseModel):

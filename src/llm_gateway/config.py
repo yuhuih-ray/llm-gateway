@@ -1,5 +1,6 @@
 from functools import lru_cache
 from ipaddress import ip_network
+from pathlib import Path
 
 from pydantic import Field, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -13,6 +14,10 @@ class Settings(BaseSettings):
     vllm_api_key: SecretStr | None = None
     vllm_max_concurrency: int = Field(default=16, ge=1)
     request_deadline_seconds: float = Field(default=120, gt=0, allow_inf_nan=False)
+    router_artifact: Path = (
+        Path(__file__).with_name("router_artifacts") / "three-tier.json"
+    )
+    router_default_quality: str = "balanced"
     fake_delay_ms: int = Field(default=0, ge=0)
     server_timing: bool = False
     max_request_bytes: int = Field(default=1_048_576, ge=1)
