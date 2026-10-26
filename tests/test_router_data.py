@@ -341,6 +341,8 @@ def test_collect_appends_resumes_and_prints_summary(monkeypatch, tmp_path, capsy
     args = Namespace(
         model="local-qwen",
         per_dataset=None,
+        dataset=None,
+        max_tokens=1024,
         concurrency=2,
         api_key="test-key",
         base_url="http://test/v1",
@@ -653,6 +655,8 @@ def test_budget_exhaustion_stops_waiting_questions_but_finishes_inflight(
         args = Namespace(
             model="local-qwen",
             per_dataset=None,
+            dataset=None,
+            max_tokens=1024,
             concurrency=2,
             api_key="test-key",
             base_url="http://test/v1",
@@ -733,7 +737,7 @@ def test_collection_progress_intervals_and_final(monkeypatch, tmp_path, capsys, 
     clock = [0.0]
     monkeypatch.setattr(label, "time", SimpleNamespace(perf_counter=lambda: clock[0]))
 
-    async def complete(client, model, question):
+    async def complete(client, model, question, *, max_tokens):
         clock[0] += 2
         index = int(question["id"].split(":")[1])
         return dict(
@@ -748,6 +752,8 @@ def test_collection_progress_intervals_and_final(monkeypatch, tmp_path, capsys, 
     args = Namespace(
         model="local-qwen",
         per_dataset=None,
+        dataset=None,
+        max_tokens=1024,
         concurrency=1,
         api_key="test-key",
         base_url="http://test/v1",
@@ -839,6 +845,8 @@ def test_consecutive_errors_stop_and_success_resets(
     args = Namespace(
         model="local-qwen",
         per_dataset=None,
+        dataset=None,
+        max_tokens=1024,
         concurrency=1,
         api_key="test-key",
         base_url="http://test/v1",
@@ -889,6 +897,8 @@ def test_error_streak_stop_allows_inflight_question_to_finish(
         args = Namespace(
             model="local-qwen",
             per_dataset=None,
+            dataset=None,
+            max_tokens=1024,
             concurrency=2,
             api_key="test-key",
             base_url="http://test/v1",
@@ -915,3 +925,100 @@ def test_error_streak_stop_allows_inflight_question_to_finish(
     assert "Stopped: 10 consecutive errors" in output
     assert 'Error counts: {"HTTP400": 10}' in output
     assert "Not started: 4 (10 consecutive errors)" in output
+
+
+@pytest.mark.parametrize("status", [200, 400])
+def test_custom_max_tokens_sent_and_recorded(status):
+    def handle(request):
+        assert json.loads(request.content)["max_tokens"] == 2048
+        return httpx.Response(
+            status,
+            headers={"X-Gateway-Model": "local-qwen"},
+            json=response_payload(),
+        )
+
+    async def run():
+        async with httpx.AsyncClient(
+            base_url="http://test/v1/", transport=httpx.MockTransport(handle)
+        ) as client:
+            return await label.label_question(
+                client, "local-qwen", question(), max_tokens=2048
+            )
+
+    row = asyncio.run(run())
+    assert row["max_tokens"] == 2048
+    assert row["error"] == (None if status == 200 else "HTTP400")
+
+
+@pytest.mark.parametrize("datasets", [[], ["mmlupro"], ["gsm8k", "mmlupro"]])
+def test_cli_filters_datasets_before_sampling_and_passes_max_tokens(
+    monkeypatch, tmp_path, datasets
+):
+    rows = [
+        dict(question(dataset), id=f"{dataset}:{i}", prompt=f"{dataset}:{i}")
+        for dataset in ("gsm8k", "mmlupro", "other")
+        for i in range(4)
+    ]
+    monkeypatch.setattr(label, "read_manifest", lambda: rows)
+    original_select = label.select_questions
+    selected_datasets = set(datasets or ["gsm8k", "mmlupro", "other"])
+
+    def select(filtered, limit):
+        assert {q["dataset"] for q in filtered} == selected_datasets
+        assert limit == 2
+        return original_select(filtered, limit)
+
+    monkeypatch.setattr(label, "select_questions", select)
+    calls = []
+    max_tokens = 2048 if datasets else 1024
+
+    def handle(request):
+        payload = json.loads(request.content)
+        assert payload["max_tokens"] == max_tokens
+        calls.append(payload["messages"][0]["content"])
+        return httpx.Response(
+            200, headers={"X-Gateway-Model": "local-qwen"}, json=response_payload()
+        )
+
+    client = httpx.AsyncClient
+    monkeypatch.setattr(
+        label.httpx,
+        "AsyncClient",
+        lambda **kwargs: client(transport=httpx.MockTransport(handle), **kwargs),
+    )
+    argv = [
+        "label.py",
+        "--model",
+        "local-qwen",
+        "--api-key",
+        "test-key",
+        "--base-url",
+        "http://test/v1",
+        "--out-dir",
+        str(tmp_path),
+        "--per-dataset",
+        "2",
+    ]
+    for dataset in datasets:
+        argv.extend(["--dataset", dataset])
+    if datasets:
+        argv.extend(["--max-tokens", str(max_tokens)])
+    monkeypatch.setattr(label.sys, "argv", argv)
+    label.main()
+    expected = original_select(
+        [q for q in rows if q["dataset"] in selected_datasets], 2
+    )
+    assert set(calls) == {q["id"] for q in expected}
+    saved = common.read_labels(tmp_path / "local-qwen.jsonl")
+    assert set(saved) == set(calls)
+    assert all(row["max_tokens"] == max_tokens for row in saved.values())
+
+
+@pytest.mark.parametrize("value", ["0", "-1"])
+def test_cli_rejects_nonpositive_max_tokens(monkeypatch, value):
+    monkeypatch.setattr(
+        label.sys, "argv", ["label.py", "--model", "local-qwen", "--max-tokens", value]
+    )
+    with pytest.raises(SystemExit) as exc:
+        label.main()
+    assert exc.value.code == 2

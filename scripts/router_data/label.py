@@ -204,10 +204,12 @@ async def label_question(
     client: httpx.AsyncClient,  # Gateway only; never call providers directly.
     model: str,  # Registry model used for identity verification and pricing.
     question: dict,  # Exact prompt and gold from the committed manifest.
+    max_tokens: int = 1024,  # Requested output cap, preserved in label metadata.
 ) -> dict:
     row = dict(
         id=question["id"],
         model=model,
+        max_tokens=max_tokens,
         correct=False,
         pred=None,
         finish_reason=None,
@@ -226,7 +228,7 @@ async def label_question(
                 "model": model,
                 "messages": [{"role": "user", "content": question["prompt"]}],
                 "temperature": 0,
-                "max_tokens": 1024,
+                "max_tokens": max_tokens,
                 "stream": False,
             },
             row,
@@ -271,7 +273,10 @@ async def label_question(
 
 
 async def collect(args: argparse.Namespace) -> None:
-    questions = select_questions(read_manifest(), args.per_dataset)
+    questions = read_manifest()
+    if args.dataset:
+        questions = [q for q in questions if q["dataset"] in args.dataset]
+    questions = select_questions(questions, args.per_dataset)
     path = args.out_dir / f"{args.model}.jsonl"
     latest = read_labels(path)
     if any(row["model"] != args.model for row in latest.values()):
@@ -312,7 +317,9 @@ async def collect(args: argparse.Namespace) -> None:
                 async with semaphore:
                     if stopped.is_set():
                         return None
-                    row = await label_question(client, args.model, question)
+                    row = await label_question(
+                        client, args.model, question, max_tokens=args.max_tokens
+                    )
                     if row["error"] is None:
                         consecutive_errors = 0
                     else:
@@ -373,6 +380,10 @@ def main() -> None:
     parser.add_argument("--base-url", default="http://localhost:8000/v1")
     parser.add_argument("--api-key", default=os.environ.get("GATEWAY_API_KEY"))
     parser.add_argument("--concurrency", type=positive, default=4)
+    parser.add_argument("--max-tokens", type=positive, default=1024)
+    parser.add_argument(
+        "--dataset", action="append", help="Dataset to label (repeatable; default: all)"
+    )
     parser.add_argument("--per-dataset", type=positive)
     parser.add_argument(
         "--out-dir", type=Path, default=ROOT / "docs/benchmarks/router/labels"
