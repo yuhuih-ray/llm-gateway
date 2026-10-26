@@ -1,9 +1,33 @@
 {
   "metadata": {
     "run": "three-tier",
-    "data_sha256": "fedd8f435d321b442f9ebef98a695e09c94a94bfe6db1ada68270e5d23698f90",
+    "pricing": "list",
+    "price_table": {
+      "gemini-flash": {
+        "input_usd_per_million_tokens": "1.50",
+        "output_usd_per_million_tokens": "7.50",
+        "source_url": "https://ai.google.dev/gemini-api/docs/pricing",
+        "as_of": "2026-10-26",
+        "effective_from": "2027-01-01",
+        "note": "Regular price, excluding temporary promotions."
+      },
+      "gemini-flash-lite": {
+        "input_usd_per_million_tokens": "0.25",
+        "output_usd_per_million_tokens": "1.50",
+        "source_url": "https://ai.google.dev/gemini-api/docs/pricing",
+        "as_of": "2026-10-26"
+      },
+      "local-qwen": {
+        "input_usd_per_million_tokens": "0",
+        "output_usd_per_million_tokens": "0",
+        "source_url": "https://github.com/yuhuih-ray/llm-gateway/blob/main/src/llm_gateway/registry.py",
+        "as_of": "2026-10-26",
+        "note": "Project marginal-cost assumption; excludes hardware and electricity."
+      }
+    },
+    "data_sha256": "ac3e8a59b521e7d174f215a070337e2226160396405f1ac3233377a1e2f8c021",
     "feature": "question text",
-    "created_at": "2026-10-26T21:08:18.125734+00:00"
+    "created_at": "2026-10-26T21:27:24.556632+00:00"
   },
   "models": [
     "local-qwen",
@@ -23,7 +47,7 @@
       "oof": {
         "tau": 0.92,
         "accuracy": 0.9327002477291495,
-        "total_cost": 3.706232,
+        "total_cost": 7.1033420000000005,
         "mean_latency_ms": 4208.181547068539,
         "shares": {
           "local-qwen": 0.06151940545004129,
@@ -39,7 +63,7 @@
       "oof": {
         "tau": 0.89,
         "accuracy": 0.9124690338563171,
-        "total_cost": 2.6019484999999998,
+        "total_cost": 4.37014025,
         "mean_latency_ms": 3092.3500412881913,
         "shares": {
           "local-qwen": 0.09826589595375723,
@@ -71,17 +95,17 @@
         "tau": 0.92,
         "n": 651,
         "accuracy": 0.9447004608294931,
-        "total_cost": 0.94649525,
+        "total_cost": 1.802051,
         "mean_latency_ms": 3951.308505376344,
         "shares": {
           "local-qwen": 0.004608294930875576,
           "gemini-flash-lite": 0.3486943164362519,
           "gemini-flash": 0.6466973886328725
         },
-        "cost_reduction_vs_last": 0.150462659101124,
+        "cost_reduction_vs_last": 0.19127453904065528,
         "gap_recovered": 0.994011976047904,
-        "accuracy_vs_hull": 0.007604347211711104,
-        "oracle_savings_captured": 0.21021281798474215,
+        "accuracy_vs_hull": 0.0076820279825104976,
+        "oracle_savings_captured": 0.2489587279205196,
         "last_model_accuracy": 0.946236559139785,
         "accuracy_retained": 0.9983766233766234,
         "last_model_mean_latency_ms": 4775.754674347158,
@@ -91,17 +115,17 @@
         "tau": 0.89,
         "n": 651,
         "accuracy": 0.9339477726574501,
-        "total_cost": 0.720773,
+        "total_cost": 1.23188375,
         "mean_latency_ms": 3033.267505376344,
         "shares": {
           "local-qwen": 0.03225806451612903,
           "gemini-flash-lite": 0.6251920122887865,
           "gemini-flash": 0.3425499231950845
         },
-        "cost_reduction_vs_last": 0.35306217562982434,
+        "cost_reduction_vs_last": 0.4471545180646519,
         "gap_recovered": 0.9520958083832335,
-        "accuracy_vs_hull": 0.009159362855869713,
-        "oracle_savings_captured": 0.49326653740107196,
+        "accuracy_vs_hull": 0.0092610070269884,
+        "oracle_savings_captured": 0.5820064738340689,
         "last_model_accuracy": 0.946236559139785,
         "accuracy_retained": 0.987012987012987,
         "last_model_mean_latency_ms": 4775.754674347158,
@@ -111,17 +135,17 @@
         "tau": 0.74,
         "n": 651,
         "accuracy": 0.8786482334869432,
-        "total_cost": 0.2604085,
+        "total_cost": 0.262075,
         "mean_latency_ms": 2539.0324884792626,
         "shares": {
           "local-qwen": 0.4485407066052227,
           "gemini-flash-lite": 0.5499231950844854,
           "gemini-flash": 0.0015360983102918587
         },
-        "cost_reduction_vs_last": 0.7662674539175289,
+        "cost_reduction_vs_last": 0.8823858341517969,
         "gap_recovered": 0.7365269461077845,
-        "accuracy_vs_hull": 0.04115995507069259,
-        "oracle_savings_captured": 1.0705595779065558,
+        "accuracy_vs_hull": 0.04021422711454237,
+        "oracle_savings_captured": 1.148493970537425,
         "last_model_accuracy": 0.946236559139785,
         "accuracy_retained": 0.9285714285714286,
         "last_model_mean_latency_ms": 4775.754674347158,
@@ -133,17 +157,17 @@
         "tau": 0.92,
         "n": 246,
         "accuracy": 0.8252032520325203,
-        "total_cost": 0.45018325000000003,
+        "total_cost": 0.8953600000000002,
         "mean_latency_ms": 5345.825117886179,
         "shares": {
           "local-qwen": 0.0,
           "gemini-flash-lite": 0.028455284552845527,
           "gemini-flash": 0.9715447154471545
         },
-        "cost_reduction_vs_last": 0.016906689465147506,
+        "cost_reduction_vs_last": 0.02237319300475349,
         "gap_recovered": 0.9919354838709679,
-        "accuracy_vs_hull": -0.0013573985430218594,
-        "oracle_savings_captured": 0.03297039074086505,
+        "accuracy_vs_hull": -0.0013521624201430216,
+        "oracle_savings_captured": 0.03735229886943232,
         "last_model_accuracy": 0.8292682926829268,
         "accuracy_retained": 0.9950980392156863,
         "last_model_mean_latency_ms": 5443.811577235772,
@@ -153,17 +177,17 @@
         "tau": 0.89,
         "n": 246,
         "accuracy": 0.7967479674796748,
-        "total_cost": 0.3801365,
+        "total_cost": 0.706061,
         "mean_latency_ms": 4453.105739837399,
         "shares": {
           "local-qwen": 0.0,
           "gemini-flash-lite": 0.3089430894308943,
           "gemini-flash": 0.6910569105691057
         },
-        "cost_reduction_vs_last": 0.1698721570824061,
+        "cost_reduction_vs_last": 0.229065224073143,
         "gap_recovered": 0.935483870967742,
-        "accuracy_vs_hull": -0.005314939646443473,
-        "oracle_savings_captured": 0.33127428090202277,
+        "accuracy_vs_hull": -0.004744850349643448,
+        "oracle_savings_captured": 0.38242698341518194,
         "last_model_accuracy": 0.8292682926829268,
         "accuracy_retained": 0.9607843137254902,
         "last_model_mean_latency_ms": 5443.811577235772,
@@ -180,10 +204,10 @@
           "gemini-flash-lite": 0.975609756097561,
           "gemini-flash": 0.0
         },
-        "cost_reduction_vs_last": 0.61640409652012,
+        "cost_reduction_vs_last": 0.80820204826006,
         "gap_recovered": 0.7983870967741936,
         "accuracy_vs_hull": 0.0034520969526088408,
-        "oracle_savings_captured": 1.2020735318072497,
+        "oracle_savings_captured": 1.3493024642071991,
         "last_model_accuracy": 0.8292682926829268,
         "accuracy_retained": 0.877450980392157,
         "last_model_mean_latency_ms": 5443.811577235772,

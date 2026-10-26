@@ -356966,8 +356966,32 @@
   },
   "metadata": {
     "run": "three-tier",
-    "data_sha256": "fedd8f435d321b442f9ebef98a695e09c94a94bfe6db1ada68270e5d23698f90",
+    "pricing": "list",
+    "price_table": {
+      "gemini-flash": {
+        "input_usd_per_million_tokens": "1.50",
+        "output_usd_per_million_tokens": "7.50",
+        "source_url": "https://ai.google.dev/gemini-api/docs/pricing",
+        "as_of": "2026-10-26",
+        "effective_from": "2027-01-01",
+        "note": "Regular price, excluding temporary promotions."
+      },
+      "gemini-flash-lite": {
+        "input_usd_per_million_tokens": "0.25",
+        "output_usd_per_million_tokens": "1.50",
+        "source_url": "https://ai.google.dev/gemini-api/docs/pricing",
+        "as_of": "2026-10-26"
+      },
+      "local-qwen": {
+        "input_usd_per_million_tokens": "0",
+        "output_usd_per_million_tokens": "0",
+        "source_url": "https://github.com/yuhuih-ray/llm-gateway/blob/main/src/llm_gateway/registry.py",
+        "as_of": "2026-10-26",
+        "note": "Project marginal-cost assumption; excludes hardware and electricity."
+      }
+    },
+    "data_sha256": "ac3e8a59b521e7d174f215a070337e2226160396405f1ac3233377a1e2f8c021",
     "feature": "question text",
-    "created_at": "2026-10-26T21:08:18.125734+00:00"
+    "created_at": "2026-10-26T21:27:24.556632+00:00"
   }
 }
