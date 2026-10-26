@@ -73,1116 +73,35 @@
           }
         }
       },
-      "random_mix": [
+      "hull": [
         {
-          "cheapest_share": 0.0,
-          "accuracy": 0.946236559139785,
-          "total_cost": 1.11413025,
-          "mean_latency_ms": 4775.754674347158,
-          "shares": {
-            "local-qwen": 0.0,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 1.0
-          }
-        },
-        {
-          "cheapest_share": 0.01,
-          "accuracy": 0.9436712749615975,
-          "total_cost": 1.1029889475,
-          "mean_latency_ms": 4775.388060384023,
-          "shares": {
-            "local-qwen": 0.01,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.99
-          }
-        },
-        {
-          "cheapest_share": 0.02,
-          "accuracy": 0.9411059907834102,
-          "total_cost": 1.091847645,
-          "mean_latency_ms": 4775.02144642089,
-          "shares": {
-            "local-qwen": 0.02,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.98
-          }
-        },
-        {
-          "cheapest_share": 0.03,
-          "accuracy": 0.9385407066052227,
-          "total_cost": 1.0807063425,
-          "mean_latency_ms": 4774.654832457756,
-          "shares": {
-            "local-qwen": 0.03,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.97
-          }
-        },
-        {
-          "cheapest_share": 0.04,
-          "accuracy": 0.9359754224270354,
-          "total_cost": 1.06956504,
-          "mean_latency_ms": 4774.288218494622,
-          "shares": {
-            "local-qwen": 0.04,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.96
-          }
-        },
-        {
-          "cheapest_share": 0.05,
-          "accuracy": 0.9334101382488479,
-          "total_cost": 1.0584237375,
-          "mean_latency_ms": 4773.92160453149,
-          "shares": {
-            "local-qwen": 0.05,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.95
-          }
-        },
-        {
-          "cheapest_share": 0.06,
-          "accuracy": 0.9308448540706604,
-          "total_cost": 1.047282435,
-          "mean_latency_ms": 4773.554990568356,
-          "shares": {
-            "local-qwen": 0.06,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.94
-          }
-        },
-        {
-          "cheapest_share": 0.07,
-          "accuracy": 0.9282795698924732,
-          "total_cost": 1.0361411325,
-          "mean_latency_ms": 4773.188376605222,
-          "shares": {
-            "local-qwen": 0.07,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.9299999999999999
-          }
-        },
-        {
-          "cheapest_share": 0.08,
-          "accuracy": 0.9257142857142858,
-          "total_cost": 1.02499983,
-          "mean_latency_ms": 4772.821762642088,
-          "shares": {
-            "local-qwen": 0.08,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.92
-          }
-        },
-        {
-          "cheapest_share": 0.09,
-          "accuracy": 0.9231490015360985,
-          "total_cost": 1.0138585275,
-          "mean_latency_ms": 4772.455148678955,
-          "shares": {
-            "local-qwen": 0.09,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.91
-          }
-        },
-        {
-          "cheapest_share": 0.1,
-          "accuracy": 0.920583717357911,
-          "total_cost": 1.002717225,
-          "mean_latency_ms": 4772.088534715822,
-          "shares": {
-            "local-qwen": 0.1,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.9
-          }
-        },
-        {
-          "cheapest_share": 0.11,
-          "accuracy": 0.9180184331797235,
-          "total_cost": 0.9915759225000002,
-          "mean_latency_ms": 4771.721920752688,
-          "shares": {
-            "local-qwen": 0.11,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.89
-          }
-        },
-        {
-          "cheapest_share": 0.12,
-          "accuracy": 0.9154531490015362,
-          "total_cost": 0.9804346200000001,
-          "mean_latency_ms": 4771.355306789554,
-          "shares": {
-            "local-qwen": 0.12,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.88
-          }
-        },
-        {
-          "cheapest_share": 0.13,
-          "accuracy": 0.9128878648233487,
-          "total_cost": 0.9692933175,
-          "mean_latency_ms": 4770.98869282642,
-          "shares": {
-            "local-qwen": 0.13,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.87
-          }
-        },
-        {
-          "cheapest_share": 0.14,
-          "accuracy": 0.9103225806451614,
-          "total_cost": 0.958152015,
-          "mean_latency_ms": 4770.622078863286,
-          "shares": {
-            "local-qwen": 0.14,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.86
-          }
-        },
-        {
-          "cheapest_share": 0.15,
-          "accuracy": 0.9077572964669739,
-          "total_cost": 0.9470107125,
-          "mean_latency_ms": 4770.255464900153,
-          "shares": {
-            "local-qwen": 0.15,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.85
-          }
-        },
-        {
-          "cheapest_share": 0.16,
-          "accuracy": 0.9051920122887864,
-          "total_cost": 0.93586941,
-          "mean_latency_ms": 4769.888850937019,
-          "shares": {
-            "local-qwen": 0.16,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.84
-          }
-        },
-        {
-          "cheapest_share": 0.17,
-          "accuracy": 0.9026267281105991,
-          "total_cost": 0.9247281075,
-          "mean_latency_ms": 4769.522236973886,
-          "shares": {
-            "local-qwen": 0.17,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.83
-          }
-        },
-        {
-          "cheapest_share": 0.18,
-          "accuracy": 0.9000614439324117,
-          "total_cost": 0.9135868050000001,
-          "mean_latency_ms": 4769.155623010753,
-          "shares": {
-            "local-qwen": 0.18,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.8200000000000001
-          }
-        },
-        {
-          "cheapest_share": 0.19,
-          "accuracy": 0.8974961597542244,
-          "total_cost": 0.9024455025000001,
-          "mean_latency_ms": 4768.789009047619,
-          "shares": {
-            "local-qwen": 0.19,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.81
-          }
-        },
-        {
-          "cheapest_share": 0.2,
-          "accuracy": 0.894930875576037,
-          "total_cost": 0.8913042000000001,
-          "mean_latency_ms": 4768.422395084485,
-          "shares": {
-            "local-qwen": 0.2,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.8
-          }
-        },
-        {
-          "cheapest_share": 0.21,
-          "accuracy": 0.8923655913978494,
-          "total_cost": 0.8801628975000001,
-          "mean_latency_ms": 4768.055781121351,
-          "shares": {
-            "local-qwen": 0.21,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.79
-          }
-        },
-        {
-          "cheapest_share": 0.22,
-          "accuracy": 0.8898003072196621,
-          "total_cost": 0.8690215950000001,
-          "mean_latency_ms": 4767.689167158218,
-          "shares": {
-            "local-qwen": 0.22,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.78
-          }
-        },
-        {
-          "cheapest_share": 0.23,
-          "accuracy": 0.8872350230414747,
-          "total_cost": 0.8578802925000001,
-          "mean_latency_ms": 4767.322553195085,
-          "shares": {
-            "local-qwen": 0.23,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.77
-          }
-        },
-        {
-          "cheapest_share": 0.24,
-          "accuracy": 0.8846697388632874,
-          "total_cost": 0.8467389900000001,
-          "mean_latency_ms": 4766.955939231951,
-          "shares": {
-            "local-qwen": 0.24,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.76
-          }
-        },
-        {
-          "cheapest_share": 0.25,
-          "accuracy": 0.8821044546850999,
-          "total_cost": 0.8355976875000001,
-          "mean_latency_ms": 4766.5893252688165,
-          "shares": {
-            "local-qwen": 0.25,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.75
-          }
-        },
-        {
-          "cheapest_share": 0.26,
-          "accuracy": 0.8795391705069124,
-          "total_cost": 0.8244563850000001,
-          "mean_latency_ms": 4766.222711305683,
-          "shares": {
-            "local-qwen": 0.26,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.74
-          }
-        },
-        {
-          "cheapest_share": 0.27,
-          "accuracy": 0.8769738863287251,
-          "total_cost": 0.8133150825000001,
-          "mean_latency_ms": 4765.856097342549,
-          "shares": {
-            "local-qwen": 0.27,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.73
-          }
-        },
-        {
-          "cheapest_share": 0.28,
-          "accuracy": 0.8744086021505376,
-          "total_cost": 0.8021737800000001,
-          "mean_latency_ms": 4765.489483379416,
-          "shares": {
-            "local-qwen": 0.28,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.72
-          }
-        },
-        {
-          "cheapest_share": 0.29,
-          "accuracy": 0.8718433179723503,
-          "total_cost": 0.7910324775,
-          "mean_latency_ms": 4765.122869416282,
-          "shares": {
-            "local-qwen": 0.29,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.71
-          }
-        },
-        {
-          "cheapest_share": 0.3,
-          "accuracy": 0.8692780337941628,
-          "total_cost": 0.779891175,
-          "mean_latency_ms": 4764.756255453149,
-          "shares": {
-            "local-qwen": 0.3,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.7
-          }
-        },
-        {
-          "cheapest_share": 0.31,
-          "accuracy": 0.8667127496159753,
-          "total_cost": 0.7687498725,
-          "mean_latency_ms": 4764.389641490015,
-          "shares": {
-            "local-qwen": 0.31,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.69
-          }
-        },
-        {
-          "cheapest_share": 0.32,
-          "accuracy": 0.864147465437788,
-          "total_cost": 0.75760857,
-          "mean_latency_ms": 4764.023027526881,
-          "shares": {
-            "local-qwen": 0.32,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.6799999999999999
-          }
-        },
-        {
-          "cheapest_share": 0.33,
-          "accuracy": 0.8615821812596005,
-          "total_cost": 0.7464672675,
-          "mean_latency_ms": 4763.656413563747,
-          "shares": {
-            "local-qwen": 0.33,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.6699999999999999
-          }
-        },
-        {
-          "cheapest_share": 0.34,
-          "accuracy": 0.8590168970814132,
-          "total_cost": 0.735325965,
-          "mean_latency_ms": 4763.289799600614,
-          "shares": {
-            "local-qwen": 0.34,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.6599999999999999
-          }
-        },
-        {
-          "cheapest_share": 0.35,
-          "accuracy": 0.8564516129032258,
-          "total_cost": 0.7241846625000001,
-          "mean_latency_ms": 4762.92318563748,
-          "shares": {
-            "local-qwen": 0.35,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.65
-          }
-        },
-        {
-          "cheapest_share": 0.36,
-          "accuracy": 0.8538863287250384,
-          "total_cost": 0.7130433600000001,
-          "mean_latency_ms": 4762.556571674347,
-          "shares": {
-            "local-qwen": 0.36,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.64
-          }
-        },
-        {
-          "cheapest_share": 0.37,
-          "accuracy": 0.8513210445468511,
-          "total_cost": 0.7019020575000001,
-          "mean_latency_ms": 4762.1899577112135,
-          "shares": {
-            "local-qwen": 0.37,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.63
-          }
-        },
-        {
-          "cheapest_share": 0.38,
-          "accuracy": 0.8487557603686635,
-          "total_cost": 0.690760755,
-          "mean_latency_ms": 4761.823343748079,
-          "shares": {
-            "local-qwen": 0.38,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.62
-          }
-        },
-        {
-          "cheapest_share": 0.39,
-          "accuracy": 0.8461904761904763,
-          "total_cost": 0.6796194525,
-          "mean_latency_ms": 4761.456729784946,
-          "shares": {
-            "local-qwen": 0.39,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.61
-          }
-        },
-        {
-          "cheapest_share": 0.4,
-          "accuracy": 0.8436251920122888,
-          "total_cost": 0.66847815,
-          "mean_latency_ms": 4761.090115821813,
-          "shares": {
-            "local-qwen": 0.4,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.6
-          }
-        },
-        {
-          "cheapest_share": 0.41,
-          "accuracy": 0.8410599078341015,
-          "total_cost": 0.6573368475000001,
-          "mean_latency_ms": 4760.723501858679,
-          "shares": {
-            "local-qwen": 0.41,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.5900000000000001
-          }
-        },
-        {
-          "cheapest_share": 0.42,
-          "accuracy": 0.8384946236559141,
-          "total_cost": 0.6461955450000001,
-          "mean_latency_ms": 4760.356887895545,
-          "shares": {
-            "local-qwen": 0.42,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.5800000000000001
-          }
-        },
-        {
-          "cheapest_share": 0.43,
-          "accuracy": 0.8359293394777266,
-          "total_cost": 0.6350542425000001,
-          "mean_latency_ms": 4759.990273932412,
-          "shares": {
-            "local-qwen": 0.43,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.5700000000000001
-          }
-        },
-        {
-          "cheapest_share": 0.44,
-          "accuracy": 0.8333640552995393,
-          "total_cost": 0.6239129400000001,
-          "mean_latency_ms": 4759.623659969278,
-          "shares": {
-            "local-qwen": 0.44,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.56
-          }
-        },
-        {
-          "cheapest_share": 0.45,
-          "accuracy": 0.8307987711213518,
-          "total_cost": 0.6127716375000001,
-          "mean_latency_ms": 4759.257046006144,
-          "shares": {
-            "local-qwen": 0.45,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.55
-          }
-        },
-        {
-          "cheapest_share": 0.46,
-          "accuracy": 0.8282334869431645,
-          "total_cost": 0.6016303350000001,
-          "mean_latency_ms": 4758.89043204301,
-          "shares": {
-            "local-qwen": 0.46,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.54
-          }
-        },
-        {
-          "cheapest_share": 0.47,
-          "accuracy": 0.825668202764977,
-          "total_cost": 0.5904890325000001,
-          "mean_latency_ms": 4758.523818079877,
-          "shares": {
-            "local-qwen": 0.47,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.53
-          }
-        },
-        {
-          "cheapest_share": 0.48,
-          "accuracy": 0.8231029185867895,
-          "total_cost": 0.5793477300000001,
-          "mean_latency_ms": 4758.157204116744,
-          "shares": {
-            "local-qwen": 0.48,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.52
-          }
-        },
-        {
-          "cheapest_share": 0.49,
-          "accuracy": 0.8205376344086022,
-          "total_cost": 0.5682064275,
-          "mean_latency_ms": 4757.79059015361,
-          "shares": {
-            "local-qwen": 0.49,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.51
-          }
-        },
-        {
-          "cheapest_share": 0.5,
-          "accuracy": 0.8179723502304148,
-          "total_cost": 0.557065125,
-          "mean_latency_ms": 4757.4239761904755,
-          "shares": {
-            "local-qwen": 0.5,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.5
-          }
-        },
-        {
-          "cheapest_share": 0.51,
-          "accuracy": 0.8154070660522273,
-          "total_cost": 0.5459238225,
-          "mean_latency_ms": 4757.057362227342,
-          "shares": {
-            "local-qwen": 0.51,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.49
-          }
-        },
-        {
-          "cheapest_share": 0.52,
-          "accuracy": 0.81284178187404,
-          "total_cost": 0.53478252,
-          "mean_latency_ms": 4756.690748264209,
-          "shares": {
-            "local-qwen": 0.52,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.48
-          }
-        },
-        {
-          "cheapest_share": 0.53,
-          "accuracy": 0.8102764976958525,
-          "total_cost": 0.5236412175,
-          "mean_latency_ms": 4756.324134301075,
-          "shares": {
-            "local-qwen": 0.53,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.47
-          }
-        },
-        {
-          "cheapest_share": 0.54,
-          "accuracy": 0.8077112135176652,
-          "total_cost": 0.512499915,
-          "mean_latency_ms": 4755.957520337941,
-          "shares": {
-            "local-qwen": 0.54,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.45999999999999996
-          }
-        },
-        {
-          "cheapest_share": 0.55,
-          "accuracy": 0.8051459293394777,
-          "total_cost": 0.5013586125,
-          "mean_latency_ms": 4755.590906374808,
-          "shares": {
-            "local-qwen": 0.55,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.44999999999999996
-          }
-        },
-        {
-          "cheapest_share": 0.56,
-          "accuracy": 0.8025806451612904,
-          "total_cost": 0.49021730999999996,
-          "mean_latency_ms": 4755.2242924116745,
-          "shares": {
-            "local-qwen": 0.56,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.43999999999999995
-          }
-        },
-        {
-          "cheapest_share": 0.57,
-          "accuracy": 0.8000153609831029,
-          "total_cost": 0.4790760075000001,
-          "mean_latency_ms": 4754.857678448541,
-          "shares": {
-            "local-qwen": 0.57,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.43000000000000005
-          }
-        },
-        {
-          "cheapest_share": 0.58,
-          "accuracy": 0.7974500768049155,
-          "total_cost": 0.46793470500000006,
-          "mean_latency_ms": 4754.491064485407,
-          "shares": {
-            "local-qwen": 0.58,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.42000000000000004
-          }
-        },
-        {
-          "cheapest_share": 0.59,
-          "accuracy": 0.7948847926267282,
-          "total_cost": 0.45679340250000006,
-          "mean_latency_ms": 4754.124450522273,
-          "shares": {
-            "local-qwen": 0.59,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.41000000000000003
-          }
-        },
-        {
-          "cheapest_share": 0.6,
-          "accuracy": 0.7923195084485407,
-          "total_cost": 0.44565210000000005,
-          "mean_latency_ms": 4753.75783655914,
-          "shares": {
-            "local-qwen": 0.6,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.4
-          }
-        },
-        {
-          "cheapest_share": 0.61,
-          "accuracy": 0.7897542242703532,
-          "total_cost": 0.43451079750000005,
-          "mean_latency_ms": 4753.391222596006,
-          "shares": {
-            "local-qwen": 0.61,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.39
-          }
-        },
-        {
-          "cheapest_share": 0.62,
-          "accuracy": 0.7871889400921659,
-          "total_cost": 0.42336949500000004,
-          "mean_latency_ms": 4753.0246086328725,
-          "shares": {
-            "local-qwen": 0.62,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.38
-          }
-        },
-        {
-          "cheapest_share": 0.63,
-          "accuracy": 0.7846236559139785,
-          "total_cost": 0.41222819250000003,
-          "mean_latency_ms": 4752.657994669738,
-          "shares": {
-            "local-qwen": 0.63,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.37
-          }
-        },
-        {
-          "cheapest_share": 0.64,
-          "accuracy": 0.7820583717357911,
-          "total_cost": 0.40108689000000003,
-          "mean_latency_ms": 4752.291380706605,
-          "shares": {
-            "local-qwen": 0.64,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.36
-          }
-        },
-        {
-          "cheapest_share": 0.65,
-          "accuracy": 0.7794930875576036,
-          "total_cost": 0.3899455875,
-          "mean_latency_ms": 4751.924766743471,
-          "shares": {
-            "local-qwen": 0.65,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.35
-          }
-        },
-        {
-          "cheapest_share": 0.66,
-          "accuracy": 0.7769278033794162,
-          "total_cost": 0.378804285,
-          "mean_latency_ms": 4751.558152780338,
-          "shares": {
-            "local-qwen": 0.66,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.33999999999999997
-          }
-        },
-        {
-          "cheapest_share": 0.67,
-          "accuracy": 0.7743625192012289,
-          "total_cost": 0.3676629825,
-          "mean_latency_ms": 4751.191538817204,
-          "shares": {
-            "local-qwen": 0.67,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.32999999999999996
-          }
-        },
-        {
-          "cheapest_share": 0.68,
-          "accuracy": 0.7717972350230414,
-          "total_cost": 0.35652167999999995,
-          "mean_latency_ms": 4750.824924854071,
-          "shares": {
-            "local-qwen": 0.68,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.31999999999999995
-          }
-        },
-        {
-          "cheapest_share": 0.69,
-          "accuracy": 0.7692319508448541,
-          "total_cost": 0.3453803775000001,
-          "mean_latency_ms": 4750.458310890937,
-          "shares": {
-            "local-qwen": 0.69,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.31000000000000005
-          }
-        },
-        {
-          "cheapest_share": 0.7,
-          "accuracy": 0.7666666666666666,
-          "total_cost": 0.33423907500000005,
-          "mean_latency_ms": 4750.091696927803,
-          "shares": {
-            "local-qwen": 0.7,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.30000000000000004
-          }
-        },
-        {
-          "cheapest_share": 0.71,
-          "accuracy": 0.7641013824884793,
-          "total_cost": 0.32309777250000005,
-          "mean_latency_ms": 4749.725082964669,
-          "shares": {
-            "local-qwen": 0.71,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.29000000000000004
-          }
-        },
-        {
-          "cheapest_share": 0.72,
-          "accuracy": 0.7615360983102919,
-          "total_cost": 0.31195647000000004,
-          "mean_latency_ms": 4749.358469001536,
-          "shares": {
-            "local-qwen": 0.72,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.28
-          }
-        },
-        {
-          "cheapest_share": 0.73,
-          "accuracy": 0.7589708141321044,
-          "total_cost": 0.30081516750000004,
-          "mean_latency_ms": 4748.991855038403,
-          "shares": {
-            "local-qwen": 0.73,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.27
-          }
-        },
-        {
-          "cheapest_share": 0.74,
-          "accuracy": 0.756405529953917,
-          "total_cost": 0.28967386500000003,
-          "mean_latency_ms": 4748.6252410752695,
-          "shares": {
-            "local-qwen": 0.74,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.26
-          }
-        },
-        {
-          "cheapest_share": 0.75,
-          "accuracy": 0.7538402457757296,
-          "total_cost": 0.2785325625,
-          "mean_latency_ms": 4748.258627112135,
-          "shares": {
-            "local-qwen": 0.75,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.25
-          }
-        },
-        {
-          "cheapest_share": 0.76,
-          "accuracy": 0.7512749615975423,
-          "total_cost": 0.26739126,
-          "mean_latency_ms": 4747.892013149001,
-          "shares": {
-            "local-qwen": 0.76,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.24
-          }
-        },
-        {
-          "cheapest_share": 0.77,
-          "accuracy": 0.7487096774193549,
-          "total_cost": 0.2562499575,
-          "mean_latency_ms": 4747.525399185868,
-          "shares": {
-            "local-qwen": 0.77,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.22999999999999998
-          }
-        },
-        {
-          "cheapest_share": 0.78,
-          "accuracy": 0.7461443932411674,
-          "total_cost": 0.24510865499999998,
-          "mean_latency_ms": 4747.158785222734,
-          "shares": {
-            "local-qwen": 0.78,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.21999999999999997
-          }
-        },
-        {
-          "cheapest_share": 0.79,
-          "accuracy": 0.74357910906298,
-          "total_cost": 0.23396735249999998,
-          "mean_latency_ms": 4746.792171259601,
-          "shares": {
-            "local-qwen": 0.79,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.20999999999999996
-          }
-        },
-        {
-          "cheapest_share": 0.8,
-          "accuracy": 0.7410138248847926,
-          "total_cost": 0.22282604999999997,
-          "mean_latency_ms": 4746.425557296468,
-          "shares": {
-            "local-qwen": 0.8,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.19999999999999996
-          }
-        },
-        {
-          "cheapest_share": 0.81,
-          "accuracy": 0.7384485407066053,
-          "total_cost": 0.21168474749999996,
-          "mean_latency_ms": 4746.058943333333,
-          "shares": {
-            "local-qwen": 0.81,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.18999999999999995
-          }
-        },
-        {
-          "cheapest_share": 0.82,
-          "accuracy": 0.7358832565284178,
-          "total_cost": 0.20054344500000007,
-          "mean_latency_ms": 4745.692329370199,
-          "shares": {
-            "local-qwen": 0.82,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.18000000000000005
-          }
-        },
-        {
-          "cheapest_share": 0.83,
-          "accuracy": 0.7333179723502304,
-          "total_cost": 0.18940214250000006,
-          "mean_latency_ms": 4745.325715407066,
-          "shares": {
-            "local-qwen": 0.83,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.17000000000000004
-          }
-        },
-        {
-          "cheapest_share": 0.84,
-          "accuracy": 0.730752688172043,
-          "total_cost": 0.17826084000000006,
-          "mean_latency_ms": 4744.959101443933,
-          "shares": {
-            "local-qwen": 0.84,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.16000000000000003
-          }
-        },
-        {
-          "cheapest_share": 0.85,
-          "accuracy": 0.7281874039938556,
-          "total_cost": 0.16711953750000003,
-          "mean_latency_ms": 4744.592487480799,
-          "shares": {
-            "local-qwen": 0.85,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.15000000000000002
-          }
-        },
-        {
-          "cheapest_share": 0.86,
-          "accuracy": 0.7256221198156683,
-          "total_cost": 0.15597823500000002,
-          "mean_latency_ms": 4744.225873517666,
-          "shares": {
-            "local-qwen": 0.86,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.14
-          }
-        },
-        {
-          "cheapest_share": 0.87,
-          "accuracy": 0.7230568356374808,
-          "total_cost": 0.14483693250000002,
-          "mean_latency_ms": 4743.8592595545315,
-          "shares": {
-            "local-qwen": 0.87,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.13
-          }
-        },
-        {
-          "cheapest_share": 0.88,
-          "accuracy": 0.7204915514592933,
-          "total_cost": 0.13369563,
-          "mean_latency_ms": 4743.492645591398,
-          "shares": {
-            "local-qwen": 0.88,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.12
-          }
-        },
-        {
-          "cheapest_share": 0.89,
-          "accuracy": 0.717926267281106,
-          "total_cost": 0.12255432749999999,
-          "mean_latency_ms": 4743.126031628264,
-          "shares": {
-            "local-qwen": 0.89,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.10999999999999999
-          }
-        },
-        {
-          "cheapest_share": 0.9,
-          "accuracy": 0.7153609831029185,
-          "total_cost": 0.11141302499999998,
-          "mean_latency_ms": 4742.75941766513,
-          "shares": {
-            "local-qwen": 0.9,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.09999999999999998
-          }
-        },
-        {
-          "cheapest_share": 0.91,
-          "accuracy": 0.7127956989247312,
-          "total_cost": 0.10027172249999998,
-          "mean_latency_ms": 4742.392803701997,
-          "shares": {
-            "local-qwen": 0.91,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.08999999999999997
-          }
-        },
-        {
-          "cheapest_share": 0.92,
-          "accuracy": 0.7102304147465438,
-          "total_cost": 0.08913041999999996,
-          "mean_latency_ms": 4742.026189738863,
-          "shares": {
-            "local-qwen": 0.92,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.07999999999999996
-          }
-        },
-        {
-          "cheapest_share": 0.93,
-          "accuracy": 0.7076651305683563,
-          "total_cost": 0.07798911749999995,
-          "mean_latency_ms": 4741.65957577573,
-          "shares": {
-            "local-qwen": 0.93,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.06999999999999995
-          }
-        },
-        {
-          "cheapest_share": 0.94,
-          "accuracy": 0.705099846390169,
-          "total_cost": 0.06684781500000006,
-          "mean_latency_ms": 4741.292961812596,
-          "shares": {
-            "local-qwen": 0.94,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.06000000000000005
-          }
-        },
-        {
-          "cheapest_share": 0.95,
-          "accuracy": 0.7025345622119815,
-          "total_cost": 0.055706512500000055,
-          "mean_latency_ms": 4740.926347849462,
-          "shares": {
-            "local-qwen": 0.95,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.050000000000000044
-          }
-        },
-        {
-          "cheapest_share": 0.96,
-          "accuracy": 0.699969278033794,
-          "total_cost": 0.04456521000000004,
-          "mean_latency_ms": 4740.559733886329,
-          "shares": {
-            "local-qwen": 0.96,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.040000000000000036
-          }
-        },
-        {
-          "cheapest_share": 0.97,
-          "accuracy": 0.6974039938556068,
-          "total_cost": 0.03342390750000003,
-          "mean_latency_ms": 4740.193119923196,
-          "shares": {
-            "local-qwen": 0.97,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.030000000000000027
-          }
-        },
-        {
-          "cheapest_share": 0.98,
-          "accuracy": 0.6948387096774193,
-          "total_cost": 0.02228260500000002,
-          "mean_latency_ms": 4739.826505960062,
-          "shares": {
-            "local-qwen": 0.98,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.020000000000000018
-          }
-        },
-        {
-          "cheapest_share": 0.99,
-          "accuracy": 0.692273425499232,
-          "total_cost": 0.01114130250000001,
-          "mean_latency_ms": 4739.4598919969285,
-          "shares": {
-            "local-qwen": 0.99,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.010000000000000009
-          }
-        },
-        {
-          "cheapest_share": 1.0,
           "accuracy": 0.6897081413210445,
           "total_cost": 0.0,
           "mean_latency_ms": 4739.093278033794,
           "shares": {
             "local-qwen": 1.0,
-            "gemini-flash-lite": 0,
+            "gemini-flash-lite": 0.0,
             "gemini-flash": 0.0
+          }
+        },
+        {
+          "accuracy": 0.9062980030721967,
+          "total_cost": 0.3816605,
+          "mean_latency_ms": 1542.164777265745,
+          "shares": {
+            "local-qwen": 0.0,
+            "gemini-flash-lite": 1.0,
+            "gemini-flash": 0.0
+          }
+        },
+        {
+          "accuracy": 0.946236559139785,
+          "total_cost": 1.11413025,
+          "mean_latency_ms": 4775.754674347158,
+          "shares": {
+            "local-qwen": 0.0,
+            "gemini-flash-lite": 0.0,
+            "gemini-flash": 1.0
           }
         }
       ],
@@ -1230,1116 +149,35 @@
           }
         }
       },
-      "random_mix": [
+      "hull": [
         {
-          "cheapest_share": 0.0,
-          "accuracy": 0.8292682926829268,
-          "total_cost": 0.45792525000000006,
-          "mean_latency_ms": 5443.811577235772,
-          "shares": {
-            "local-qwen": 0.0,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 1.0
-          }
-        },
-        {
-          "cheapest_share": 0.01,
-          "accuracy": 0.8242276422764228,
-          "total_cost": 0.45334599750000004,
-          "mean_latency_ms": 5443.878754715448,
-          "shares": {
-            "local-qwen": 0.01,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.99
-          }
-        },
-        {
-          "cheapest_share": 0.02,
-          "accuracy": 0.8191869918699186,
-          "total_cost": 0.4487667450000001,
-          "mean_latency_ms": 5443.945932195122,
-          "shares": {
-            "local-qwen": 0.02,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.98
-          }
-        },
-        {
-          "cheapest_share": 0.03,
-          "accuracy": 0.8141463414634146,
-          "total_cost": 0.44418749250000006,
-          "mean_latency_ms": 5444.013109674797,
-          "shares": {
-            "local-qwen": 0.03,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.97
-          }
-        },
-        {
-          "cheapest_share": 0.04,
-          "accuracy": 0.8091056910569105,
-          "total_cost": 0.43960824000000004,
-          "mean_latency_ms": 5444.080287154471,
-          "shares": {
-            "local-qwen": 0.04,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.96
-          }
-        },
-        {
-          "cheapest_share": 0.05,
-          "accuracy": 0.8040650406504064,
-          "total_cost": 0.4350289875,
-          "mean_latency_ms": 5444.147464634147,
-          "shares": {
-            "local-qwen": 0.05,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.95
-          }
-        },
-        {
-          "cheapest_share": 0.06,
-          "accuracy": 0.7990243902439024,
-          "total_cost": 0.43044973500000006,
-          "mean_latency_ms": 5444.21464211382,
-          "shares": {
-            "local-qwen": 0.06,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.94
-          }
-        },
-        {
-          "cheapest_share": 0.07,
-          "accuracy": 0.7939837398373983,
-          "total_cost": 0.42587048250000004,
-          "mean_latency_ms": 5444.281819593496,
-          "shares": {
-            "local-qwen": 0.07,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.9299999999999999
-          }
-        },
-        {
-          "cheapest_share": 0.08,
-          "accuracy": 0.7889430894308943,
-          "total_cost": 0.42129123000000007,
-          "mean_latency_ms": 5444.348997073171,
-          "shares": {
-            "local-qwen": 0.08,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.92
-          }
-        },
-        {
-          "cheapest_share": 0.09,
-          "accuracy": 0.7839024390243903,
-          "total_cost": 0.41671197750000005,
-          "mean_latency_ms": 5444.416174552846,
-          "shares": {
-            "local-qwen": 0.09,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.91
-          }
-        },
-        {
-          "cheapest_share": 0.1,
-          "accuracy": 0.7788617886178861,
-          "total_cost": 0.4121327250000001,
-          "mean_latency_ms": 5444.48335203252,
-          "shares": {
-            "local-qwen": 0.1,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.9
-          }
-        },
-        {
-          "cheapest_share": 0.11,
-          "accuracy": 0.7738211382113821,
-          "total_cost": 0.40755347250000007,
-          "mean_latency_ms": 5444.550529512196,
-          "shares": {
-            "local-qwen": 0.11,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.89
-          }
-        },
-        {
-          "cheapest_share": 0.12,
-          "accuracy": 0.7687804878048781,
-          "total_cost": 0.40297422000000005,
-          "mean_latency_ms": 5444.617706991869,
-          "shares": {
-            "local-qwen": 0.12,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.88
-          }
-        },
-        {
-          "cheapest_share": 0.13,
-          "accuracy": 0.7637398373983739,
-          "total_cost": 0.39839496750000003,
-          "mean_latency_ms": 5444.684884471545,
-          "shares": {
-            "local-qwen": 0.13,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.87
-          }
-        },
-        {
-          "cheapest_share": 0.14,
-          "accuracy": 0.7586991869918699,
-          "total_cost": 0.39381571500000007,
-          "mean_latency_ms": 5444.75206195122,
-          "shares": {
-            "local-qwen": 0.14,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.86
-          }
-        },
-        {
-          "cheapest_share": 0.15,
-          "accuracy": 0.7536585365853659,
-          "total_cost": 0.38923646250000005,
-          "mean_latency_ms": 5444.819239430894,
-          "shares": {
-            "local-qwen": 0.15,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.85
-          }
-        },
-        {
-          "cheapest_share": 0.16,
-          "accuracy": 0.7486178861788617,
-          "total_cost": 0.38465721,
-          "mean_latency_ms": 5444.886416910569,
-          "shares": {
-            "local-qwen": 0.16,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.84
-          }
-        },
-        {
-          "cheapest_share": 0.17,
-          "accuracy": 0.7435772357723577,
-          "total_cost": 0.3800779575,
-          "mean_latency_ms": 5444.953594390244,
-          "shares": {
-            "local-qwen": 0.17,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.83
-          }
-        },
-        {
-          "cheapest_share": 0.18,
-          "accuracy": 0.7385365853658536,
-          "total_cost": 0.3754987050000001,
-          "mean_latency_ms": 5445.020771869919,
-          "shares": {
-            "local-qwen": 0.18,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.8200000000000001
-          }
-        },
-        {
-          "cheapest_share": 0.19,
-          "accuracy": 0.7334959349593496,
-          "total_cost": 0.3709194525000001,
-          "mean_latency_ms": 5445.087949349594,
-          "shares": {
-            "local-qwen": 0.19,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.81
-          }
-        },
-        {
-          "cheapest_share": 0.2,
-          "accuracy": 0.7284552845528456,
-          "total_cost": 0.36634020000000006,
-          "mean_latency_ms": 5445.155126829269,
-          "shares": {
-            "local-qwen": 0.2,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.8
-          }
-        },
-        {
-          "cheapest_share": 0.21,
-          "accuracy": 0.7234146341463414,
-          "total_cost": 0.36176094750000004,
-          "mean_latency_ms": 5445.222304308943,
-          "shares": {
-            "local-qwen": 0.21,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.79
-          }
-        },
-        {
-          "cheapest_share": 0.22,
-          "accuracy": 0.7183739837398374,
-          "total_cost": 0.3571816950000001,
-          "mean_latency_ms": 5445.289481788618,
-          "shares": {
-            "local-qwen": 0.22,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.78
-          }
-        },
-        {
-          "cheapest_share": 0.23,
-          "accuracy": 0.7133333333333334,
-          "total_cost": 0.35260244250000006,
-          "mean_latency_ms": 5445.356659268293,
-          "shares": {
-            "local-qwen": 0.23,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.77
-          }
-        },
-        {
-          "cheapest_share": 0.24,
-          "accuracy": 0.7082926829268292,
-          "total_cost": 0.34802319000000004,
-          "mean_latency_ms": 5445.4238367479675,
-          "shares": {
-            "local-qwen": 0.24,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.76
-          }
-        },
-        {
-          "cheapest_share": 0.25,
-          "accuracy": 0.7032520325203252,
-          "total_cost": 0.3434439375,
-          "mean_latency_ms": 5445.491014227642,
-          "shares": {
-            "local-qwen": 0.25,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.75
-          }
-        },
-        {
-          "cheapest_share": 0.26,
-          "accuracy": 0.6982113821138212,
-          "total_cost": 0.33886468500000005,
-          "mean_latency_ms": 5445.558191707317,
-          "shares": {
-            "local-qwen": 0.26,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.74
-          }
-        },
-        {
-          "cheapest_share": 0.27,
-          "accuracy": 0.693170731707317,
-          "total_cost": 0.33428543250000003,
-          "mean_latency_ms": 5445.6253691869915,
-          "shares": {
-            "local-qwen": 0.27,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.73
-          }
-        },
-        {
-          "cheapest_share": 0.28,
-          "accuracy": 0.688130081300813,
-          "total_cost": 0.32970618,
-          "mean_latency_ms": 5445.692546666667,
-          "shares": {
-            "local-qwen": 0.28,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.72
-          }
-        },
-        {
-          "cheapest_share": 0.29,
-          "accuracy": 0.683089430894309,
-          "total_cost": 0.32512692750000005,
-          "mean_latency_ms": 5445.759724146342,
-          "shares": {
-            "local-qwen": 0.29,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.71
-          }
-        },
-        {
-          "cheapest_share": 0.3,
-          "accuracy": 0.6780487804878048,
-          "total_cost": 0.32054767500000003,
-          "mean_latency_ms": 5445.8269016260165,
-          "shares": {
-            "local-qwen": 0.3,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.7
-          }
-        },
-        {
-          "cheapest_share": 0.31,
-          "accuracy": 0.6730081300813008,
-          "total_cost": 0.3159684225,
-          "mean_latency_ms": 5445.894079105691,
-          "shares": {
-            "local-qwen": 0.31,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.69
-          }
-        },
-        {
-          "cheapest_share": 0.32,
-          "accuracy": 0.6679674796747967,
-          "total_cost": 0.31138917,
-          "mean_latency_ms": 5445.961256585366,
-          "shares": {
-            "local-qwen": 0.32,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.6799999999999999
-          }
-        },
-        {
-          "cheapest_share": 0.33,
-          "accuracy": 0.6629268292682926,
-          "total_cost": 0.30680991750000003,
-          "mean_latency_ms": 5446.0284340650405,
-          "shares": {
-            "local-qwen": 0.33,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.6699999999999999
-          }
-        },
-        {
-          "cheapest_share": 0.34,
-          "accuracy": 0.6578861788617886,
-          "total_cost": 0.302230665,
-          "mean_latency_ms": 5446.095611544715,
-          "shares": {
-            "local-qwen": 0.34,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.6599999999999999
-          }
-        },
-        {
-          "cheapest_share": 0.35,
-          "accuracy": 0.6528455284552845,
-          "total_cost": 0.29765141250000005,
-          "mean_latency_ms": 5446.162789024391,
-          "shares": {
-            "local-qwen": 0.35,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.65
-          }
-        },
-        {
-          "cheapest_share": 0.36,
-          "accuracy": 0.6478048780487805,
-          "total_cost": 0.29307216,
-          "mean_latency_ms": 5446.2299665040655,
-          "shares": {
-            "local-qwen": 0.36,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.64
-          }
-        },
-        {
-          "cheapest_share": 0.37,
-          "accuracy": 0.6427642276422765,
-          "total_cost": 0.28849290750000006,
-          "mean_latency_ms": 5446.29714398374,
-          "shares": {
-            "local-qwen": 0.37,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.63
-          }
-        },
-        {
-          "cheapest_share": 0.38,
-          "accuracy": 0.6377235772357723,
-          "total_cost": 0.28391365500000004,
-          "mean_latency_ms": 5446.364321463415,
-          "shares": {
-            "local-qwen": 0.38,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.62
-          }
-        },
-        {
-          "cheapest_share": 0.39,
-          "accuracy": 0.6326829268292683,
-          "total_cost": 0.2793344025,
-          "mean_latency_ms": 5446.4314989430895,
-          "shares": {
-            "local-qwen": 0.39,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.61
-          }
-        },
-        {
-          "cheapest_share": 0.4,
-          "accuracy": 0.6276422764227642,
-          "total_cost": 0.27475515,
-          "mean_latency_ms": 5446.498676422764,
-          "shares": {
-            "local-qwen": 0.4,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.6
-          }
-        },
-        {
-          "cheapest_share": 0.41,
-          "accuracy": 0.6226016260162602,
-          "total_cost": 0.2701758975000001,
-          "mean_latency_ms": 5446.56585390244,
-          "shares": {
-            "local-qwen": 0.41,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.5900000000000001
-          }
-        },
-        {
-          "cheapest_share": 0.42,
-          "accuracy": 0.6175609756097561,
-          "total_cost": 0.2655966450000001,
-          "mean_latency_ms": 5446.6330313821145,
-          "shares": {
-            "local-qwen": 0.42,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.5800000000000001
-          }
-        },
-        {
-          "cheapest_share": 0.43,
-          "accuracy": 0.6125203252032521,
-          "total_cost": 0.26101739250000006,
-          "mean_latency_ms": 5446.700208861789,
-          "shares": {
-            "local-qwen": 0.43,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.5700000000000001
-          }
-        },
-        {
-          "cheapest_share": 0.44,
-          "accuracy": 0.607479674796748,
-          "total_cost": 0.25643814000000004,
-          "mean_latency_ms": 5446.767386341464,
-          "shares": {
-            "local-qwen": 0.44,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.56
-          }
-        },
-        {
-          "cheapest_share": 0.45,
-          "accuracy": 0.6024390243902439,
-          "total_cost": 0.2518588875000001,
-          "mean_latency_ms": 5446.8345638211385,
-          "shares": {
-            "local-qwen": 0.45,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.55
-          }
-        },
-        {
-          "cheapest_share": 0.46,
-          "accuracy": 0.5973983739837398,
-          "total_cost": 0.24727963500000005,
-          "mean_latency_ms": 5446.901741300813,
-          "shares": {
-            "local-qwen": 0.46,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.54
-          }
-        },
-        {
-          "cheapest_share": 0.47,
-          "accuracy": 0.5923577235772357,
-          "total_cost": 0.24270038250000003,
-          "mean_latency_ms": 5446.968918780489,
-          "shares": {
-            "local-qwen": 0.47,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.53
-          }
-        },
-        {
-          "cheapest_share": 0.48,
-          "accuracy": 0.5873170731707317,
-          "total_cost": 0.23812113000000004,
-          "mean_latency_ms": 5447.036096260163,
-          "shares": {
-            "local-qwen": 0.48,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.52
-          }
-        },
-        {
-          "cheapest_share": 0.49,
-          "accuracy": 0.5822764227642276,
-          "total_cost": 0.23354187750000002,
-          "mean_latency_ms": 5447.103273739838,
-          "shares": {
-            "local-qwen": 0.49,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.51
-          }
-        },
-        {
-          "cheapest_share": 0.5,
-          "accuracy": 0.5772357723577235,
-          "total_cost": 0.22896262500000003,
-          "mean_latency_ms": 5447.170451219512,
-          "shares": {
-            "local-qwen": 0.5,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.5
-          }
-        },
-        {
-          "cheapest_share": 0.51,
-          "accuracy": 0.5721951219512195,
-          "total_cost": 0.22438337250000004,
-          "mean_latency_ms": 5447.237628699188,
-          "shares": {
-            "local-qwen": 0.51,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.49
-          }
-        },
-        {
-          "cheapest_share": 0.52,
-          "accuracy": 0.5671544715447154,
-          "total_cost": 0.21980412000000002,
-          "mean_latency_ms": 5447.304806178861,
-          "shares": {
-            "local-qwen": 0.52,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.48
-          }
-        },
-        {
-          "cheapest_share": 0.53,
-          "accuracy": 0.5621138211382113,
-          "total_cost": 0.21522486750000003,
-          "mean_latency_ms": 5447.371983658537,
-          "shares": {
-            "local-qwen": 0.53,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.47
-          }
-        },
-        {
-          "cheapest_share": 0.54,
-          "accuracy": 0.5570731707317073,
-          "total_cost": 0.210645615,
-          "mean_latency_ms": 5447.4391611382125,
-          "shares": {
-            "local-qwen": 0.54,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.45999999999999996
-          }
-        },
-        {
-          "cheapest_share": 0.55,
-          "accuracy": 0.5520325203252032,
-          "total_cost": 0.20606636250000002,
-          "mean_latency_ms": 5447.506338617886,
-          "shares": {
-            "local-qwen": 0.55,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.44999999999999996
-          }
-        },
-        {
-          "cheapest_share": 0.56,
-          "accuracy": 0.5469918699186991,
-          "total_cost": 0.20148711,
-          "mean_latency_ms": 5447.573516097562,
-          "shares": {
-            "local-qwen": 0.56,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.43999999999999995
-          }
-        },
-        {
-          "cheapest_share": 0.57,
-          "accuracy": 0.5419512195121952,
-          "total_cost": 0.19690785750000006,
-          "mean_latency_ms": 5447.640693577236,
-          "shares": {
-            "local-qwen": 0.57,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.43000000000000005
-          }
-        },
-        {
-          "cheapest_share": 0.58,
-          "accuracy": 0.536910569105691,
-          "total_cost": 0.19232860500000004,
-          "mean_latency_ms": 5447.707871056911,
-          "shares": {
-            "local-qwen": 0.58,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.42000000000000004
-          }
-        },
-        {
-          "cheapest_share": 0.59,
-          "accuracy": 0.531869918699187,
-          "total_cost": 0.18774935250000005,
-          "mean_latency_ms": 5447.775048536586,
-          "shares": {
-            "local-qwen": 0.59,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.41000000000000003
-          }
-        },
-        {
-          "cheapest_share": 0.6,
-          "accuracy": 0.526829268292683,
-          "total_cost": 0.18317010000000003,
-          "mean_latency_ms": 5447.842226016261,
-          "shares": {
-            "local-qwen": 0.6,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.4
-          }
-        },
-        {
-          "cheapest_share": 0.61,
-          "accuracy": 0.5217886178861788,
-          "total_cost": 0.17859084750000004,
-          "mean_latency_ms": 5447.909403495935,
-          "shares": {
-            "local-qwen": 0.61,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.39
-          }
-        },
-        {
-          "cheapest_share": 0.62,
-          "accuracy": 0.5167479674796748,
-          "total_cost": 0.17401159500000002,
-          "mean_latency_ms": 5447.97658097561,
-          "shares": {
-            "local-qwen": 0.62,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.38
-          }
-        },
-        {
-          "cheapest_share": 0.63,
-          "accuracy": 0.5117073170731707,
-          "total_cost": 0.16943234250000003,
-          "mean_latency_ms": 5448.043758455285,
-          "shares": {
-            "local-qwen": 0.63,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.37
-          }
-        },
-        {
-          "cheapest_share": 0.64,
-          "accuracy": 0.5066666666666666,
-          "total_cost": 0.16485309,
-          "mean_latency_ms": 5448.110935934959,
-          "shares": {
-            "local-qwen": 0.64,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.36
-          }
-        },
-        {
-          "cheapest_share": 0.65,
-          "accuracy": 0.5016260162601626,
-          "total_cost": 0.16027383750000002,
-          "mean_latency_ms": 5448.178113414635,
-          "shares": {
-            "local-qwen": 0.65,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.35
-          }
-        },
-        {
-          "cheapest_share": 0.66,
-          "accuracy": 0.49658536585365853,
-          "total_cost": 0.155694585,
-          "mean_latency_ms": 5448.24529089431,
-          "shares": {
-            "local-qwen": 0.66,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.33999999999999997
-          }
-        },
-        {
-          "cheapest_share": 0.67,
-          "accuracy": 0.49154471544715445,
-          "total_cost": 0.1511153325,
-          "mean_latency_ms": 5448.312468373984,
-          "shares": {
-            "local-qwen": 0.67,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.32999999999999996
-          }
-        },
-        {
-          "cheapest_share": 0.68,
-          "accuracy": 0.48650406504065036,
-          "total_cost": 0.14653607999999999,
-          "mean_latency_ms": 5448.379645853659,
-          "shares": {
-            "local-qwen": 0.68,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.31999999999999995
-          }
-        },
-        {
-          "cheapest_share": 0.69,
-          "accuracy": 0.4814634146341463,
-          "total_cost": 0.14195682750000005,
-          "mean_latency_ms": 5448.446823333334,
-          "shares": {
-            "local-qwen": 0.69,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.31000000000000005
-          }
-        },
-        {
-          "cheapest_share": 0.7,
-          "accuracy": 0.4764227642276423,
-          "total_cost": 0.13737757500000003,
-          "mean_latency_ms": 5448.514000813008,
-          "shares": {
-            "local-qwen": 0.7,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.30000000000000004
-          }
-        },
-        {
-          "cheapest_share": 0.71,
-          "accuracy": 0.4713821138211382,
-          "total_cost": 0.13279832250000004,
-          "mean_latency_ms": 5448.581178292683,
-          "shares": {
-            "local-qwen": 0.71,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.29000000000000004
-          }
-        },
-        {
-          "cheapest_share": 0.72,
-          "accuracy": 0.4663414634146341,
-          "total_cost": 0.12821907000000002,
-          "mean_latency_ms": 5448.648355772358,
-          "shares": {
-            "local-qwen": 0.72,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.28
-          }
-        },
-        {
-          "cheapest_share": 0.73,
-          "accuracy": 0.4613008130081301,
-          "total_cost": 0.12363981750000003,
-          "mean_latency_ms": 5448.715533252032,
-          "shares": {
-            "local-qwen": 0.73,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.27
-          }
-        },
-        {
-          "cheapest_share": 0.74,
-          "accuracy": 0.456260162601626,
-          "total_cost": 0.11906056500000002,
-          "mean_latency_ms": 5448.782710731708,
-          "shares": {
-            "local-qwen": 0.74,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.26
-          }
-        },
-        {
-          "cheapest_share": 0.75,
-          "accuracy": 0.4512195121951219,
-          "total_cost": 0.11448131250000002,
-          "mean_latency_ms": 5448.849888211382,
-          "shares": {
-            "local-qwen": 0.75,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.25
-          }
-        },
-        {
-          "cheapest_share": 0.76,
-          "accuracy": 0.4461788617886179,
-          "total_cost": 0.10990206000000001,
-          "mean_latency_ms": 5448.917065691057,
-          "shares": {
-            "local-qwen": 0.76,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.24
-          }
-        },
-        {
-          "cheapest_share": 0.77,
-          "accuracy": 0.44113821138211384,
-          "total_cost": 0.1053228075,
-          "mean_latency_ms": 5448.984243170732,
-          "shares": {
-            "local-qwen": 0.77,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.22999999999999998
-          }
-        },
-        {
-          "cheapest_share": 0.78,
-          "accuracy": 0.4360975609756097,
-          "total_cost": 0.100743555,
-          "mean_latency_ms": 5449.051420650407,
-          "shares": {
-            "local-qwen": 0.78,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.21999999999999997
-          }
-        },
-        {
-          "cheapest_share": 0.79,
-          "accuracy": 0.43105691056910567,
-          "total_cost": 0.09616430249999999,
-          "mean_latency_ms": 5449.118598130082,
-          "shares": {
-            "local-qwen": 0.79,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.20999999999999996
-          }
-        },
-        {
-          "cheapest_share": 0.8,
-          "accuracy": 0.42601626016260163,
-          "total_cost": 0.09158504999999999,
-          "mean_latency_ms": 5449.185775609756,
-          "shares": {
-            "local-qwen": 0.8,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.19999999999999996
-          }
-        },
-        {
-          "cheapest_share": 0.81,
-          "accuracy": 0.4209756097560975,
-          "total_cost": 0.08700579749999998,
-          "mean_latency_ms": 5449.252953089432,
-          "shares": {
-            "local-qwen": 0.81,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.18999999999999995
-          }
-        },
-        {
-          "cheapest_share": 0.82,
-          "accuracy": 0.4159349593495935,
-          "total_cost": 0.08242654500000003,
-          "mean_latency_ms": 5449.320130569106,
-          "shares": {
-            "local-qwen": 0.82,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.18000000000000005
-          }
-        },
-        {
-          "cheapest_share": 0.83,
-          "accuracy": 0.4108943089430894,
-          "total_cost": 0.07784729250000003,
-          "mean_latency_ms": 5449.387308048781,
-          "shares": {
-            "local-qwen": 0.83,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.17000000000000004
-          }
-        },
-        {
-          "cheapest_share": 0.84,
-          "accuracy": 0.40585365853658534,
-          "total_cost": 0.07326804000000002,
-          "mean_latency_ms": 5449.454485528456,
-          "shares": {
-            "local-qwen": 0.84,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.16000000000000003
-          }
-        },
-        {
-          "cheapest_share": 0.85,
-          "accuracy": 0.4008130081300813,
-          "total_cost": 0.06868878750000001,
-          "mean_latency_ms": 5449.52166300813,
-          "shares": {
-            "local-qwen": 0.85,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.15000000000000002
-          }
-        },
-        {
-          "cheapest_share": 0.86,
-          "accuracy": 0.3957723577235772,
-          "total_cost": 0.06410953500000001,
-          "mean_latency_ms": 5449.588840487805,
-          "shares": {
-            "local-qwen": 0.86,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.14
-          }
-        },
-        {
-          "cheapest_share": 0.87,
-          "accuracy": 0.39073170731707313,
-          "total_cost": 0.05953028250000001,
-          "mean_latency_ms": 5449.65601796748,
-          "shares": {
-            "local-qwen": 0.87,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.13
-          }
-        },
-        {
-          "cheapest_share": 0.88,
-          "accuracy": 0.3856910569105691,
-          "total_cost": 0.054951030000000005,
-          "mean_latency_ms": 5449.723195447155,
-          "shares": {
-            "local-qwen": 0.88,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.12
-          }
-        },
-        {
-          "cheapest_share": 0.89,
-          "accuracy": 0.380650406504065,
-          "total_cost": 0.0503717775,
-          "mean_latency_ms": 5449.790372926829,
-          "shares": {
-            "local-qwen": 0.89,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.10999999999999999
-          }
-        },
-        {
-          "cheapest_share": 0.9,
-          "accuracy": 0.3756097560975609,
-          "total_cost": 0.045792524999999994,
-          "mean_latency_ms": 5449.857550406505,
-          "shares": {
-            "local-qwen": 0.9,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.09999999999999998
-          }
-        },
-        {
-          "cheapest_share": 0.91,
-          "accuracy": 0.3705691056910569,
-          "total_cost": 0.04121327249999999,
-          "mean_latency_ms": 5449.924727886179,
-          "shares": {
-            "local-qwen": 0.91,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.08999999999999997
-          }
-        },
-        {
-          "cheapest_share": 0.92,
-          "accuracy": 0.3655284552845528,
-          "total_cost": 0.03663401999999999,
-          "mean_latency_ms": 5449.991905365854,
-          "shares": {
-            "local-qwen": 0.92,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.07999999999999996
-          }
-        },
-        {
-          "cheapest_share": 0.93,
-          "accuracy": 0.3604878048780487,
-          "total_cost": 0.032054767499999984,
-          "mean_latency_ms": 5450.059082845529,
-          "shares": {
-            "local-qwen": 0.93,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.06999999999999995
-          }
-        },
-        {
-          "cheapest_share": 0.94,
-          "accuracy": 0.35544715447154474,
-          "total_cost": 0.027475515000000027,
-          "mean_latency_ms": 5450.126260325204,
-          "shares": {
-            "local-qwen": 0.94,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.06000000000000005
-          }
-        },
-        {
-          "cheapest_share": 0.95,
-          "accuracy": 0.35040650406504065,
-          "total_cost": 0.022896262500000025,
-          "mean_latency_ms": 5450.193437804878,
-          "shares": {
-            "local-qwen": 0.95,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.050000000000000044
-          }
-        },
-        {
-          "cheapest_share": 0.96,
-          "accuracy": 0.3453658536585366,
-          "total_cost": 0.01831701000000002,
-          "mean_latency_ms": 5450.260615284554,
-          "shares": {
-            "local-qwen": 0.96,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.040000000000000036
-          }
-        },
-        {
-          "cheapest_share": 0.97,
-          "accuracy": 0.3403252032520325,
-          "total_cost": 0.013737757500000013,
-          "mean_latency_ms": 5450.3277927642275,
-          "shares": {
-            "local-qwen": 0.97,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.030000000000000027
-          }
-        },
-        {
-          "cheapest_share": 0.98,
-          "accuracy": 0.33528455284552844,
-          "total_cost": 0.00915850500000001,
-          "mean_latency_ms": 5450.394970243903,
-          "shares": {
-            "local-qwen": 0.98,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.020000000000000018
-          }
-        },
-        {
-          "cheapest_share": 0.99,
-          "accuracy": 0.3302439024390244,
-          "total_cost": 0.004579252500000005,
-          "mean_latency_ms": 5450.462147723577,
-          "shares": {
-            "local-qwen": 0.99,
-            "gemini-flash-lite": 0,
-            "gemini-flash": 0.010000000000000009
-          }
-        },
-        {
-          "cheapest_share": 1.0,
           "accuracy": 0.3252032520325203,
           "total_cost": 0.0,
           "mean_latency_ms": 5450.5293252032525,
           "shares": {
             "local-qwen": 1.0,
-            "gemini-flash-lite": 0,
+            "gemini-flash-lite": 0.0,
             "gemini-flash": 0.0
+          }
+        },
+        {
+          "accuracy": 0.7317073170731707,
+          "total_cost": 0.17896774999999998,
+          "mean_latency_ms": 2046.2579918699187,
+          "shares": {
+            "local-qwen": 0.0,
+            "gemini-flash-lite": 1.0,
+            "gemini-flash": 0.0
+          }
+        },
+        {
+          "accuracy": 0.8292682926829268,
+          "total_cost": 0.45792525000000006,
+          "mean_latency_ms": 5443.811577235772,
+          "shares": {
+            "local-qwen": 0.0,
+            "gemini-flash-lite": 0.0,
+            "gemini-flash": 1.0
           }
         }
       ],
@@ -3517,7 +1355,9 @@
               "gemini-flash": 0.663594470046083
             },
             "cost_reduction_vs_last": 0.16695781305641788,
-            "gap_recovered": 0.9640718562874249
+            "gap_recovered": 0.9640718562874249,
+            "accuracy_vs_hull": 0.0009259186106618245,
+            "oracle_savings_captured": 0.23325835510836854
           }
         },
         "ood": {
@@ -4655,7 +2495,9 @@
               "gemini-flash": 0.9512195121951219
             },
             "cost_reduction_vs_last": 0.026456828925681686,
-            "gap_recovered": 0.967741935483871
+            "gap_recovered": 0.967741935483871,
+            "accuracy_vs_hull": -0.012023045443076419,
+            "oracle_savings_captured": 0.05159448804227134
           }
         }
       }
@@ -5817,7 +3659,9 @@
               "gemini-flash": 0.794162826420891
             },
             "cost_reduction_vs_last": 0.1305148118902616,
-            "gap_recovered": 0.9820359281437122
+            "gap_recovered": 0.9820359281437122,
+            "accuracy_vs_hull": 0.003320340220358986,
+            "oracle_savings_captured": 0.1823434901397104
           }
         },
         "ood": {
@@ -6955,7 +4799,9 @@
               "gemini-flash": 0.6463414634146342
             },
             "cost_reduction_vs_last": 0.21370354659412216,
-            "gap_recovered": 0.8951612903225806
+            "gap_recovered": 0.8951612903225806,
+            "accuracy_vs_hull": -0.018620453082101807,
+            "oracle_savings_captured": 0.4167515733013084
           }
         }
       }
@@ -8121,7 +5967,9 @@
               "gemini-flash": 0.6466973886328725
             },
             "cost_reduction_vs_last": 0.150462659101124,
-            "gap_recovered": 0.994011976047904
+            "gap_recovered": 0.994011976047904,
+            "accuracy_vs_hull": 0.007604347211711104,
+            "oracle_savings_captured": 0.21021281798474215
           }
         },
         "ood": {
@@ -9259,7 +7107,9 @@
               "gemini-flash": 0.9715447154471545
             },
             "cost_reduction_vs_last": 0.016906689465147506,
-            "gap_recovered": 0.9919354838709679
+            "gap_recovered": 0.9919354838709679,
+            "accuracy_vs_hull": -0.0013573985430218594,
+            "oracle_savings_captured": 0.03297039074086505
           }
         }
       }
@@ -10425,7 +8275,9 @@
               "gemini-flash": 1.0
             },
             "cost_reduction_vs_last": 0.0,
-            "gap_recovered": 1.0
+            "gap_recovered": 1.0,
+            "accuracy_vs_hull": 0.0,
+            "oracle_savings_captured": 0.0
           }
         },
         "ood": {
@@ -11563,7 +9415,2306 @@
               "gemini-flash": 1.0
             },
             "cost_reduction_vs_last": 0.0,
-            "gap_recovered": 1.0
+            "gap_recovered": 1.0,
+            "accuracy_vs_hull": 0.0,
+            "oracle_savings_captured": 0.0
+          }
+        }
+      }
+    },
+    "tfidf_multiclass": {
+      "selection": {
+        "tau": 0.93,
+        "all_last": false,
+        "target_accuracy": 0.9321965317919075,
+        "oof": {
+          "tau": 0.93,
+          "accuracy": 0.9322873658133773,
+          "total_cost": 3.5295015000000003,
+          "mean_latency_ms": 3848.0072109826588,
+          "shares": {
+            "local-qwen": 0.01610239471511148,
+            "gemini-flash-lite": 0.45623451692815853,
+            "gemini-flash": 0.5276630883567299
+          }
+        }
+      },
+      "classifiers": {
+        "multiclass": {
+          "C": 1.0
+        }
+      },
+      "evaluation": {
+        "test": {
+          "n": 651,
+          "classifiers": {
+            "multiclass": {
+              "roc_auc": 0.7510724579191214,
+              "brier": 0.3993074941277125
+            }
+          },
+          "sweep": [
+            {
+              "tau": 0.0,
+              "accuracy": 0.6897081413210445,
+              "total_cost": 0.0,
+              "mean_latency_ms": 4739.093278033794,
+              "shares": {
+                "local-qwen": 1.0,
+                "gemini-flash-lite": 0.0,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.01,
+              "accuracy": 0.6897081413210445,
+              "total_cost": 0.0,
+              "mean_latency_ms": 4739.093278033794,
+              "shares": {
+                "local-qwen": 1.0,
+                "gemini-flash-lite": 0.0,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.02,
+              "accuracy": 0.6897081413210445,
+              "total_cost": 0.0,
+              "mean_latency_ms": 4739.093278033794,
+              "shares": {
+                "local-qwen": 1.0,
+                "gemini-flash-lite": 0.0,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.03,
+              "accuracy": 0.6897081413210445,
+              "total_cost": 0.0,
+              "mean_latency_ms": 4739.093278033794,
+              "shares": {
+                "local-qwen": 1.0,
+                "gemini-flash-lite": 0.0,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.04,
+              "accuracy": 0.6897081413210445,
+              "total_cost": 0.0,
+              "mean_latency_ms": 4739.093278033794,
+              "shares": {
+                "local-qwen": 1.0,
+                "gemini-flash-lite": 0.0,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.05,
+              "accuracy": 0.6897081413210445,
+              "total_cost": 0.0,
+              "mean_latency_ms": 4739.093278033794,
+              "shares": {
+                "local-qwen": 1.0,
+                "gemini-flash-lite": 0.0,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.06,
+              "accuracy": 0.6897081413210445,
+              "total_cost": 0.0,
+              "mean_latency_ms": 4739.093278033794,
+              "shares": {
+                "local-qwen": 1.0,
+                "gemini-flash-lite": 0.0,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.07,
+              "accuracy": 0.6897081413210445,
+              "total_cost": 0.0,
+              "mean_latency_ms": 4739.093278033794,
+              "shares": {
+                "local-qwen": 1.0,
+                "gemini-flash-lite": 0.0,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.08,
+              "accuracy": 0.6897081413210445,
+              "total_cost": 0.0,
+              "mean_latency_ms": 4739.093278033794,
+              "shares": {
+                "local-qwen": 1.0,
+                "gemini-flash-lite": 0.0,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.09,
+              "accuracy": 0.6897081413210445,
+              "total_cost": 0.0,
+              "mean_latency_ms": 4739.093278033794,
+              "shares": {
+                "local-qwen": 1.0,
+                "gemini-flash-lite": 0.0,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.1,
+              "accuracy": 0.6897081413210445,
+              "total_cost": 0.0,
+              "mean_latency_ms": 4739.093278033794,
+              "shares": {
+                "local-qwen": 1.0,
+                "gemini-flash-lite": 0.0,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.11,
+              "accuracy": 0.6897081413210445,
+              "total_cost": 0.0,
+              "mean_latency_ms": 4739.093278033794,
+              "shares": {
+                "local-qwen": 1.0,
+                "gemini-flash-lite": 0.0,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.12,
+              "accuracy": 0.6897081413210445,
+              "total_cost": 0.0,
+              "mean_latency_ms": 4739.093278033794,
+              "shares": {
+                "local-qwen": 1.0,
+                "gemini-flash-lite": 0.0,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.13,
+              "accuracy": 0.6897081413210445,
+              "total_cost": 0.0,
+              "mean_latency_ms": 4739.093278033794,
+              "shares": {
+                "local-qwen": 1.0,
+                "gemini-flash-lite": 0.0,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.14,
+              "accuracy": 0.6897081413210445,
+              "total_cost": 0.0,
+              "mean_latency_ms": 4739.093278033794,
+              "shares": {
+                "local-qwen": 1.0,
+                "gemini-flash-lite": 0.0,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.15,
+              "accuracy": 0.6897081413210445,
+              "total_cost": 0.0,
+              "mean_latency_ms": 4739.093278033794,
+              "shares": {
+                "local-qwen": 1.0,
+                "gemini-flash-lite": 0.0,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.16,
+              "accuracy": 0.6897081413210445,
+              "total_cost": 0.0,
+              "mean_latency_ms": 4739.093278033794,
+              "shares": {
+                "local-qwen": 1.0,
+                "gemini-flash-lite": 0.0,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.17,
+              "accuracy": 0.6897081413210445,
+              "total_cost": 0.0,
+              "mean_latency_ms": 4739.093278033794,
+              "shares": {
+                "local-qwen": 1.0,
+                "gemini-flash-lite": 0.0,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.18,
+              "accuracy": 0.6897081413210445,
+              "total_cost": 0.0,
+              "mean_latency_ms": 4739.093278033794,
+              "shares": {
+                "local-qwen": 1.0,
+                "gemini-flash-lite": 0.0,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.19,
+              "accuracy": 0.6897081413210445,
+              "total_cost": 0.0,
+              "mean_latency_ms": 4739.093278033794,
+              "shares": {
+                "local-qwen": 1.0,
+                "gemini-flash-lite": 0.0,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.2,
+              "accuracy": 0.6897081413210445,
+              "total_cost": 0.0,
+              "mean_latency_ms": 4739.093278033794,
+              "shares": {
+                "local-qwen": 1.0,
+                "gemini-flash-lite": 0.0,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.21,
+              "accuracy": 0.6897081413210445,
+              "total_cost": 0.0,
+              "mean_latency_ms": 4739.093278033794,
+              "shares": {
+                "local-qwen": 1.0,
+                "gemini-flash-lite": 0.0,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.22,
+              "accuracy": 0.6897081413210445,
+              "total_cost": 0.0,
+              "mean_latency_ms": 4739.093278033794,
+              "shares": {
+                "local-qwen": 1.0,
+                "gemini-flash-lite": 0.0,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.23,
+              "accuracy": 0.6897081413210445,
+              "total_cost": 0.0,
+              "mean_latency_ms": 4739.093278033794,
+              "shares": {
+                "local-qwen": 1.0,
+                "gemini-flash-lite": 0.0,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.24,
+              "accuracy": 0.6897081413210445,
+              "total_cost": 0.0,
+              "mean_latency_ms": 4739.093278033794,
+              "shares": {
+                "local-qwen": 1.0,
+                "gemini-flash-lite": 0.0,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.25,
+              "accuracy": 0.6897081413210445,
+              "total_cost": 0.0,
+              "mean_latency_ms": 4739.093278033794,
+              "shares": {
+                "local-qwen": 1.0,
+                "gemini-flash-lite": 0.0,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.26,
+              "accuracy": 0.6897081413210445,
+              "total_cost": 0.0,
+              "mean_latency_ms": 4739.093278033794,
+              "shares": {
+                "local-qwen": 1.0,
+                "gemini-flash-lite": 0.0,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.27,
+              "accuracy": 0.6897081413210445,
+              "total_cost": 0.0,
+              "mean_latency_ms": 4739.093278033794,
+              "shares": {
+                "local-qwen": 1.0,
+                "gemini-flash-lite": 0.0,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.28,
+              "accuracy": 0.6897081413210445,
+              "total_cost": 0.0,
+              "mean_latency_ms": 4739.093278033794,
+              "shares": {
+                "local-qwen": 1.0,
+                "gemini-flash-lite": 0.0,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.29,
+              "accuracy": 0.6912442396313364,
+              "total_cost": 0.00134775,
+              "mean_latency_ms": 4727.952523809524,
+              "shares": {
+                "local-qwen": 0.9984639016897081,
+                "gemini-flash-lite": 0.0015360983102918587,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.3,
+              "accuracy": 0.6912442396313364,
+              "total_cost": 0.00134775,
+              "mean_latency_ms": 4727.952523809524,
+              "shares": {
+                "local-qwen": 0.9984639016897081,
+                "gemini-flash-lite": 0.0015360983102918587,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.31,
+              "accuracy": 0.6927803379416283,
+              "total_cost": 0.0033892500000000003,
+              "mean_latency_ms": 4709.170279569892,
+              "shares": {
+                "local-qwen": 0.9953917050691244,
+                "gemini-flash-lite": 0.004608294930875576,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.32,
+              "accuracy": 0.695852534562212,
+              "total_cost": 0.006883,
+              "mean_latency_ms": 4670.158076804915,
+              "shares": {
+                "local-qwen": 0.9907834101382489,
+                "gemini-flash-lite": 0.009216589861751152,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.33,
+              "accuracy": 0.695852534562212,
+              "total_cost": 0.006883,
+              "mean_latency_ms": 4670.158076804915,
+              "shares": {
+                "local-qwen": 0.9907834101382489,
+                "gemini-flash-lite": 0.009216589861751152,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.34,
+              "accuracy": 0.6973886328725039,
+              "total_cost": 0.00781925,
+              "mean_latency_ms": 4660.347021505377,
+              "shares": {
+                "local-qwen": 0.989247311827957,
+                "gemini-flash-lite": 0.010752688172043012,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.35,
+              "accuracy": 0.6973886328725039,
+              "total_cost": 0.00848025,
+              "mean_latency_ms": 4654.417511520737,
+              "shares": {
+                "local-qwen": 0.9877112135176651,
+                "gemini-flash-lite": 0.01228878648233487,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.36,
+              "accuracy": 0.6989247311827957,
+              "total_cost": 0.011892,
+              "mean_latency_ms": 4622.703403993856,
+              "shares": {
+                "local-qwen": 0.9831029185867896,
+                "gemini-flash-lite": 0.016897081413210446,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.37,
+              "accuracy": 0.7004608294930875,
+              "total_cost": 0.015137,
+              "mean_latency_ms": 4595.304540706606,
+              "shares": {
+                "local-qwen": 0.978494623655914,
+                "gemini-flash-lite": 0.021505376344086023,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.38,
+              "accuracy": 0.7004608294930875,
+              "total_cost": 0.015137,
+              "mean_latency_ms": 4595.304540706606,
+              "shares": {
+                "local-qwen": 0.978494623655914,
+                "gemini-flash-lite": 0.021505376344086023,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.39,
+              "accuracy": 0.7019969278033794,
+              "total_cost": 0.018370749999999998,
+              "mean_latency_ms": 4561.857178187404,
+              "shares": {
+                "local-qwen": 0.9738863287250384,
+                "gemini-flash-lite": 0.026113671274961597,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.4,
+              "accuracy": 0.7035330261136713,
+              "total_cost": 0.020227500000000002,
+              "mean_latency_ms": 4542.540196620583,
+              "shares": {
+                "local-qwen": 0.9692780337941628,
+                "gemini-flash-lite": 0.030721966205837174,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.41,
+              "accuracy": 0.7081413210445469,
+              "total_cost": 0.025681750000000003,
+              "mean_latency_ms": 4482.880423963134,
+              "shares": {
+                "local-qwen": 0.9615975422427036,
+                "gemini-flash-lite": 0.03840245775729647,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.42,
+              "accuracy": 0.7096774193548387,
+              "total_cost": 0.026985249999999995,
+              "mean_latency_ms": 4466.79400921659,
+              "shares": {
+                "local-qwen": 0.9600614439324117,
+                "gemini-flash-lite": 0.039938556067588324,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.43,
+              "accuracy": 0.7112135176651305,
+              "total_cost": 0.0289315,
+              "mean_latency_ms": 4452.353637480798,
+              "shares": {
+                "local-qwen": 0.9554531490015361,
+                "gemini-flash-lite": 0.0445468509984639,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.44,
+              "accuracy": 0.7188940092165899,
+              "total_cost": 0.03535325,
+              "mean_latency_ms": 4387.740198156682,
+              "shares": {
+                "local-qwen": 0.9447004608294931,
+                "gemini-flash-lite": 0.055299539170506916,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.45,
+              "accuracy": 0.7204301075268817,
+              "total_cost": 0.039208,
+              "mean_latency_ms": 4361.426465437788,
+              "shares": {
+                "local-qwen": 0.9370199692780338,
+                "gemini-flash-lite": 0.0629800307219662,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.46,
+              "accuracy": 0.7250384024577573,
+              "total_cost": 0.04611174999999999,
+              "mean_latency_ms": 4283.208603686636,
+              "shares": {
+                "local-qwen": 0.9247311827956989,
+                "gemini-flash-lite": 0.07526881720430108,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.47,
+              "accuracy": 0.7265745007680492,
+              "total_cost": 0.052891749999999994,
+              "mean_latency_ms": 4228.173061443932,
+              "shares": {
+                "local-qwen": 0.9139784946236559,
+                "gemini-flash-lite": 0.08602150537634409,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.48,
+              "accuracy": 0.7357910906298003,
+              "total_cost": 0.06054999999999999,
+              "mean_latency_ms": 4174.438897081413,
+              "shares": {
+                "local-qwen": 0.9001536098310292,
+                "gemini-flash-lite": 0.09984639016897082,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.49,
+              "accuracy": 0.7373271889400922,
+              "total_cost": 0.06497750000000001,
+              "mean_latency_ms": 4148.464867895545,
+              "shares": {
+                "local-qwen": 0.8894009216589862,
+                "gemini-flash-lite": 0.11059907834101383,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.5,
+              "accuracy": 0.7450076804915514,
+              "total_cost": 0.074263,
+              "mean_latency_ms": 4051.754884792627,
+              "shares": {
+                "local-qwen": 0.8725038402457758,
+                "gemini-flash-lite": 0.12749615975422426,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.51,
+              "accuracy": 0.7526881720430108,
+              "total_cost": 0.08441075,
+              "mean_latency_ms": 3987.494705069125,
+              "shares": {
+                "local-qwen": 0.8509984639016898,
+                "gemini-flash-lite": 0.1490015360983103,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.52,
+              "accuracy": 0.7572964669738863,
+              "total_cost": 0.09244350000000001,
+              "mean_latency_ms": 3916.581952380952,
+              "shares": {
+                "local-qwen": 0.837173579109063,
+                "gemini-flash-lite": 0.16282642089093702,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.53,
+              "accuracy": 0.7634408602150538,
+              "total_cost": 0.09882374999999999,
+              "mean_latency_ms": 3869.9306697388633,
+              "shares": {
+                "local-qwen": 0.8233486943164362,
+                "gemini-flash-lite": 0.17665130568356374,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.54,
+              "accuracy": 0.7634408602150538,
+              "total_cost": 0.1015645,
+              "mean_latency_ms": 3839.529523809523,
+              "shares": {
+                "local-qwen": 0.8187403993855606,
+                "gemini-flash-lite": 0.18125960061443933,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.55,
+              "accuracy": 0.7695852534562212,
+              "total_cost": 0.11211675000000002,
+              "mean_latency_ms": 3755.4044086021504,
+              "shares": {
+                "local-qwen": 0.7987711213517665,
+                "gemini-flash-lite": 0.2012288786482335,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.56,
+              "accuracy": 0.7726574500768049,
+              "total_cost": 0.12015625,
+              "mean_latency_ms": 3676.5410076804915,
+              "shares": {
+                "local-qwen": 0.7803379416282642,
+                "gemini-flash-lite": 0.2196620583717358,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.57,
+              "accuracy": 0.7757296466973886,
+              "total_cost": 0.1270695,
+              "mean_latency_ms": 3630.1446743471583,
+              "shares": {
+                "local-qwen": 0.7649769585253456,
+                "gemini-flash-lite": 0.2350230414746544,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.58,
+              "accuracy": 0.7864823348694316,
+              "total_cost": 0.13722375,
+              "mean_latency_ms": 3543.640955453149,
+              "shares": {
+                "local-qwen": 0.7403993855606759,
+                "gemini-flash-lite": 0.25960061443932414,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.59,
+              "accuracy": 0.794162826420891,
+              "total_cost": 0.14775525,
+              "mean_latency_ms": 3453.105533026113,
+              "shares": {
+                "local-qwen": 0.7188940092165899,
+                "gemini-flash-lite": 0.28110599078341014,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.6,
+              "accuracy": 0.7972350230414746,
+              "total_cost": 0.15320500000000004,
+              "mean_latency_ms": 3415.512382488479,
+              "shares": {
+                "local-qwen": 0.706605222734255,
+                "gemini-flash-lite": 0.29339477726574503,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.61,
+              "accuracy": 0.8141321044546851,
+              "total_cost": 0.16733350000000002,
+              "mean_latency_ms": 3276.3014055299536,
+              "shares": {
+                "local-qwen": 0.6758832565284179,
+                "gemini-flash-lite": 0.3241167434715822,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.62,
+              "accuracy": 0.8218125960061444,
+              "total_cost": 0.17460399999999998,
+              "mean_latency_ms": 3216.086347158218,
+              "shares": {
+                "local-qwen": 0.6574500768049155,
+                "gemini-flash-lite": 0.3425499231950845,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.63,
+              "accuracy": 0.8279569892473119,
+              "total_cost": 0.179137,
+              "mean_latency_ms": 3171.9206374807986,
+              "shares": {
+                "local-qwen": 0.6451612903225806,
+                "gemini-flash-lite": 0.3548387096774194,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.64,
+              "accuracy": 0.8341013824884793,
+              "total_cost": 0.191571,
+              "mean_latency_ms": 3069.6930460829494,
+              "shares": {
+                "local-qwen": 0.6190476190476191,
+                "gemini-flash-lite": 0.38095238095238093,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.65,
+              "accuracy": 0.8417818740399385,
+              "total_cost": 0.2009995,
+              "mean_latency_ms": 2991.331698924731,
+              "shares": {
+                "local-qwen": 0.5975422427035331,
+                "gemini-flash-lite": 0.402457757296467,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.66,
+              "accuracy": 0.847926267281106,
+              "total_cost": 0.20772725,
+              "mean_latency_ms": 2934.040110599078,
+              "shares": {
+                "local-qwen": 0.5775729646697388,
+                "gemini-flash-lite": 0.42242703533026116,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.67,
+              "accuracy": 0.8540706605222734,
+              "total_cost": 0.21781775000000003,
+              "mean_latency_ms": 2856.2224132104457,
+              "shares": {
+                "local-qwen": 0.5560675883256528,
+                "gemini-flash-lite": 0.44393241167434716,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.68,
+              "accuracy": 0.8556067588325653,
+              "total_cost": 0.22304225,
+              "mean_latency_ms": 2809.043657450077,
+              "shares": {
+                "local-qwen": 0.5407066052227343,
+                "gemini-flash-lite": 0.4592933947772657,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.69,
+              "accuracy": 0.8617511520737328,
+              "total_cost": 0.22938825000000002,
+              "mean_latency_ms": 2759.094741935484,
+              "shares": {
+                "local-qwen": 0.5253456221198156,
+                "gemini-flash-lite": 0.47465437788018433,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.7,
+              "accuracy": 0.8632872503840245,
+              "total_cost": 0.232561,
+              "mean_latency_ms": 2727.3829231950845,
+              "shares": {
+                "local-qwen": 0.5176651305683564,
+                "gemini-flash-lite": 0.4823348694316436,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.71,
+              "accuracy": 0.8648233486943164,
+              "total_cost": 0.237929,
+              "mean_latency_ms": 2692.6933809523807,
+              "shares": {
+                "local-qwen": 0.5023041474654378,
+                "gemini-flash-lite": 0.4976958525345622,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.72,
+              "accuracy": 0.8678955453149002,
+              "total_cost": 0.24228425,
+              "mean_latency_ms": 2665.7846866359446,
+              "shares": {
+                "local-qwen": 0.4915514592933948,
+                "gemini-flash-lite": 0.5084485407066052,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.73,
+              "accuracy": 0.8740399385560675,
+              "total_cost": 0.25170375,
+              "mean_latency_ms": 2638.820029185868,
+              "shares": {
+                "local-qwen": 0.47772657450076805,
+                "gemini-flash-lite": 0.5207373271889401,
+                "gemini-flash": 0.0015360983102918587
+              }
+            },
+            {
+              "tau": 0.74,
+              "accuracy": 0.8771121351766513,
+              "total_cost": 0.25650775000000003,
+              "mean_latency_ms": 2611.26303686636,
+              "shares": {
+                "local-qwen": 0.46697388632872505,
+                "gemini-flash-lite": 0.5314900153609831,
+                "gemini-flash": 0.0015360983102918587
+              }
+            },
+            {
+              "tau": 0.75,
+              "accuracy": 0.8786482334869432,
+              "total_cost": 0.26253725,
+              "mean_latency_ms": 2599.5040614439326,
+              "shares": {
+                "local-qwen": 0.4577572964669739,
+                "gemini-flash-lite": 0.5376344086021505,
+                "gemini-flash": 0.004608294930875576
+              }
+            },
+            {
+              "tau": 0.76,
+              "accuracy": 0.8817204301075269,
+              "total_cost": 0.27089575,
+              "mean_latency_ms": 2550.805946236559,
+              "shares": {
+                "local-qwen": 0.4393241167434716,
+                "gemini-flash-lite": 0.554531490015361,
+                "gemini-flash": 0.006144393241167435
+              }
+            },
+            {
+              "tau": 0.77,
+              "accuracy": 0.8817204301075269,
+              "total_cost": 0.27724575,
+              "mean_latency_ms": 2510.607238095238,
+              "shares": {
+                "local-qwen": 0.4270353302611367,
+                "gemini-flash-lite": 0.565284178187404,
+                "gemini-flash": 0.007680491551459293
+              }
+            },
+            {
+              "tau": 0.78,
+              "accuracy": 0.8817204301075269,
+              "total_cost": 0.28339575,
+              "mean_latency_ms": 2458.934920122888,
+              "shares": {
+                "local-qwen": 0.4116743471582181,
+                "gemini-flash-lite": 0.5806451612903226,
+                "gemini-flash": 0.007680491551459293
+              }
+            },
+            {
+              "tau": 0.79,
+              "accuracy": 0.8863287250384024,
+              "total_cost": 0.306811,
+              "mean_latency_ms": 2456.7062211981565,
+              "shares": {
+                "local-qwen": 0.38863287250384027,
+                "gemini-flash-lite": 0.6006144393241167,
+                "gemini-flash": 0.010752688172043012
+              }
+            },
+            {
+              "tau": 0.8,
+              "accuracy": 0.8863287250384024,
+              "total_cost": 0.31431074999999997,
+              "mean_latency_ms": 2403.456425499232,
+              "shares": {
+                "local-qwen": 0.36251920122887865,
+                "gemini-flash-lite": 0.6251920122887865,
+                "gemini-flash": 0.01228878648233487
+              }
+            },
+            {
+              "tau": 0.81,
+              "accuracy": 0.890937019969278,
+              "total_cost": 0.33738175000000004,
+              "mean_latency_ms": 2399.510124423963,
+              "shares": {
+                "local-qwen": 0.3379416282642089,
+                "gemini-flash-lite": 0.6436251920122887,
+                "gemini-flash": 0.018433179723502304
+              }
+            },
+            {
+              "tau": 0.82,
+              "accuracy": 0.890937019969278,
+              "total_cost": 0.35439675,
+              "mean_latency_ms": 2388.2774485407067,
+              "shares": {
+                "local-qwen": 0.31490015360983103,
+                "gemini-flash-lite": 0.6620583717357911,
+                "gemini-flash": 0.02304147465437788
+              }
+            },
+            {
+              "tau": 0.83,
+              "accuracy": 0.8924731182795699,
+              "total_cost": 0.36301049999999996,
+              "mean_latency_ms": 2358.4976374807984,
+              "shares": {
+                "local-qwen": 0.29339477726574503,
+                "gemini-flash-lite": 0.6774193548387096,
+                "gemini-flash": 0.029185867895545316
+              }
+            },
+            {
+              "tau": 0.84,
+              "accuracy": 0.8940092165898618,
+              "total_cost": 0.37622900000000004,
+              "mean_latency_ms": 2347.4755176651306,
+              "shares": {
+                "local-qwen": 0.26881720430107525,
+                "gemini-flash-lite": 0.6881720430107527,
+                "gemini-flash": 0.043010752688172046
+              }
+            },
+            {
+              "tau": 0.85,
+              "accuracy": 0.901689708141321,
+              "total_cost": 0.401845,
+              "mean_latency_ms": 2358.2025053763437,
+              "shares": {
+                "local-qwen": 0.24270353302611367,
+                "gemini-flash-lite": 0.695852534562212,
+                "gemini-flash": 0.06144393241167435
+              }
+            },
+            {
+              "tau": 0.86,
+              "accuracy": 0.9047619047619048,
+              "total_cost": 0.4226685,
+              "mean_latency_ms": 2369.804780337942,
+              "shares": {
+                "local-qwen": 0.2119815668202765,
+                "gemini-flash-lite": 0.7050691244239631,
+                "gemini-flash": 0.08294930875576037
+              }
+            },
+            {
+              "tau": 0.87,
+              "accuracy": 0.9078341013824884,
+              "total_cost": 0.47354225,
+              "mean_latency_ms": 2470.3886574500766,
+              "shares": {
+                "local-qwen": 0.1781874039938556,
+                "gemini-flash-lite": 0.7004608294930875,
+                "gemini-flash": 0.12135176651305683
+              }
+            },
+            {
+              "tau": 0.88,
+              "accuracy": 0.9155145929339478,
+              "total_cost": 0.5303807500000001,
+              "mean_latency_ms": 2532.9220015360984,
+              "shares": {
+                "local-qwen": 0.1336405529953917,
+                "gemini-flash-lite": 0.7019969278033794,
+                "gemini-flash": 0.16436251920122888
+              }
+            },
+            {
+              "tau": 0.89,
+              "accuracy": 0.9185867895545314,
+              "total_cost": 0.58071925,
+              "mean_latency_ms": 2604.4135745007684,
+              "shares": {
+                "local-qwen": 0.0967741935483871,
+                "gemini-flash-lite": 0.695852534562212,
+                "gemini-flash": 0.2073732718894009
+              }
+            },
+            {
+              "tau": 0.9,
+              "accuracy": 0.9308755760368663,
+              "total_cost": 0.70882375,
+              "mean_latency_ms": 3069.3635806451616,
+              "shares": {
+                "local-qwen": 0.07680491551459294,
+                "gemini-flash-lite": 0.6129032258064516,
+                "gemini-flash": 0.3102918586789555
+              }
+            },
+            {
+              "tau": 0.91,
+              "accuracy": 0.9308755760368663,
+              "total_cost": 0.77709475,
+              "mean_latency_ms": 3270.758316436252,
+              "shares": {
+                "local-qwen": 0.039938556067588324,
+                "gemini-flash-lite": 0.5683563748079877,
+                "gemini-flash": 0.391705069124424
+              }
+            },
+            {
+              "tau": 0.92,
+              "accuracy": 0.9354838709677419,
+              "total_cost": 0.83540925,
+              "mean_latency_ms": 3492.4204854070663,
+              "shares": {
+                "local-qwen": 0.02304147465437788,
+                "gemini-flash-lite": 0.5161290322580645,
+                "gemini-flash": 0.4608294930875576
+              }
+            },
+            {
+              "tau": 0.93,
+              "accuracy": 0.9370199692780338,
+              "total_cost": 0.89490625,
+              "mean_latency_ms": 3709.9256774193545,
+              "shares": {
+                "local-qwen": 0.01228878648233487,
+                "gemini-flash-lite": 0.4500768049155146,
+                "gemini-flash": 0.5376344086021505
+              }
+            },
+            {
+              "tau": 0.94,
+              "accuracy": 0.9416282642089093,
+              "total_cost": 0.935468,
+              "mean_latency_ms": 3897.4814807987714,
+              "shares": {
+                "local-qwen": 0.004608294930875576,
+                "gemini-flash-lite": 0.3671274961597542,
+                "gemini-flash": 0.6282642089093702
+              }
+            },
+            {
+              "tau": 0.95,
+              "accuracy": 0.9447004608294931,
+              "total_cost": 0.9711679999999999,
+              "mean_latency_ms": 4073.713998463901,
+              "shares": {
+                "local-qwen": 0.0030721966205837174,
+                "gemini-flash-lite": 0.29185867895545314,
+                "gemini-flash": 0.7050691244239631
+              }
+            },
+            {
+              "tau": 0.96,
+              "accuracy": 0.946236559139785,
+              "total_cost": 1.02698025,
+              "mean_latency_ms": 4347.0340122887865,
+              "shares": {
+                "local-qwen": 0.0,
+                "gemini-flash-lite": 0.1827956989247312,
+                "gemini-flash": 0.8172043010752689
+              }
+            },
+            {
+              "tau": 0.97,
+              "accuracy": 0.946236559139785,
+              "total_cost": 1.0967105,
+              "mean_latency_ms": 4682.074258064516,
+              "shares": {
+                "local-qwen": 0.0,
+                "gemini-flash-lite": 0.04608294930875576,
+                "gemini-flash": 0.9539170506912442
+              }
+            },
+            {
+              "tau": 0.98,
+              "accuracy": 0.946236559139785,
+              "total_cost": 1.11275125,
+              "mean_latency_ms": 4768.1201490015355,
+              "shares": {
+                "local-qwen": 0.0,
+                "gemini-flash-lite": 0.004608294930875576,
+                "gemini-flash": 0.9953917050691244
+              }
+            },
+            {
+              "tau": 0.99,
+              "accuracy": 0.946236559139785,
+              "total_cost": 1.11413025,
+              "mean_latency_ms": 4775.754674347158,
+              "shares": {
+                "local-qwen": 0.0,
+                "gemini-flash-lite": 0.0,
+                "gemini-flash": 1.0
+              }
+            },
+            {
+              "tau": 1.0,
+              "accuracy": 0.946236559139785,
+              "total_cost": 1.11413025,
+              "mean_latency_ms": 4775.754674347158,
+              "shares": {
+                "local-qwen": 0.0,
+                "gemini-flash-lite": 0.0,
+                "gemini-flash": 1.0
+              }
+            }
+          ],
+          "selected": {
+            "accuracy": 0.9370199692780338,
+            "total_cost": 0.89490625,
+            "mean_latency_ms": 3709.9256774193545,
+            "shares": {
+              "local-qwen": 0.01228878648233487,
+              "gemini-flash-lite": 0.4500768049155146,
+              "gemini-flash": 0.5376344086021505
+            },
+            "cost_reduction_vs_last": 0.19676693995159011,
+            "gap_recovered": 0.9640718562874249,
+            "accuracy_vs_hull": 0.002736791169152819,
+            "oracle_savings_captured": 0.2749049709779408
+          }
+        },
+        "ood": {
+          "n": 246,
+          "classifiers": {
+            "multiclass": {
+              "roc_auc": 0.4823364569965869,
+              "brier": 0.7498246220041827
+            }
+          },
+          "sweep": [
+            {
+              "tau": 0.0,
+              "accuracy": 0.3252032520325203,
+              "total_cost": 0.0,
+              "mean_latency_ms": 5450.5293252032525,
+              "shares": {
+                "local-qwen": 1.0,
+                "gemini-flash-lite": 0.0,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.01,
+              "accuracy": 0.3252032520325203,
+              "total_cost": 0.0,
+              "mean_latency_ms": 5450.5293252032525,
+              "shares": {
+                "local-qwen": 1.0,
+                "gemini-flash-lite": 0.0,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.02,
+              "accuracy": 0.3252032520325203,
+              "total_cost": 0.0,
+              "mean_latency_ms": 5450.5293252032525,
+              "shares": {
+                "local-qwen": 1.0,
+                "gemini-flash-lite": 0.0,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.03,
+              "accuracy": 0.3252032520325203,
+              "total_cost": 0.0,
+              "mean_latency_ms": 5450.5293252032525,
+              "shares": {
+                "local-qwen": 1.0,
+                "gemini-flash-lite": 0.0,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.04,
+              "accuracy": 0.3252032520325203,
+              "total_cost": 0.0,
+              "mean_latency_ms": 5450.5293252032525,
+              "shares": {
+                "local-qwen": 1.0,
+                "gemini-flash-lite": 0.0,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.05,
+              "accuracy": 0.3252032520325203,
+              "total_cost": 0.0,
+              "mean_latency_ms": 5450.5293252032525,
+              "shares": {
+                "local-qwen": 1.0,
+                "gemini-flash-lite": 0.0,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.06,
+              "accuracy": 0.3252032520325203,
+              "total_cost": 0.0,
+              "mean_latency_ms": 5450.5293252032525,
+              "shares": {
+                "local-qwen": 1.0,
+                "gemini-flash-lite": 0.0,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.07,
+              "accuracy": 0.3252032520325203,
+              "total_cost": 0.0,
+              "mean_latency_ms": 5450.5293252032525,
+              "shares": {
+                "local-qwen": 1.0,
+                "gemini-flash-lite": 0.0,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.08,
+              "accuracy": 0.3252032520325203,
+              "total_cost": 0.0,
+              "mean_latency_ms": 5450.5293252032525,
+              "shares": {
+                "local-qwen": 1.0,
+                "gemini-flash-lite": 0.0,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.09,
+              "accuracy": 0.3252032520325203,
+              "total_cost": 0.0,
+              "mean_latency_ms": 5450.5293252032525,
+              "shares": {
+                "local-qwen": 1.0,
+                "gemini-flash-lite": 0.0,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.1,
+              "accuracy": 0.3252032520325203,
+              "total_cost": 0.0,
+              "mean_latency_ms": 5450.5293252032525,
+              "shares": {
+                "local-qwen": 1.0,
+                "gemini-flash-lite": 0.0,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.11,
+              "accuracy": 0.3252032520325203,
+              "total_cost": 0.0,
+              "mean_latency_ms": 5450.5293252032525,
+              "shares": {
+                "local-qwen": 1.0,
+                "gemini-flash-lite": 0.0,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.12,
+              "accuracy": 0.3252032520325203,
+              "total_cost": 0.0,
+              "mean_latency_ms": 5450.5293252032525,
+              "shares": {
+                "local-qwen": 1.0,
+                "gemini-flash-lite": 0.0,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.13,
+              "accuracy": 0.3252032520325203,
+              "total_cost": 0.0,
+              "mean_latency_ms": 5450.5293252032525,
+              "shares": {
+                "local-qwen": 1.0,
+                "gemini-flash-lite": 0.0,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.14,
+              "accuracy": 0.3252032520325203,
+              "total_cost": 0.0,
+              "mean_latency_ms": 5450.5293252032525,
+              "shares": {
+                "local-qwen": 1.0,
+                "gemini-flash-lite": 0.0,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.15,
+              "accuracy": 0.3252032520325203,
+              "total_cost": 0.0,
+              "mean_latency_ms": 5450.5293252032525,
+              "shares": {
+                "local-qwen": 1.0,
+                "gemini-flash-lite": 0.0,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.16,
+              "accuracy": 0.3252032520325203,
+              "total_cost": 0.0,
+              "mean_latency_ms": 5450.5293252032525,
+              "shares": {
+                "local-qwen": 1.0,
+                "gemini-flash-lite": 0.0,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.17,
+              "accuracy": 0.3252032520325203,
+              "total_cost": 0.0,
+              "mean_latency_ms": 5450.5293252032525,
+              "shares": {
+                "local-qwen": 1.0,
+                "gemini-flash-lite": 0.0,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.18,
+              "accuracy": 0.3252032520325203,
+              "total_cost": 0.0,
+              "mean_latency_ms": 5450.5293252032525,
+              "shares": {
+                "local-qwen": 1.0,
+                "gemini-flash-lite": 0.0,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.19,
+              "accuracy": 0.3252032520325203,
+              "total_cost": 0.0,
+              "mean_latency_ms": 5450.5293252032525,
+              "shares": {
+                "local-qwen": 1.0,
+                "gemini-flash-lite": 0.0,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.2,
+              "accuracy": 0.3252032520325203,
+              "total_cost": 0.0,
+              "mean_latency_ms": 5450.5293252032525,
+              "shares": {
+                "local-qwen": 1.0,
+                "gemini-flash-lite": 0.0,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.21,
+              "accuracy": 0.3252032520325203,
+              "total_cost": 0.0,
+              "mean_latency_ms": 5450.5293252032525,
+              "shares": {
+                "local-qwen": 1.0,
+                "gemini-flash-lite": 0.0,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.22,
+              "accuracy": 0.3252032520325203,
+              "total_cost": 0.0,
+              "mean_latency_ms": 5450.5293252032525,
+              "shares": {
+                "local-qwen": 1.0,
+                "gemini-flash-lite": 0.0,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.23,
+              "accuracy": 0.3252032520325203,
+              "total_cost": 0.0,
+              "mean_latency_ms": 5450.5293252032525,
+              "shares": {
+                "local-qwen": 1.0,
+                "gemini-flash-lite": 0.0,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.24,
+              "accuracy": 0.3252032520325203,
+              "total_cost": 0.0,
+              "mean_latency_ms": 5450.5293252032525,
+              "shares": {
+                "local-qwen": 1.0,
+                "gemini-flash-lite": 0.0,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.25,
+              "accuracy": 0.3252032520325203,
+              "total_cost": 0.0,
+              "mean_latency_ms": 5450.5293252032525,
+              "shares": {
+                "local-qwen": 1.0,
+                "gemini-flash-lite": 0.0,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.26,
+              "accuracy": 0.3252032520325203,
+              "total_cost": 0.0,
+              "mean_latency_ms": 5450.5293252032525,
+              "shares": {
+                "local-qwen": 1.0,
+                "gemini-flash-lite": 0.0,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.27,
+              "accuracy": 0.32113821138211385,
+              "total_cost": 0.00067775,
+              "mean_latency_ms": 5431.410483739838,
+              "shares": {
+                "local-qwen": 0.9959349593495935,
+                "gemini-flash-lite": 0.0040650406504065045,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.28,
+              "accuracy": 0.32113821138211385,
+              "total_cost": 0.00067775,
+              "mean_latency_ms": 5431.410483739838,
+              "shares": {
+                "local-qwen": 0.9959349593495935,
+                "gemini-flash-lite": 0.0040650406504065045,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.29,
+              "accuracy": 0.32113821138211385,
+              "total_cost": 0.00067775,
+              "mean_latency_ms": 5431.410483739838,
+              "shares": {
+                "local-qwen": 0.9959349593495935,
+                "gemini-flash-lite": 0.0040650406504065045,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.3,
+              "accuracy": 0.32113821138211385,
+              "total_cost": 0.00067775,
+              "mean_latency_ms": 5431.410483739838,
+              "shares": {
+                "local-qwen": 0.9959349593495935,
+                "gemini-flash-lite": 0.0040650406504065045,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.31,
+              "accuracy": 0.32113821138211385,
+              "total_cost": 0.00145575,
+              "mean_latency_ms": 5414.351463414635,
+              "shares": {
+                "local-qwen": 0.991869918699187,
+                "gemini-flash-lite": 0.008130081300813009,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.32,
+              "accuracy": 0.32113821138211385,
+              "total_cost": 0.00218225,
+              "mean_latency_ms": 5402.811910569107,
+              "shares": {
+                "local-qwen": 0.9878048780487805,
+                "gemini-flash-lite": 0.012195121951219513,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.33,
+              "accuracy": 0.32113821138211385,
+              "total_cost": 0.00218225,
+              "mean_latency_ms": 5402.811910569107,
+              "shares": {
+                "local-qwen": 0.9878048780487805,
+                "gemini-flash-lite": 0.012195121951219513,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.34,
+              "accuracy": 0.32113821138211385,
+              "total_cost": 0.003951,
+              "mean_latency_ms": 5371.722821138213,
+              "shares": {
+                "local-qwen": 0.975609756097561,
+                "gemini-flash-lite": 0.024390243902439025,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.35,
+              "accuracy": 0.3252032520325203,
+              "total_cost": 0.00469175,
+              "mean_latency_ms": 5357.435508130082,
+              "shares": {
+                "local-qwen": 0.9715447154471545,
+                "gemini-flash-lite": 0.028455284552845527,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.36,
+              "accuracy": 0.3252032520325203,
+              "total_cost": 0.0054522500000000005,
+              "mean_latency_ms": 5343.9428780487815,
+              "shares": {
+                "local-qwen": 0.967479674796748,
+                "gemini-flash-lite": 0.032520325203252036,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.37,
+              "accuracy": 0.32926829268292684,
+              "total_cost": 0.00690175,
+              "mean_latency_ms": 5320.241752032522,
+              "shares": {
+                "local-qwen": 0.959349593495935,
+                "gemini-flash-lite": 0.04065040650406504,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.38,
+              "accuracy": 0.33739837398373984,
+              "total_cost": 0.0102435,
+              "mean_latency_ms": 5242.607951219513,
+              "shares": {
+                "local-qwen": 0.9390243902439024,
+                "gemini-flash-lite": 0.06097560975609756,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.39,
+              "accuracy": 0.34146341463414637,
+              "total_cost": 0.0114905,
+              "mean_latency_ms": 5229.431418699188,
+              "shares": {
+                "local-qwen": 0.9308943089430894,
+                "gemini-flash-lite": 0.06910569105691057,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.4,
+              "accuracy": 0.34552845528455284,
+              "total_cost": 0.012228250000000001,
+              "mean_latency_ms": 5218.733353658537,
+              "shares": {
+                "local-qwen": 0.926829268292683,
+                "gemini-flash-lite": 0.07317073170731707,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.41,
+              "accuracy": 0.34959349593495936,
+              "total_cost": 0.014614,
+              "mean_latency_ms": 5153.278048780488,
+              "shares": {
+                "local-qwen": 0.9146341463414634,
+                "gemini-flash-lite": 0.08536585365853659,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.42,
+              "accuracy": 0.3617886178861789,
+              "total_cost": 0.018464500000000002,
+              "mean_latency_ms": 5056.874378048781,
+              "shares": {
+                "local-qwen": 0.8943089430894309,
+                "gemini-flash-lite": 0.10569105691056911,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.43,
+              "accuracy": 0.3617886178861789,
+              "total_cost": 0.02044125,
+              "mean_latency_ms": 5017.175711382114,
+              "shares": {
+                "local-qwen": 0.8821138211382114,
+                "gemini-flash-lite": 0.11788617886178862,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.44,
+              "accuracy": 0.36585365853658536,
+              "total_cost": 0.022313500000000003,
+              "mean_latency_ms": 4981.372865853659,
+              "shares": {
+                "local-qwen": 0.8699186991869918,
+                "gemini-flash-lite": 0.13008130081300814,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.45,
+              "accuracy": 0.3821138211382114,
+              "total_cost": 0.028355,
+              "mean_latency_ms": 4883.483130081301,
+              "shares": {
+                "local-qwen": 0.8373983739837398,
+                "gemini-flash-lite": 0.16260162601626016,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.46,
+              "accuracy": 0.3861788617886179,
+              "total_cost": 0.029937500000000002,
+              "mean_latency_ms": 4855.501638211383,
+              "shares": {
+                "local-qwen": 0.8292682926829268,
+                "gemini-flash-lite": 0.17073170731707318,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.47,
+              "accuracy": 0.3902439024390244,
+              "total_cost": 0.03209225,
+              "mean_latency_ms": 4808.9536504065045,
+              "shares": {
+                "local-qwen": 0.8170731707317073,
+                "gemini-flash-lite": 0.18292682926829268,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.48,
+              "accuracy": 0.3943089430894309,
+              "total_cost": 0.03714725,
+              "mean_latency_ms": 4700.023394308943,
+              "shares": {
+                "local-qwen": 0.7886178861788617,
+                "gemini-flash-lite": 0.21138211382113822,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.49,
+              "accuracy": 0.4146341463414634,
+              "total_cost": 0.04366025,
+              "mean_latency_ms": 4584.741329268293,
+              "shares": {
+                "local-qwen": 0.7560975609756098,
+                "gemini-flash-lite": 0.24390243902439024,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.5,
+              "accuracy": 0.43089430894308944,
+              "total_cost": 0.050457999999999996,
+              "mean_latency_ms": 4454.606357723577,
+              "shares": {
+                "local-qwen": 0.7195121951219512,
+                "gemini-flash-lite": 0.2804878048780488,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.51,
+              "accuracy": 0.45528455284552843,
+              "total_cost": 0.057635,
+              "mean_latency_ms": 4313.41837398374,
+              "shares": {
+                "local-qwen": 0.6788617886178862,
+                "gemini-flash-lite": 0.32113821138211385,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.52,
+              "accuracy": 0.4878048780487805,
+              "total_cost": 0.06552175,
+              "mean_latency_ms": 4158.280081300813,
+              "shares": {
+                "local-qwen": 0.6382113821138211,
+                "gemini-flash-lite": 0.3617886178861789,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.53,
+              "accuracy": 0.516260162601626,
+              "total_cost": 0.07703299999999999,
+              "mean_latency_ms": 3925.0088821138215,
+              "shares": {
+                "local-qwen": 0.5772357723577236,
+                "gemini-flash-lite": 0.42276422764227645,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.54,
+              "accuracy": 0.5365853658536586,
+              "total_cost": 0.08600574999999999,
+              "mean_latency_ms": 3726.0360325203255,
+              "shares": {
+                "local-qwen": 0.5284552845528455,
+                "gemini-flash-lite": 0.4715447154471545,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.55,
+              "accuracy": 0.5447154471544715,
+              "total_cost": 0.09426425,
+              "mean_latency_ms": 3569.4190284552847,
+              "shares": {
+                "local-qwen": 0.483739837398374,
+                "gemini-flash-lite": 0.516260162601626,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.56,
+              "accuracy": 0.5528455284552846,
+              "total_cost": 0.09873874999999999,
+              "mean_latency_ms": 3494.5447439024388,
+              "shares": {
+                "local-qwen": 0.45934959349593496,
+                "gemini-flash-lite": 0.540650406504065,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.57,
+              "accuracy": 0.5609756097560976,
+              "total_cost": 0.10422699999999999,
+              "mean_latency_ms": 3412.5961016260167,
+              "shares": {
+                "local-qwen": 0.43089430894308944,
+                "gemini-flash-lite": 0.5691056910569106,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.58,
+              "accuracy": 0.5609756097560976,
+              "total_cost": 0.10792475,
+              "mean_latency_ms": 3350.1184146341457,
+              "shares": {
+                "local-qwen": 0.4105691056910569,
+                "gemini-flash-lite": 0.5894308943089431,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.59,
+              "accuracy": 0.573170731707317,
+              "total_cost": 0.11398824999999999,
+              "mean_latency_ms": 3223.7394552845526,
+              "shares": {
+                "local-qwen": 0.3780487804878049,
+                "gemini-flash-lite": 0.6219512195121951,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.6,
+              "accuracy": 0.5853658536585366,
+              "total_cost": 0.12093675,
+              "mean_latency_ms": 3096.6720162601628,
+              "shares": {
+                "local-qwen": 0.34146341463414637,
+                "gemini-flash-lite": 0.6585365853658537,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.61,
+              "accuracy": 0.6056910569105691,
+              "total_cost": 0.12732125,
+              "mean_latency_ms": 3023.580894308943,
+              "shares": {
+                "local-qwen": 0.3089430894308943,
+                "gemini-flash-lite": 0.6910569105691057,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.62,
+              "accuracy": 0.6178861788617886,
+              "total_cost": 0.13257274999999996,
+              "mean_latency_ms": 2911.909069105691,
+              "shares": {
+                "local-qwen": 0.2804878048780488,
+                "gemini-flash-lite": 0.7195121951219512,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.63,
+              "accuracy": 0.6300813008130082,
+              "total_cost": 0.13893899999999998,
+              "mean_latency_ms": 2763.022158536585,
+              "shares": {
+                "local-qwen": 0.24390243902439024,
+                "gemini-flash-lite": 0.7560975609756098,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.64,
+              "accuracy": 0.6341463414634146,
+              "total_cost": 0.14552774999999996,
+              "mean_latency_ms": 2617.4883780487803,
+              "shares": {
+                "local-qwen": 0.2032520325203252,
+                "gemini-flash-lite": 0.7967479674796748,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.65,
+              "accuracy": 0.6422764227642277,
+              "total_cost": 0.14738974999999999,
+              "mean_latency_ms": 2586.3273617886175,
+              "shares": {
+                "local-qwen": 0.1910569105691057,
+                "gemini-flash-lite": 0.8089430894308943,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.66,
+              "accuracy": 0.6666666666666666,
+              "total_cost": 0.154009,
+              "mean_latency_ms": 2485.8461829268285,
+              "shares": {
+                "local-qwen": 0.15447154471544716,
+                "gemini-flash-lite": 0.8455284552845529,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.67,
+              "accuracy": 0.6707317073170732,
+              "total_cost": 0.15992125,
+              "mean_latency_ms": 2373.383682926829,
+              "shares": {
+                "local-qwen": 0.12195121951219512,
+                "gemini-flash-lite": 0.8780487804878049,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.68,
+              "accuracy": 0.6829268292682927,
+              "total_cost": 0.16346125,
+              "mean_latency_ms": 2324.113540650406,
+              "shares": {
+                "local-qwen": 0.1016260162601626,
+                "gemini-flash-lite": 0.8983739837398373,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.69,
+              "accuracy": 0.6910569105691057,
+              "total_cost": 0.16545575,
+              "mean_latency_ms": 2301.218044715447,
+              "shares": {
+                "local-qwen": 0.08943089430894309,
+                "gemini-flash-lite": 0.9105691056910569,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.7,
+              "accuracy": 0.7113821138211383,
+              "total_cost": 0.16929075,
+              "mean_latency_ms": 2246.260597560975,
+              "shares": {
+                "local-qwen": 0.06504065040650407,
+                "gemini-flash-lite": 0.9349593495934959,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.71,
+              "accuracy": 0.7154471544715447,
+              "total_cost": 0.170377,
+              "mean_latency_ms": 2228.1420609756096,
+              "shares": {
+                "local-qwen": 0.056910569105691054,
+                "gemini-flash-lite": 0.943089430894309,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.72,
+              "accuracy": 0.7154471544715447,
+              "total_cost": 0.17134475,
+              "mean_latency_ms": 2209.725121951219,
+              "shares": {
+                "local-qwen": 0.04878048780487805,
+                "gemini-flash-lite": 0.9512195121951219,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.73,
+              "accuracy": 0.7195121951219512,
+              "total_cost": 0.1721035,
+              "mean_latency_ms": 2206.5981382113814,
+              "shares": {
+                "local-qwen": 0.044715447154471545,
+                "gemini-flash-lite": 0.9552845528455285,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.74,
+              "accuracy": 0.7235772357723578,
+              "total_cost": 0.17354474999999997,
+              "mean_latency_ms": 2191.956613821138,
+              "shares": {
+                "local-qwen": 0.036585365853658534,
+                "gemini-flash-lite": 0.9634146341463414,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.75,
+              "accuracy": 0.7276422764227642,
+              "total_cost": 0.17487824999999999,
+              "mean_latency_ms": 2158.6287479674797,
+              "shares": {
+                "local-qwen": 0.028455284552845527,
+                "gemini-flash-lite": 0.9715447154471545,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.76,
+              "accuracy": 0.7276422764227642,
+              "total_cost": 0.17565824999999996,
+              "mean_latency_ms": 2123.1190284552845,
+              "shares": {
+                "local-qwen": 0.024390243902439025,
+                "gemini-flash-lite": 0.975609756097561,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.77,
+              "accuracy": 0.7317073170731707,
+              "total_cost": 0.17662774999999997,
+              "mean_latency_ms": 2093.4548780487808,
+              "shares": {
+                "local-qwen": 0.016260162601626018,
+                "gemini-flash-lite": 0.983739837398374,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.78,
+              "accuracy": 0.7317073170731707,
+              "total_cost": 0.17662774999999997,
+              "mean_latency_ms": 2093.4548780487808,
+              "shares": {
+                "local-qwen": 0.016260162601626018,
+                "gemini-flash-lite": 0.983739837398374,
+                "gemini-flash": 0.0
+              }
+            },
+            {
+              "tau": 0.79,
+              "accuracy": 0.7317073170731707,
+              "total_cost": 0.17867299999999997,
+              "mean_latency_ms": 2073.3486951219516,
+              "shares": {
+                "local-qwen": 0.0040650406504065045,
+                "gemini-flash-lite": 0.991869918699187,
+                "gemini-flash": 0.0040650406504065045
+              }
+            },
+            {
+              "tau": 0.8,
+              "accuracy": 0.7317073170731707,
+              "total_cost": 0.17867299999999997,
+              "mean_latency_ms": 2073.3486951219516,
+              "shares": {
+                "local-qwen": 0.0040650406504065045,
+                "gemini-flash-lite": 0.991869918699187,
+                "gemini-flash": 0.0040650406504065045
+              }
+            },
+            {
+              "tau": 0.81,
+              "accuracy": 0.7317073170731707,
+              "total_cost": 0.17922974999999997,
+              "mean_latency_ms": 2082.8284512195123,
+              "shares": {
+                "local-qwen": 0.0040650406504065045,
+                "gemini-flash-lite": 0.9878048780487805,
+                "gemini-flash": 0.008130081300813009
+              }
+            },
+            {
+              "tau": 0.82,
+              "accuracy": 0.7357723577235772,
+              "total_cost": 0.18188824999999997,
+              "mean_latency_ms": 2109.458967479675,
+              "shares": {
+                "local-qwen": 0.0040650406504065045,
+                "gemini-flash-lite": 0.983739837398374,
+                "gemini-flash": 0.012195121951219513
+              }
+            },
+            {
+              "tau": 0.83,
+              "accuracy": 0.7398373983739838,
+              "total_cost": 0.1837625,
+              "mean_latency_ms": 2130.0466300813005,
+              "shares": {
+                "local-qwen": 0.0040650406504065045,
+                "gemini-flash-lite": 0.9715447154471545,
+                "gemini-flash": 0.024390243902439025
+              }
+            },
+            {
+              "tau": 0.84,
+              "accuracy": 0.7357723577235772,
+              "total_cost": 0.20920675,
+              "mean_latency_ms": 2379.7973536585364,
+              "shares": {
+                "local-qwen": 0.0,
+                "gemini-flash-lite": 0.943089430894309,
+                "gemini-flash": 0.056910569105691054
+              }
+            },
+            {
+              "tau": 0.85,
+              "accuracy": 0.7398373983739838,
+              "total_cost": 0.21633924999999998,
+              "mean_latency_ms": 2472.119601626016,
+              "shares": {
+                "local-qwen": 0.0,
+                "gemini-flash-lite": 0.9186991869918699,
+                "gemini-flash": 0.08130081300813008
+              }
+            },
+            {
+              "tau": 0.86,
+              "accuracy": 0.7479674796747967,
+              "total_cost": 0.23562049999999998,
+              "mean_latency_ms": 2706.6527926829267,
+              "shares": {
+                "local-qwen": 0.0,
+                "gemini-flash-lite": 0.8414634146341463,
+                "gemini-flash": 0.15853658536585366
+              }
+            },
+            {
+              "tau": 0.87,
+              "accuracy": 0.7601626016260162,
+              "total_cost": 0.26177275,
+              "mean_latency_ms": 2997.262349593496,
+              "shares": {
+                "local-qwen": 0.0,
+                "gemini-flash-lite": 0.7764227642276422,
+                "gemini-flash": 0.22357723577235772
+              }
+            },
+            {
+              "tau": 0.88,
+              "accuracy": 0.7642276422764228,
+              "total_cost": 0.28967425,
+              "mean_latency_ms": 3346.5820609756092,
+              "shares": {
+                "local-qwen": 0.0,
+                "gemini-flash-lite": 0.6707317073170732,
+                "gemini-flash": 0.32926829268292684
+              }
+            },
+            {
+              "tau": 0.89,
+              "accuracy": 0.7723577235772358,
+              "total_cost": 0.326936,
+              "mean_latency_ms": 3831.019772357724,
+              "shares": {
+                "local-qwen": 0.0,
+                "gemini-flash-lite": 0.5121951219512195,
+                "gemini-flash": 0.4878048780487805
+              }
+            },
+            {
+              "tau": 0.9,
+              "accuracy": 0.8008130081300813,
+              "total_cost": 0.362786,
+              "mean_latency_ms": 4286.470447154472,
+              "shares": {
+                "local-qwen": 0.0,
+                "gemini-flash-lite": 0.37398373983739835,
+                "gemini-flash": 0.6260162601626016
+              }
+            },
+            {
+              "tau": 0.91,
+              "accuracy": 0.8089430894308943,
+              "total_cost": 0.40765975,
+              "mean_latency_ms": 4795.787398373984,
+              "shares": {
+                "local-qwen": 0.0,
+                "gemini-flash-lite": 0.21544715447154472,
+                "gemini-flash": 0.7845528455284553
+              }
+            },
+            {
+              "tau": 0.92,
+              "accuracy": 0.8089430894308943,
+              "total_cost": 0.43660375,
+              "mean_latency_ms": 5158.008642276423,
+              "shares": {
+                "local-qwen": 0.0,
+                "gemini-flash-lite": 0.09349593495934959,
+                "gemini-flash": 0.9065040650406504
+              }
+            },
+            {
+              "tau": 0.93,
+              "accuracy": 0.8170731707317073,
+              "total_cost": 0.44449675,
+              "mean_latency_ms": 5274.823967479675,
+              "shares": {
+                "local-qwen": 0.0,
+                "gemini-flash-lite": 0.052845528455284556,
+                "gemini-flash": 0.9471544715447154
+              }
+            },
+            {
+              "tau": 0.94,
+              "accuracy": 0.8252032520325203,
+              "total_cost": 0.45363625,
+              "mean_latency_ms": 5388.458857723578,
+              "shares": {
+                "local-qwen": 0.0,
+                "gemini-flash-lite": 0.02032520325203252,
+                "gemini-flash": 0.9796747967479674
+              }
+            },
+            {
+              "tau": 0.95,
+              "accuracy": 0.8292682926829268,
+              "total_cost": 0.4565095,
+              "mean_latency_ms": 5425.518804878049,
+              "shares": {
+                "local-qwen": 0.0,
+                "gemini-flash-lite": 0.008130081300813009,
+                "gemini-flash": 0.991869918699187
+              }
+            },
+            {
+              "tau": 0.96,
+              "accuracy": 0.8292682926829268,
+              "total_cost": 0.45792525000000006,
+              "mean_latency_ms": 5443.811577235772,
+              "shares": {
+                "local-qwen": 0.0,
+                "gemini-flash-lite": 0.0,
+                "gemini-flash": 1.0
+              }
+            },
+            {
+              "tau": 0.97,
+              "accuracy": 0.8292682926829268,
+              "total_cost": 0.45792525000000006,
+              "mean_latency_ms": 5443.811577235772,
+              "shares": {
+                "local-qwen": 0.0,
+                "gemini-flash-lite": 0.0,
+                "gemini-flash": 1.0
+              }
+            },
+            {
+              "tau": 0.98,
+              "accuracy": 0.8292682926829268,
+              "total_cost": 0.45792525000000006,
+              "mean_latency_ms": 5443.811577235772,
+              "shares": {
+                "local-qwen": 0.0,
+                "gemini-flash-lite": 0.0,
+                "gemini-flash": 1.0
+              }
+            },
+            {
+              "tau": 0.99,
+              "accuracy": 0.8292682926829268,
+              "total_cost": 0.45792525000000006,
+              "mean_latency_ms": 5443.811577235772,
+              "shares": {
+                "local-qwen": 0.0,
+                "gemini-flash-lite": 0.0,
+                "gemini-flash": 1.0
+              }
+            },
+            {
+              "tau": 1.0,
+              "accuracy": 0.8292682926829268,
+              "total_cost": 0.45792525000000006,
+              "mean_latency_ms": 5443.811577235772,
+              "shares": {
+                "local-qwen": 0.0,
+                "gemini-flash-lite": 0.0,
+                "gemini-flash": 1.0
+              }
+            }
+          ],
+          "selected": {
+            "accuracy": 0.8170731707317073,
+            "total_cost": 0.44449675,
+            "mean_latency_ms": 5274.823967479675,
+            "shares": {
+              "local-qwen": 0.0,
+              "gemini-flash-lite": 0.052845528455284556,
+              "gemini-flash": 0.9471544715447154
+            },
+            "cost_reduction_vs_last": 0.029324655061060856,
+            "gap_recovered": 0.9758064516129032,
+            "accuracy_vs_hull": -0.0074987163662267875,
+            "oracle_savings_captured": 0.0571871469986705
           }
         }
       }
