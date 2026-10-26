@@ -51,6 +51,7 @@ def stub_router(monkeypatch):
             selected,
             {NAMES[0]: 0.8, NAMES[1]: 0.9},
             dict(economy=0.7, balanced=0.85, high=0.95)[level],
+            0.25,
         )
 
     router.route.side_effect = route
@@ -123,6 +124,7 @@ async def test_quality_routes_and_records_metadata(
         tau=dict(economy=0.7, balanced=0.85, high=0.95)[quality],
         probabilities={NAMES[0]: 0.8, NAMES[1]: 0.9},
         routed_model=selected,
+        oov_ratio=0.25,
     )
 
 
@@ -345,7 +347,7 @@ async def test_artifact_errors_only_affect_auto(monkeypatch, tmp_path, invalid):
 
 
 @pytest.mark.anyio
-async def test_artifact_loaded_lazily_once(monkeypatch, tmp_path):
+async def test_artifact_preloaded_once_and_reused(monkeypatch, tmp_path):
     path = tmp_path / "router.json"
     path.write_text(json.dumps(artifact()))
     monkeypatch.setattr(get_settings(), "router_artifact", path)
@@ -357,7 +359,7 @@ async def test_artifact_loaded_lazily_once(monkeypatch, tmp_path):
             transport=httpx.ASGITransport(app), base_url="http://gateway"
         ) as client,
     ):
-        constructor.assert_not_called()
+        constructor.assert_called_once_with(path)
         first = await client.post("/v1/chat/completions", json=body())
         path.unlink()
         second = await client.post("/v1/chat/completions", json=body())

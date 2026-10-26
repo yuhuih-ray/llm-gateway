@@ -786,3 +786,37 @@ Live checks (both response modes, skipped without `VLLM_BASE_URL`):
 ```sh
 uv run pytest -m live_vllm tests/test_vllm_live.py
 ```
+
+### Router drift monitoring
+
+Automatic requests record unigram `oov_ratio` (unknown token occurrences divided
+by all token occurrences; null for tokenless text) and classifier probabilities.
+OOV uses the first classifier's vocabulary and tokenizer; cascade vectorizers
+are trained on the same questions. The artifact is preloaded off the event loop
+at startup when present; a load failure leaves explicit-model requests available.
+
+Compare recent traffic with the manifest's test-split raw `question` reference:
+
+```sh
+uv run python scripts/router_monitor/drift.py --since 2026-10-26T00:00:00Z --until 2026-10-27T00:00:00Z --out data/router/drift.json
+```
+
+The script uses `DATABASE_URL`, `ROUTER_ARTIFACT` (or `--artifact`), and only `auto`
+usage rows matching the artifact run, in the inclusive-start/exclusive-end time
+window. It needs at least 50 requests (`--min-requests` changes this). Null or
+missing feature values are excluded and sample counts are reported; an entirely
+missing feature is an error. PSI uses fixed probability/OOV bins and replaces
+empty-bin proportions with 0.0001: below 0.1 is stable, 0.1–0.2 is watch, and
+0.2 or above is drift. Exit code 1 signals drift; insufficient data is an error
+(exit 2), not a stable result. Allow the usage worker to drain before measuring.
+Distribution drift is an alert to investigate, not evidence of accuracy loss.
+
+Optional demo traffic (calls real models and may incur cost):
+
+```sh
+GATEWAY_API_KEY=... uv run python scripts/router_monitor/send_batch.py --split test --n 100 --seed 42 --quality balanced
+GATEWAY_API_KEY=... uv run python scripts/router_monitor/send_batch.py --split ood --n 100 --seed 42 --quality balanced
+```
+
+Both passes send only raw question text. Use the printed start/end timestamps as
+the monitoring window; model shares use successful responses as the denominator.

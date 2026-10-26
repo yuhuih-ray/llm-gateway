@@ -96,6 +96,7 @@ def auto_targets(
         artifact_run=router.run_name,
         quality=quality,
         tau=decision.tau,
+        oov_ratio=decision.oov_ratio,
         probabilities=decision.probabilities,
         routed_model=decision.model,
     )

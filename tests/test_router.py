@@ -123,3 +123,16 @@ def test_router_hard_filters_skip_probability_winner(tmp_path):
     assert router.route("hi", allowed_models=["last"]).model == "last"
     with pytest.raises(ValueError, match="No eligible"):
         router.route("hi", allowed_models=[])
+
+
+def test_oov_ratio_uses_preprocessed_unigrams_and_counts_occurrences():
+    router = Router(FIXTURES / "synthetic.json")
+    classifier = router.classifiers[router.models[0]]
+    known = next(word for word in classifier.vocabulary if " " not in word)
+    assert router.route(
+        f"{known.upper()} zzzunknown zzzunknown"
+    ).oov_ratio == pytest.approx(2 / 3)
+    assert router.route(known).oov_ratio == 0
+    assert router.route("zzzunknown").oov_ratio == 1
+    assert router.route("").oov_ratio is None
+    assert router.route("! ? a").oov_ratio is None

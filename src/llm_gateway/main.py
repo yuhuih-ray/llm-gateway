@@ -18,7 +18,7 @@ from llm_gateway.auth import (
     authenticate,
     authentication_error_handler,
 )
-from llm_gateway.auto_routing import auto_targets
+from llm_gateway.auto_routing import auto_targets, load_router
 from llm_gateway.budgets import budget_exceeded
 from llm_gateway.cache import (
     CachedAnswer,
@@ -58,6 +58,12 @@ from llm_gateway.vllm import close_vllm_client
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:  # Application lifecycle.
+    path = get_settings().router_artifact
+    if path.exists():
+        try:
+            await asyncio.to_thread(load_router, path)
+        except Exception:
+            logger.exception("router_preload_failed")
     app.state.provider_semaphores = {}
     app.state.circuits = {}
     app.state.queue_warning_at = float("-inf")

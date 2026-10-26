@@ -14,6 +14,7 @@ class RoutingDecision:
     model: str
     probabilities: dict[str, float]
     tau: float | None
+    oov_ratio: float | None
 
 
 class _Classifier:
@@ -49,13 +50,16 @@ class _Classifier:
         if not isinstance(lo, int) or not isinstance(hi, int) or not 1 <= lo <= hi:
             raise ValueError("Invalid ngram range")
 
+    def tokens(self, question: str) -> list[str]:
+        text = question.lower() if self.settings["lowercase"] else question
+        return self.pattern.findall(text)
+
     def probability(
         self, question: str
     ) -> float:  # Question text only, never prompt metadata.
         if self.constant is not None:
             return self.constant
-        text = question.lower() if self.settings["lowercase"] else question
-        words = self.pattern.findall(text)
+        words = self.tokens(question)
         lo, hi = self.settings["ngram_range"]
         counts = Counter(
             self.vocabulary[term]
@@ -148,4 +152,13 @@ class Router:
                 ),
                 chosen,
             )
-        return RoutingDecision(chosen, probabilities, tau)
+        # Cascade vectorizers are fitted on the same train questions. Use the
+        # first classifier as the canonical vocabulary for this single drift feature.
+        classifier = self.classifiers[self.models[0]]
+        tokens = classifier.tokens(question)
+        oov_ratio = (
+            sum(token not in classifier.vocabulary for token in tokens) / len(tokens)
+            if tokens
+            else None
+        )
+        return RoutingDecision(chosen, probabilities, tau, oov_ratio)
