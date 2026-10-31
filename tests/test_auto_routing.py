@@ -6,6 +6,7 @@ from uuid import uuid4
 
 import httpx
 import pytest
+from pydantic import SecretStr
 
 from llm_gateway import auto_routing
 from llm_gateway.auth import AuthContext, authenticate
@@ -28,6 +29,9 @@ def anyio_backend():
 @pytest.fixture(autouse=True)
 def isolated_routing(monkeypatch):
     REAL_LOADER.cache_clear()
+    monkeypatch.setattr(get_settings(), "vllm_base_url", "http://test-vllm/v1")
+    monkeypatch.setattr(get_settings(), "vllm_api_key", SecretStr("test-key"))
+    monkeypatch.setattr(get_settings(), "gemini_api_key", SecretStr("test-key"))
     app.dependency_overrides[authenticate] = lambda: AuthContext(uuid4(), uuid4())
     factory = Mock(side_effect=lambda model: FakeProvider(delay=0))
     monkeypatch.setattr("llm_gateway.main.create_provider", factory)
@@ -176,8 +180,8 @@ async def test_all_models_filtered(stub_router, isolated_usage_queue):
         ) as client,
     ):
         response = await client.post("/v1/chat/completions", json=payload)
-    assert response.status_code == 400
-    assert response.json()["error"]["code"] == "context_length_exceeded"
+    assert response.status_code == 503
+    assert response.json()["error"]["code"] == "router_unavailable"
     stub_router.route.assert_not_called()
     assert not isolated_usage_queue.recorded
 
@@ -440,3 +444,45 @@ async def test_auto_fallback_still_checks_budget(
     assert response.json()["error"]["code"] == "insufficient_quota"
     assert check.await_count == 2
     isolated_routing.assert_called_once_with(NAMES[0])
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize("missing", ["vllm_base_url", "vllm_api_key"])
+async def test_unconfigured_local_routes_to_gemini(
+    monkeypatch, stub_router, isolated_routing, missing
+):
+    monkeypatch.setattr(get_settings(), missing, None)
+    async with (
+        app.router.lifespan_context(app),
+        httpx.AsyncClient(
+            transport=httpx.ASGITransport(app=app), base_url="http://gateway"
+        ) as client,
+    ):
+        response = await client.post(
+            "/v1/chat/completions",
+            json=body(),
+            headers={"X-Gateway-Quality": "economy"},
+        )
+    assert response.status_code == 200
+    assert response.json()["model"] == "gemini-flash-lite"
+    isolated_routing.assert_called_once_with("gemini-flash-lite")
+    assert stub_router.route.call_args.kwargs["allowed_models"] == NAMES[1:]
+
+
+@pytest.mark.anyio
+async def test_no_configured_models_returns_router_unavailable(
+    monkeypatch, stub_router, isolated_routing
+):
+    monkeypatch.setattr(get_settings(), "vllm_base_url", None)
+    monkeypatch.setattr(get_settings(), "gemini_api_key", None)
+    async with (
+        app.router.lifespan_context(app),
+        httpx.AsyncClient(
+            transport=httpx.ASGITransport(app=app), base_url="http://gateway"
+        ) as client,
+    ):
+        response = await client.post("/v1/chat/completions", json=body())
+    assert response.status_code == 503
+    assert response.json()["error"]["code"] == "router_unavailable"
+    stub_router.route.assert_not_called()
+    isolated_routing.assert_not_called()

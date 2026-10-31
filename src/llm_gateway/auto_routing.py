@@ -62,8 +62,17 @@ def auto_targets(
             "router_unavailable",
             "router_unavailable",
         ) from exc
+    settings = get_settings()
+    configured = {
+        "fake": True,
+        "vllm": bool(settings.vllm_base_url) and settings.vllm_api_key is not None,
+        "gemini": settings.gemini_api_key is not None,
+    }
     eligible = []
     for model in router.models:
+        # Configuration is a hard eligibility filter, not an upstream failure.
+        if not configured.get(MODELS[model].provider, False):
+            continue
         try:
             apply_token_limits(request.model_copy(update={"model": model}))
         except GatewayError as exc:
@@ -73,10 +82,10 @@ def auto_targets(
             eligible.append(model)
     if not eligible:
         raise GatewayError(
-            400,
-            "Input exceeds every automatic routing model's limit",
-            "invalid_request_error",
-            "context_length_exceeded",
+            503,
+            "Automatic routing unavailable: no eligible configured model",
+            "router_unavailable",
+            "router_unavailable",
         )
     try:
         decision = router.route(question, quality, allowed_models=eligible)
