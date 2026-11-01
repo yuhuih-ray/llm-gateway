@@ -69,10 +69,12 @@ def auto_targets(
         "gemini": settings.gemini_api_key is not None,
     }
     eligible = []
+    has_configured_model = False
     for model in router.models:
         # Configuration is a hard eligibility filter, not an upstream failure.
         if not configured.get(MODELS[model].provider, False):
             continue
+        has_configured_model = True
         try:
             apply_token_limits(request.model_copy(update={"model": model}))
         except GatewayError as exc:
@@ -81,6 +83,13 @@ def auto_targets(
         else:
             eligible.append(model)
     if not eligible:
+        if has_configured_model:
+            raise GatewayError(
+                400,
+                "Input exceeds every automatic routing model's limit",
+                "invalid_request_error",
+                "context_length_exceeded",
+            )
         raise GatewayError(
             503,
             "Automatic routing unavailable: no eligible configured model",
